@@ -1,0 +1,2 @@
+# synapse
+Serialization factory generation
