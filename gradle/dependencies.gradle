@@ -1,0 +1,74 @@
+/*
+ * Copyright (c) 2017. Uber Technologies
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+def versions = [
+    errorProne: '2.0.19',
+    kotlin: '1.1.4-2'
+]
+
+ext.deps = [
+    versions: versions,
+
+    apt: [
+        autoCommon: "com.google.auto:auto-common:0.8",
+        autoService: "com.google.auto.service:auto-service:1.0-rc3",
+        autoValue           : "com.google.auto.value:auto-value:1.5",
+        autoValueAnnotations: "com.jakewharton.auto.value:auto-value-annotations:1.4",
+        autoValueGson       : "com.ryanharter.auto.value:auto-value-gson:0.5.0",
+        autoValueMoshi      : "com.ryanharter.auto.value:auto-value-moshi:0.4.3",
+    ],
+
+    build: [
+        ci: 'true' == System.getenv('CI'),
+        errorProne: "com.google.errorprone:error_prone_core:${versions.errorProne}",
+
+        repositories: [
+            plugins: 'https://plugins.gradle.org/m2/'
+        ],
+
+        gradlePlugins: [
+            apt: 'net.ltgt.gradle:gradle-apt-plugin:0.11',
+            errorProne: 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.10',
+            kotlin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+        ]
+    ],
+
+    kotlin: [
+        stdLib: "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}",
+        stdLibJre7  : "org.jetbrains.kotlin:kotlin-stdlib-jre7:${versions.kotlin}",
+        stdLibJre8  : "org.jetbrains.kotlin:kotlin-stdlib-jre8:${versions.kotlin}",
+    ],
+
+    misc: [
+        errorProneAnnotations: "com.google.errorprone:error_prone_annotations:${versions.errorProne}",
+        javapoet: "com.squareup:javapoet:1.9.0",
+        jsr305: 'com.google.code.findbugs:jsr305:3.0.2',
+        gson: "com.google.code.gson:gson:2.8.1",
+        guava: "com.google.guava:guava:20.0",
+        moshi: "com.squareup.moshi:moshi:1.5.0",
+    ],
+
+    rx: [
+        android: 'io.reactivex.rxjava2:rxandroid:2.0.1',
+        java: 'io.reactivex.rxjava2:rxjava:2.1.0'
+    ],
+
+    test: [
+        compileTesting       : 'com.google.testing.compile:compile-testing:0.11',
+        junit: 'junit:junit:4.12',
+        truth: 'com.google.truth:truth:0.34'
+    ]
+]
