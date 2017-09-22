@@ -84,6 +84,8 @@ class MoshiSupport : SynapseExtension {
               String::class.java,
               MoshiSupportMeta::class.java))
 
+  override fun toString() = "MoshiSupport"
+
   override fun isApplicable(processingEnv: ProcessingEnvironment, type: TypeElement): Boolean {
     // check that the class contains a public static method returning a JsonAdapter
     val jsonAdapterType = ParameterizedTypeName.get(

@@ -60,50 +60,6 @@ public class MyAdapterFactory implements TypeAdapterFactory {
   }
 
   @Test
-  fun doesNotImplementSupportedType_shouldFail() {
-    val source1 = JavaFileObjects.forSourceString("test.Foo", """
-package test;
-import com.uber.synapse.annotations.Neuron;
-import com.google.gson.TypeAdapter;
-import com.google.gson.Gson;
-@Neuron public abstract class Foo {
-  public static TypeAdapter<Foo> typeAdapter(Gson gson) {
-    return null;
-  }
-  public abstract String getName();
-  public abstract boolean isAwesome();
-}""")
-
-    val source2 = JavaFileObjects.forSourceString("test.Bar", """
-package test;
-import com.uber.synapse.annotations.Neuron;
-import com.google.gson.TypeAdapter;
-import com.google.gson.Gson;
-@Neuron public abstract class Bar {
-  public static TypeAdapter<Bar> jsonAdapter(Gson gson) {
-    return null;
-  }
-  public abstract String getName();
-}""")
-    val source3 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
-package test;
-import com.google.gson.TypeAdapterFactory;
-import com.uber.synapse.annotations.Synapse;
-@Synapse
-public abstract class MyAdapterFactory {
-  public static TypeAdapterFactory create() {
-    return new Synapse_MyAdapterFactory();
-  }
-}""")
-
-    assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
-        .that(ImmutableSet.of(source1, source2, source3))
-        .processedWith(SynapseProcessor())
-        .failsToCompile()
-        .withErrorContaining("Must implement a supported interface!")
-  }
-
-  @Test
   fun testSearchUpComplexAncestry() {
     val source1 = JavaFileObjects.forSourceString("test.Foo", """
 package test;
@@ -177,4 +133,65 @@ final class Synapse_MyAdapterFactory extends MyAdapterFactory {
         .and()
         .generatesSources(expected)
   }
+
+  @Test
+  fun testNoMatchingModelsForFactory_shouldFail() {
+    val modelName = "test.Foo"
+    val model = JavaFileObjects.forSourceString(modelName, """
+package test;
+import com.uber.synapse.annotations.Neuron;
+@Neuron public abstract class Foo {
+  public abstract String getName();
+  public abstract boolean isAwesome();
+}""")
+
+    val factoryName = "test.MyAdapterFactory"
+    val factory = JavaFileObjects.forSourceString(factoryName, """
+package test;
+import com.google.gson.TypeAdapterFactory;
+import com.uber.synapse.annotations.Synapse;
+@Synapse
+public abstract class MyAdapterFactory implements TypeAdapterFactory {
+  public static TypeAdapterFactory create() {
+    return new Synapse_MyAdapterFactory();
+  }
+}""")
+
+    assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
+        .that(ImmutableSet.of(model, factory))
+        .processedWith(SynapseProcessor())
+        .failsToCompile()
+        .withErrorContaining("""
+          |No @Neuron-annotated elements applicable for the given @Synapse-annotated element with the current synapse extensions
+          |  Detected factories: [$factoryName]
+          |  Available extensions: [GsonSupport, MoshiSupport]
+          |  Detected models: [$modelName]
+        """.trimMargin())
+  }
+
+  @Test
+  fun noMatchingExtensions_shouldFail() {
+    val factoryName = "test.MyAdapterFactory"
+    val factory = JavaFileObjects.forSourceString(factoryName, """
+package test;
+import com.uber.synapse.annotations.Synapse;
+@Synapse
+public abstract class MyAdapterFactory {
+  public static TypeAdapterFactory create() {
+    return new Synapse_MyAdapterFactory();
+  }
+}""")
+
+    assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
+        .that(ImmutableSet.of(factory))
+        .processedWith(SynapseProcessor())
+        .failsToCompile()
+        .withErrorContaining("""
+          |No extensions applicable for the given @Synapse-annotated element
+          |  Detected factories: [test.MyAdapterFactory]
+          |  Available extensions: [GsonSupport, MoshiSupport]
+          |  Detected models: []
+        """.trimMargin())
+  }
+
 }

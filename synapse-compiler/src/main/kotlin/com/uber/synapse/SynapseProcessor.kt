@@ -106,7 +106,8 @@ open class SynapseProcessor : AbstractProcessor() {
   }
 
   private fun processSynapse(roundEnv: RoundEnvironment) {
-    roundEnv.findElementsAnnotatedWith<Neuron>()
+    val neuronElements = roundEnv.findElementsAnnotatedWith<Neuron>()
+    neuronElements
         .forEach { element ->
           extensionElements.forEach { extension, elements ->
             if (extension.isApplicable(processingEnv, element as TypeElement)) {
@@ -120,15 +121,37 @@ open class SynapseProcessor : AbstractProcessor() {
         .cast<TypeElement>()
         .onEach { checkAbstract(it) }
         .forEach { factory ->
+          val applicableExtensions = extensionElements
+              .filter { (extension, _) ->
+                extension.isTypeSupported(elementUtils, typeUtils, factory)
+              }
+
+          if (applicableExtensions.isEmpty()) {
+            error(factory, """
+              |No extensions applicable for the given @Synapse-annotated element
+              |Detected factories: [${adaptorFactories.joinToString { it.toString() }}]
+              |Available extensions: [${extensionElements.keys.joinToString()}]
+              |Detected models: [${neuronElements.joinToString()}]
+              """.trimMargin())
+            return@forEach
+          } else if (applicableExtensions
+              .none { (_, elements) -> elements.isNotEmpty() }) {
+            error(factory, """
+              |No @Neuron-annotated elements applicable for the given @Synapse-annotated element with the current synapse extensions
+              |Detected factories: [${adaptorFactories.joinToString { it.toString() }}]
+              |Available extensions: [${extensionElements.keys.joinToString()}]
+              |Detected models: [${neuronElements.joinToString()}]
+              """.trimMargin())
+            return@forEach
+          }
+
           val implementationMethods = ArrayList<MethodSpec>()
           val globalExtras = mutableMapOf<ExtensionName, ExtensionArgsInput>()
-          extensionElements.forEach { extension, elements ->
-            if (extension.isTypeSupported(elementUtils, typeUtils, factory)) {
-              val extras: ExtensionArgsInput = mutableMapOf()
-              implementationMethods.add(
-                  extension.createSynapseImplementationMethod(elements, extras))
-              globalExtras.put(extension.javaClass.name, extras)
-            }
+          applicableExtensions.forEach { extension, elements ->
+            val extras: ExtensionArgsInput = mutableMapOf()
+            implementationMethods.add(
+                extension.createSynapseImplementationMethod(elements, extras))
+            globalExtras.put(extension.javaClass.name, extras)
           }
           if (!implementationMethods.isEmpty()) {
             val adapterName = factory.classNameOf()
@@ -149,9 +172,6 @@ open class SynapseProcessor : AbstractProcessor() {
                   adapterName + GenerationalClassUtil.ExtensionFilter.SYNAPSE.extension,
                   json)
             }
-          } else {
-            error(factory,
-                "Must implement a supported interface! TypeAdapterFactory, JsonAdapter, etc.")
           }
         }
   }

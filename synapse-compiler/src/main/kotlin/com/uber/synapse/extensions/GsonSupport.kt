@@ -79,6 +79,8 @@ class GsonSupport : SynapseExtension {
               String::class.java,
               GsonSupportMeta::class.java))
 
+  override fun toString() = "GsonSupport"
+
   /**
    * Determines whether or not a given type is applicable to this. Specifically, it will check if it has a
    * static method returning a TypeAdapter.
