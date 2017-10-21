@@ -16,7 +16,7 @@
 
 def versions = [
     errorProne: '2.0.19',
-    kotlin: '1.1.4-2'
+    kotlin: '1.1.51'
 ]
 
 ext.deps = [
@@ -25,10 +25,10 @@ ext.deps = [
     apt: [
         autoCommon: "com.google.auto:auto-common:0.8",
         autoService: "com.google.auto.service:auto-service:1.0-rc3",
-        autoValue           : "com.google.auto.value:auto-value:1.5",
+        autoValue: "com.google.auto.value:auto-value:1.5",
         autoValueAnnotations: "com.jakewharton.auto.value:auto-value-annotations:1.4",
-        autoValueGson       : "com.ryanharter.auto.value:auto-value-gson:0.5.0",
-        autoValueMoshi      : "com.ryanharter.auto.value:auto-value-moshi:0.4.3",
+        autoValueGson: "com.ryanharter.auto.value:auto-value-gson:0.5.0",
+        autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.3",
     ],
 
     build: [
@@ -48,8 +48,8 @@ ext.deps = [
 
     kotlin: [
         stdLib: "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}",
-        stdLibJre7  : "org.jetbrains.kotlin:kotlin-stdlib-jre7:${versions.kotlin}",
-        stdLibJre8  : "org.jetbrains.kotlin:kotlin-stdlib-jre8:${versions.kotlin}",
+        stdLibJre7: "org.jetbrains.kotlin:kotlin-stdlib-jre7:${versions.kotlin}",
+        stdLibJre8: "org.jetbrains.kotlin:kotlin-stdlib-jre8:${versions.kotlin}",
     ],
 
     misc: [
@@ -67,8 +67,8 @@ ext.deps = [
     ],
 
     test: [
-        compileTesting       : 'com.google.testing.compile:compile-testing:0.11',
+        compileTesting: 'com.google.testing.compile:compile-testing:0.11',
         junit: 'junit:junit:4.12',
-        truth: 'com.google.truth:truth:0.34'
+        truth: 'com.google.truth:truth:0.36'
     ]
 ]
