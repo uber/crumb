@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-rootProject.name = 'fractory-root'
-include ':fractory'
-include ':fractory-compiler'
-include ':fractory-annotations'
-include ':fractory-integration:integration'
-include ':fractory-integration:lib1'
-include ':fractory-integration:lib2'
-include ':fractory-integration:lib3'
+package com.uber.fractory;
+
+import com.google.auto.service.AutoService;
+import javax.annotation.processing.Processor;
+
+/**
+ * A stub to cover for https://github.com/facebook/buck/issues/1366.
+ */
+@AutoService(Processor.class) public final class FractoryProcessorStub extends FractoryProcessor {}

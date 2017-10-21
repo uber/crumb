@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-rootProject.name = 'fractory-root'
-include ':fractory'
-include ':fractory-compiler'
-include ':fractory-annotations'
-include ':fractory-integration:integration'
-include ':fractory-integration:lib1'
-include ':fractory-integration:lib2'
-include ':fractory-integration:lib3'
+package com.uber.fractory.integration.consumer;
+
+import com.google.gson.TypeAdapterFactory;
+import com.squareup.moshi.JsonAdapter;
+import com.uber.fractory.annotations.Cortex;
+
+@Cortex public abstract class IntegrationCortex implements TypeAdapterFactory, JsonAdapter.Factory {
+
+  public static IntegrationCortex create() {
+    return new Cortex_IntegrationCortex();
+  }
+}

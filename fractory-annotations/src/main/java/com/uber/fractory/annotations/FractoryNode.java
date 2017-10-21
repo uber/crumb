@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-rootProject.name = 'fractory-root'
-include ':fractory'
-include ':fractory-compiler'
-include ':fractory-annotations'
-include ':fractory-integration:integration'
-include ':fractory-integration:lib1'
-include ':fractory-integration:lib2'
-include ':fractory-integration:lib3'
+package com.uber.fractory.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * An annotation that indicates that the given type exposes hooks that a {@link Fractory} should read and
+ * collect into its factory implementations.
+ */
+@Inherited
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface FractoryNode { }

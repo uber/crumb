@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-rootProject.name = 'fractory-root'
-include ':fractory'
-include ':fractory-compiler'
-include ':fractory-annotations'
-include ':fractory-integration:integration'
-include ':fractory-integration:lib1'
-include ':fractory-integration:lib2'
-include ':fractory-integration:lib3'
+apply plugin: "java-library"
+
+dependencies {
+  compileOnly deps.apt.autoService
+  api project(':fractory-compiler')
+}

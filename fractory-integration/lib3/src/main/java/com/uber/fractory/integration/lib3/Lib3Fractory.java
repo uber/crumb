@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-rootProject.name = 'fractory-root'
-include ':fractory'
-include ':fractory-compiler'
-include ':fractory-annotations'
-include ':fractory-integration:integration'
-include ':fractory-integration:lib1'
-include ':fractory-integration:lib2'
-include ':fractory-integration:lib3'
+package com.uber.fractory.integration.lib3;
+
+import com.google.gson.TypeAdapterFactory;
+import com.squareup.moshi.JsonAdapter;
+import com.uber.fractory.annotations.Fractory;
+
+@Fractory public abstract class Lib3Fractory implements TypeAdapterFactory, JsonAdapter.Factory {
+
+  public static Lib3Fractory create() {
+    return new Fractory_Lib3Fractory();
+  }
+}
