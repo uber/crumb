@@ -23,8 +23,7 @@ buildscript {
 }
 
 apply plugin: "java-library"
-apply plugin: "net.ltgt.apt"
-apply plugin: "idea"
+apply plugin: "net.ltgt.apt-idea"
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8

@@ -15,7 +15,7 @@
  */
 
 def versions = [
-    errorProne: '2.0.19',
+    errorProne: '2.1.2',
     kotlin: '1.1.51'
 ]
 
@@ -25,10 +25,10 @@ ext.deps = [
     apt: [
         autoCommon: "com.google.auto:auto-common:0.8",
         autoService: "com.google.auto.service:auto-service:1.0-rc3",
-        autoValue: "com.google.auto.value:auto-value:1.5",
-        autoValueAnnotations: "com.jakewharton.auto.value:auto-value-annotations:1.4",
-        autoValueGson: "com.ryanharter.auto.value:auto-value-gson:0.5.0",
-        autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.3",
+        autoValue: "com.google.auto.value:auto-value:1.5.2",
+        autoValueAnnotations: "com.jakewharton.auto.value:auto-value-annotations:1.5",
+        autoValueGson: "com.ryanharter.auto.value:auto-value-gson:0.6.0",
+        autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.4",
     ],
 
     build: [
@@ -40,8 +40,8 @@ ext.deps = [
         ],
 
         gradlePlugins: [
-            apt: 'net.ltgt.gradle:gradle-apt-plugin:0.11',
-            errorProne: 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.10',
+            apt: 'net.ltgt.gradle:gradle-apt-plugin:0.13',
+            errorProne: 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.13',
             kotlin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
         ]
     ],
