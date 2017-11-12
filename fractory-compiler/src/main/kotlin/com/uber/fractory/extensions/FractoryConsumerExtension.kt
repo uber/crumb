@@ -9,7 +9,7 @@ import javax.lang.model.element.TypeElement
 /**
  * Interface for FractoryConsumer extensions.
  */
-interface FractoryConsumerExtension {
+interface FractoryConsumerExtension : FractoryExtension {
 
   fun supportedConsumerAnnotations(): Set<Annotation> {
     return emptySet()

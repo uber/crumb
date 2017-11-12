@@ -9,7 +9,7 @@ import javax.lang.model.element.TypeElement
 /**
  * Interface for [FractoryProducer] extensions.
  */
-interface FractoryProducerExtension {
+interface FractoryProducerExtension : FractoryExtension {
 
   fun supportedProducerAnnotations(): Set<Annotation> {
     return emptySet()

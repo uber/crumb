@@ -137,7 +137,7 @@ open class FractoryProcessor : AbstractProcessor() {
           applicableExtensions.forEach { extension ->
             val extras: ProducerMetadata = extension.produce(context, producer, factorySpecBuilder,
                 qualifierAnnotations)
-            globalExtras.put(extension.javaClass.name, extras)
+            globalExtras.put(extension.key(), extras)
           }
           val factorySpec = factorySpecBuilder.build()
           if (emptyFactory != factorySpec) {
@@ -200,7 +200,7 @@ open class FractoryProcessor : AbstractProcessor() {
           val emptyFactory = factorySpecBuilder.build()
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, qualifierAnnotations)) {
-              val extras = extrasByExtension[extension.javaClass.name] ?: setOf<ExtensionArgs>()
+              val extras = extrasByExtension[extension.key()] ?: setOf<ExtensionArgs>()
               extension.consume(context, consumer, factorySpecBuilder, extras)
             }
           }
