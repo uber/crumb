@@ -23,18 +23,18 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to indicate that a given class should generate a concrete implementation of
- * factories it implements that delegate to {@link Fractory} locations on the classpath.
+ * factories it implements that handles all the publicly denoted {@link FractoryNode}
+ * implementations of this
+ * project.
  * <p>
  * <code><pre>
  *   // Gson example
- *   &#64;Cortex
- *   public abstract class Factory implements TypeAdapterFactory {
- *     public static Factory create() {
- *       return new Cortex_Factory();
+ *   &#64;Fractory
+ *   public abstract class FooFactory implements TypeAdapterFactory {
+ *     public static FooFactory create() {
+ *       return new Fractory_FooFactory();
  *     }
  *   }
  * </pre></code>
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.SOURCE)
-public @interface Cortex { }
+@Target(ElementType.TYPE) @Retention(RetentionPolicy.CLASS) public @interface FractoryProducer {}

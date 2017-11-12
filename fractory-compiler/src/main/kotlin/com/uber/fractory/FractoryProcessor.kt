@@ -18,20 +18,21 @@ package com.uber.fractory
 
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import com.uber.fractory.annotations.Cortex
-import com.uber.fractory.annotations.Fractory
-import com.uber.fractory.annotations.FractoryNode
+import com.uber.fractory.annotations.FractoryConsumable
+import com.uber.fractory.annotations.FractoryConsumer
+import com.uber.fractory.annotations.FractoryProducer
+import com.uber.fractory.annotations.FractoryQualifier
+import com.uber.fractory.extensions.FractoryConsumerExtension
+import com.uber.fractory.extensions.FractoryProducerExtension
 import com.uber.fractory.extensions.GsonSupport
 import com.uber.fractory.extensions.MoshiSupport
 import com.uber.fractory.packaging.GenerationalClassUtil
 import java.io.IOException
-import java.util.ArrayList
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
@@ -50,19 +51,17 @@ import kotlin.properties.Delegates
 
 typealias ExtensionName = String
 typealias ExtensionArgs = Map<String, String>
-typealias ExtensionArgsInput = MutableMap<String, String>
+typealias ProducerMetadata = Map<String, String>
 typealias MoshiTypes = com.squareup.moshi.Types
 
 /**
- * Generates a Fractory that adapts all [FractoryNode] annotated types.
-
- * Supports Gson and Moshi.
+ * Generates a Fractory that adapts all [FractoryConsumer] and [FractoryProducer] annotated types.
  */
 open class FractoryProcessor : AbstractProcessor() {
 
   companion object {
-    private const val FRACTORY_PREFIX = "Fractory_"
-    private const val CORTEX_PREFIX = "Cortex_"
+    private const val FRACTORY_PRODUCER_PREFIX = "FractoryProducer_"
+    private const val FRACTORY_CONSUMER_PREFIX = "FractoryConsumer_"
   }
 
   private val fractoryAdapter = Moshi.Builder()
@@ -70,19 +69,16 @@ open class FractoryProcessor : AbstractProcessor() {
       .build()
       .adapter(FractoryModel::class.java)
 
-  // A little meh, but we can build out an actual plugin system in the future if we need to.
-  // This just ensures all the code below is extension-agnostic.
-  private val extensionElements = mapOf(
-      Pair(GsonSupport(), mutableListOf<Element>()),
-      Pair(MoshiSupport(), mutableListOf<Element>())
-  )
+  private val producerExtensions = listOf<FractoryProducerExtension>(GsonSupport(), MoshiSupport())
+  private val consumerExtensions = listOf<FractoryConsumerExtension>(GsonSupport(), MoshiSupport())
 
   private lateinit var typeUtils: Types
   private lateinit var elementUtils: Elements
 
   override fun getSupportedAnnotationTypes(): Set<String> {
-    // Food for thought - Optionally also look for AutoValue classes?
-    return listOf(FractoryNode::class, Fractory::class, Cortex::class)
+    return (listOf(FractoryConsumer::class, FractoryProducer::class, FractoryConsumable::class)
+        + producerExtensions.flatMap { it.supportedProducerAnnotations() }.map { it::class }
+        + consumerExtensions.flatMap { it.supportedConsumerAnnotations() }.map { it::class })
         .map { it.java.name }
         .toSet()
   }
@@ -98,73 +94,56 @@ open class FractoryProcessor : AbstractProcessor() {
   }
 
   override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean {
-    processFractory(roundEnv)
-    processCortex(roundEnv)
+    processProducers(roundEnv)
+    processConsumers(roundEnv)
 
     // return true, we're the only ones that care about these annotations.
     return true
   }
 
-  private fun processFractory(roundEnv: RoundEnvironment) {
-    val neuronElements = roundEnv.findElementsAnnotatedWith<FractoryNode>()
-    neuronElements
-        .forEach { element ->
-          extensionElements.forEach { extension, elements ->
-            if (extension.isApplicable(processingEnv, element as TypeElement)) {
-              elements.add(element)
-            }
-          }
-        }
-
-    val adaptorFactories = roundEnv.findElementsAnnotatedWith<Fractory>()
+  private fun processProducers(roundEnv: RoundEnvironment) {
+    val adaptorFactories = roundEnv.findElementsAnnotatedWith<FractoryProducer>()
     adaptorFactories
         .cast<TypeElement>()
         .onEach { checkAbstract(it) }
-        .forEach { factory ->
-          val applicableExtensions = extensionElements
-              .filter { (extension, _) ->
-                extension.isTypeSupported(elementUtils, typeUtils, factory)
+        .forEach { producer ->
+          val context = FractoryContext(processingEnv, roundEnv)
+          val qualifierAnnotations = producer.annotationMirrors
+              .filter {
+                it.annotationType.asElement().getAnnotation(FractoryQualifier::class.java) != null
+              }
+          val applicableExtensions = producerExtensions
+              .filter {
+                it.isProducerApplicable(context, producer, qualifierAnnotations)
               }
 
           if (applicableExtensions.isEmpty()) {
-            error(factory, """
-              |No extensions applicable for the given @Fractory-annotated element
-              |Detected factories: [${adaptorFactories.joinToString { it.toString() }}]
-              |Available extensions: [${extensionElements.keys.joinToString()}]
-              |Detected models: [${neuronElements.joinToString()}]
-              """.trimMargin())
-            return@forEach
-          } else if (applicableExtensions
-              .none { (_, elements) -> elements.isNotEmpty() }) {
-            error(factory, """
-              |No @Neuron-annotated elements applicable for the given @Fractory-annotated element with the current fractory extensions
-              |Detected factories: [${adaptorFactories.joinToString { it.toString() }}]
-              |Available extensions: [${extensionElements.keys.joinToString()}]
-              |Detected models: [${neuronElements.joinToString()}]
+            error(producer, """
+              |No extensions applicable for the given @FractoryProducer-annotated element
+              |Detected producers: [${adaptorFactories.joinToString { it.toString() }}]
+              |Available extensions: [${producerExtensions.joinToString()}]
               """.trimMargin())
             return@forEach
           }
 
-          val implementationMethods = ArrayList<MethodSpec>()
-          val globalExtras = mutableMapOf<ExtensionName, ExtensionArgsInput>()
-          applicableExtensions.forEach { extension, elements ->
-            val extras: ExtensionArgsInput = mutableMapOf()
-            implementationMethods.add(
-                extension.createFractoryImplementationMethod(elements, extras))
+          val globalExtras = mutableMapOf<ExtensionName, ProducerMetadata>()
+          val adapterName = producer.classNameOf()
+          val packageName = producer.packageName()
+          val factorySpecBuilder = TypeSpec.classBuilder(
+              ClassName.get(packageName, FRACTORY_PRODUCER_PREFIX + adapterName))
+              .addModifiers(FINAL)
+              .superclass(ClassName.get(packageName, adapterName))
+          val emptyFactory = factorySpecBuilder.build()
+          applicableExtensions.forEach { extension ->
+            val extras: ProducerMetadata = extension.produce(context, producer, factorySpecBuilder,
+                qualifierAnnotations)
             globalExtras.put(extension.javaClass.name, extras)
           }
-          if (!implementationMethods.isEmpty()) {
-            val adapterName = factory.classNameOf()
-            val packageName = factory.packageName()
-            val factorySpec = TypeSpec.classBuilder(
-                ClassName.get(packageName, FRACTORY_PREFIX + adapterName))
-                .addModifiers(FINAL)
-                .superclass(ClassName.get(packageName, adapterName))
-                .addMethods(implementationMethods)
-                .build()
+          val factorySpec = factorySpecBuilder.build()
+          if (emptyFactory != factorySpec) {
             val file = JavaFile.builder(packageName, factorySpec).build()
             file.writeToFiler()?.run {
-              // Write metadata to resources for cortexes to pick up
+              // Write metadata to resources for consumers to pick up
               val fractoryModel = FractoryModel("$packageName.$adapterName", globalExtras)
               val json = fractoryAdapter.toJson(fractoryModel)
               GenerationalClassUtil.writeIntermediateFile(processingEnv,
@@ -172,61 +151,66 @@ open class FractoryProcessor : AbstractProcessor() {
                   adapterName + GenerationalClassUtil.ExtensionFilter.FRACTORY.extension,
                   json)
             }
+          } else {
+            error(producer, "No modifications were made to this producer.")
           }
         }
   }
 
-  private fun processCortex(roundEnv: RoundEnvironment) {
-    val cortexes = roundEnv.findElementsAnnotatedWith<Cortex>()
-    if (cortexes.isEmpty()) {
+  private fun processConsumers(roundEnv: RoundEnvironment) {
+    val consumers = roundEnv.findElementsAnnotatedWith<FractoryConsumer>()
+    if (consumers.isEmpty()) {
       return
     }
 
-    // Load the fractories from the classpath
-    val fractoryJsons = GenerationalClassUtil.loadObjects<String>(
+    // Load the producerMetadata from the classpath
+    val producerMetadataBlobs = GenerationalClassUtil.loadObjects<String>(
         GenerationalClassUtil.ExtensionFilter.FRACTORY,
         processingEnv)
 
-    if (fractoryJsons.isEmpty()) {
-      message(WARNING, cortexes.iterator().next(), "No fractories found on the classpath.")
+    if (producerMetadataBlobs.isEmpty()) {
+      message(WARNING, consumers.iterator().next(),
+          "No @FractoryProducer metadata found on the classpath.")
       return
     }
 
-    val fractories = fractoryJsons.map { fractoryAdapter.fromJson(it)!! }
+    val producerMetadata = producerMetadataBlobs.map { fractoryAdapter.fromJson(it)!! }
     val extrasByExtension = mutableMapOf<ExtensionName, MutableSet<ExtensionArgs>>()
-    fractories.map { it.extras }
+    producerMetadata.map { it.extras }
         .flatMap { it.entries }
         .forEach {
           extrasByExtension.getOrPut(it.key, { mutableSetOf() }).add(it.value)
         }
 
-    // Iterate through the cortexes to generate their implementations. Currently these will all be the same
-    // but in the future we could add configuration to cortex.
-    cortexes.cast<TypeElement>()
+    // Iterate through the consumers to generate their implementations.
+    consumers.cast<TypeElement>()
         .onEach { checkAbstract(it) }
-        .forEach { factory ->
-          val implementationMethods = ArrayList<MethodSpec>()
-          extensionElements.forEach { extension, _ ->
-            if (extension.isTypeSupported(elementUtils, typeUtils, factory)) {
+        .forEach { consumer ->
+          val context = FractoryContext(processingEnv, roundEnv)
+          val qualifierAnnotations = consumer.annotationMirrors
+              .filter {
+                it.annotationType.asElement().getAnnotation(FractoryQualifier::class.java) != null
+              }
+          val adapterName = consumer.classNameOf()
+          val packageName = consumer.packageName()
+          val factorySpecBuilder = TypeSpec.classBuilder(
+              ClassName.get(packageName, FRACTORY_CONSUMER_PREFIX + adapterName))
+              .addModifiers(PUBLIC, FINAL)
+              .superclass(ClassName.get(packageName, adapterName))
+          val emptyFactory = factorySpecBuilder.build()
+          consumerExtensions.forEach { extension ->
+            if (extension.isConsumerApplicable(context, consumer, qualifierAnnotations)) {
               val extras = extrasByExtension[extension.javaClass.name] ?: setOf<ExtensionArgs>()
-              implementationMethods.addAll(extension.createCortexImplementationMethod(extras))
+              extension.consume(context, consumer, factorySpecBuilder, extras)
             }
           }
 
-          if (!implementationMethods.isEmpty()) {
-            val adapterName = factory.classNameOf()
-            val packageName = factory.packageName()
-            val factorySpec = TypeSpec.classBuilder(
-                ClassName.get(packageName, CORTEX_PREFIX + adapterName))
-                .addModifiers(PUBLIC, FINAL)
-                .superclass(ClassName.get(packageName, adapterName))
-                .addMethods(implementationMethods)
-
-            JavaFile.builder(packageName, factorySpec.build()).build()
+          val factorySpec = factorySpecBuilder.build()
+          if (emptyFactory != factorySpec) {
+            JavaFile.builder(packageName, factorySpec).build()
                 .writeToFiler()
           } else {
-            error(factory,
-                "Must implement a supported interface! TypeAdapterFactory, JsonAdapter, etc.")
+            error(consumer, "No modifications were made to this consumer.")
           }
         }
   }
@@ -279,7 +263,7 @@ open class FractoryProcessor : AbstractProcessor() {
   }
 }
 
-class FractoryAdapter(moshi: Moshi) : JsonAdapter<FractoryModel>() {
+internal class FractoryAdapter(moshi: Moshi) : JsonAdapter<FractoryModel>() {
 
   companion object {
     private val NAMES = arrayOf("name", "extras")
@@ -328,14 +312,17 @@ class FractoryAdapter(moshi: Moshi) : JsonAdapter<FractoryModel>() {
   }
 }
 
+class FractoryContext(val processingEnv: ProcessingEnvironment,
+    val roundEnv: RoundEnvironment)
+
 /** Return a list of elements annotated with [T]. */
-inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element>
+internal inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element>
     = getElementsAnnotatedWith(T::class.java)
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T> Iterable<*>.cast() = map { it as T }
+internal inline fun <T> Iterable<*>.cast() = map { it as T }
 
-data class FractoryModel(
+internal data class FractoryModel(
     val name: String,
     val extras: Map<ExtensionName, ExtensionArgs>)
 

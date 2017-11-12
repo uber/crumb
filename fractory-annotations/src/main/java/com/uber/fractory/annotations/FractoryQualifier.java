@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package com.uber.fractory.integration.consumer;
+package com.uber.fractory.annotations;
 
-import com.google.gson.TypeAdapterFactory;
-import com.squareup.moshi.JsonAdapter;
-import com.uber.fractory.annotations.Cortex;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Cortex public abstract class IntegrationCortex implements TypeAdapterFactory, JsonAdapter.Factory {
-
-  public static IntegrationCortex create() {
-    return new Cortex_IntegrationCortex();
-  }
-}
+@Target(ElementType.ANNOTATION_TYPE) @Retention(RetentionPolicy.CLASS)
+public @interface FractoryQualifier {}

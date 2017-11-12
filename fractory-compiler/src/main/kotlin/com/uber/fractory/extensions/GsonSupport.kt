@@ -30,6 +30,8 @@ import com.squareup.javapoet.NameAllocator
 import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
+import com.squareup.javapoet.TypeSpec
+import com.squareup.javapoet.TypeSpec.Builder
 import com.squareup.javapoet.TypeVariableName
 import com.squareup.javapoet.WildcardTypeName
 import com.squareup.moshi.JsonAdapter
@@ -37,14 +39,16 @@ import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
 import com.uber.fractory.ExtensionArgs
-import com.uber.fractory.ExtensionArgsInput
+import com.uber.fractory.FractoryContext
 import com.uber.fractory.MoshiTypes
-import com.uber.fractory.annotations.FractoryNode
+import com.uber.fractory.ProducerMetadata
+import com.uber.fractory.annotations.FractoryConsumable
 import com.uber.fractory.asPackageAndName
+import com.uber.fractory.findElementsAnnotatedWith
 import com.uber.fractory.implementsInterface
 import com.uber.fractory.rawType
 import java.lang.Exception
-import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier.PRIVATE
@@ -52,9 +56,8 @@ import javax.lang.model.element.Modifier.PUBLIC
 import javax.lang.model.element.Modifier.STATIC
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.ElementFilter
-import javax.lang.model.util.Elements
-import javax.lang.model.util.Types
 import javax.tools.Diagnostic
+import javax.tools.Diagnostic.Kind
 import kotlin.String
 import kotlin.properties.Delegates
 
@@ -63,7 +66,7 @@ typealias ModelName = String
 /**
  * Gson support for Fractory.
  */
-class GsonSupport : FractoryExtension {
+class GsonSupport : FractoryConsumerExtension, FractoryProducerExtension {
 
   companion object {
     private const val AV_PREFIX = "AutoValue_"
@@ -81,15 +84,26 @@ class GsonSupport : FractoryExtension {
 
   override fun toString() = "GsonSupport"
 
+  override fun isProducerApplicable(context: FractoryContext,
+      type: TypeElement,
+      annotations: Collection<AnnotationMirror>): Boolean {
+    return implementsTypeAdapterFactory(context, type)
+  }
+
+  private fun implementsTypeAdapterFactory(context: FractoryContext,
+      type: TypeElement) = with(context.processingEnv) {
+    type.implementsInterface<TypeAdapterFactory>(elementUtils, typeUtils)
+  }
+
   /**
    * Determines whether or not a given type is applicable to this. Specifically, it will check if it has a
    * static method returning a TypeAdapter.
    *
-   * @param processingEnv Processing environment
+   * @param context FractoryContext
    * @param type the type to check
    * @return true if the type is applicable.
    */
-  override fun isApplicable(processingEnv: ProcessingEnvironment, type: TypeElement): Boolean {
+  private fun isConsumableApplicable(context: FractoryContext, type: TypeElement): Boolean {
     // check that the class contains a public static method returning a TypeAdapter
     val typeName = TypeName.get(type.asType())
     val typeAdapterType = ParameterizedTypeName.get(
@@ -114,49 +128,44 @@ class GsonSupport : FractoryExtension {
       if (typeName is ParameterizedTypeName && typeName.rawType == argument) {
         return true
       } else {
-        processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
+        context.processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
             String.format(
                 "Found public static method returning TypeAdapter<%s> on %s class. Skipping GsonTypeAdapter generation.",
                 argument, type))
       }
     } else {
-      processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
+      context.processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
           "Found public static method returning TypeAdapter with no type arguments, skipping GsonTypeAdapter generation.")
     }
-
     return false
-  }
-
-  /**
-   * Checks if a given type is supported. Different than [.isApplicable]
-   * in that it actually looks up the type's ancestry to see if it implements a TypeAdapterFactory.
-   *
-   * This is safe to call multiple times as results are cached.
-   *
-   * @param elementUtils Elements instance
-   * @param typeUtils Types instance
-   * @param type the type to check
-   * @return true if supported.
-   */
-  override fun isTypeSupported(
-      elementUtils: Elements,
-      typeUtils: Types,
-      type: TypeElement): Boolean {
-    return type.implementsInterface<TypeAdapterFactory>(elementUtils, typeUtils)
   }
 
   /**
    * Creates a fractory implementation method for the gson support. In this case, it builds the create() method of
    * [TypeAdapterFactory].
    *
-   * @param elements the elements to check in the factory.
    * @return the implemented create method.
    */
-  override fun createFractoryImplementationMethod(elements: List<Element>,
-      extras: ExtensionArgsInput): MethodSpec {
+  override fun produce(context: FractoryContext,
+      type: TypeElement,
+      builder: TypeSpec.Builder,
+      annotations: Collection<AnnotationMirror>): ProducerMetadata {
+    val elements = context.roundEnv.findElementsAnnotatedWith<FractoryConsumable>()
+        .filterIsInstance(TypeElement::class.java)
+        .filter { isConsumableApplicable(context, it) }
+
+    if (elements.isEmpty()) {
+      context.processingEnv.messager.printMessage(Kind.ERROR, """
+        |No @FractoryConsumable-annotated elements applicable for the given @FractoryProducer-annotated element with the current fractory extensions
+        |FractoryProducer: $type
+        |Extension: $this
+        """.trimMargin(), type)
+      return emptyMap()
+    }
+
     val gson = ParameterSpec.builder(Gson::class.java, "gson").build()
     val t = TypeVariableName.get("T")
-    val type = ParameterSpec
+    val typeParam = ParameterSpec
         .builder(ParameterizedTypeName.get(ClassName.get(TypeToken::class.java), t), "type")
         .build()
     val result = ParameterizedTypeName.get(ClassName.get(TypeAdapter::class.java), t)
@@ -167,9 +176,9 @@ class GsonSupport : FractoryExtension {
         .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java)
             .addMember("value", "\"unchecked\"")
             .build())
-        .addParameters(ImmutableSet.of(gson, type))
+        .addParameters(ImmutableSet.of(gson, typeParam))
         .returns(result)
-        .addStatement("Class<\$T> rawType = (Class<\$T>) \$N.getRawType()", t, t, type)
+        .addStatement("Class<\$T> rawType = (Class<\$T>) \$N.getRawType()", t, t, typeParam)
 
     val modelsMap = mutableMapOf<String, GsonSupportMeta>()
     elements.forEachIndexed { i, element ->
@@ -199,7 +208,7 @@ class GsonSupport : FractoryExtension {
             argCount = 1
             create.addStatement(
                 "return (TypeAdapter<\$T>) \$T.$typeAdapterName(\$N, (\$T) \$N)", t,
-                elementType, gson, params[1], type)
+                elementType, gson, params[1], typeParam)
           }
         }
         modelsMap.put(fqcn, GsonSupportMeta(typeAdapterName, argCount))
@@ -209,8 +218,13 @@ class GsonSupport : FractoryExtension {
     create.addStatement("return null")
     create.endControlFlow()
 
-    extras.put(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap))
-    return create.build()
+    builder.addMethod(create.build())
+    return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap)))
+  }
+
+  override fun isConsumerApplicable(context: FractoryContext, type: TypeElement,
+      annotations: Collection<AnnotationMirror>): Boolean {
+    return implementsTypeAdapterFactory(context, type)
   }
 
   /**
@@ -220,7 +234,10 @@ class GsonSupport : FractoryExtension {
    * @param extras extras.
    * @return the implemented create method + any others it needs to function.
    */
-  override fun createCortexImplementationMethod(extras: Set<ExtensionArgs>): Set<MethodSpec> {
+  override fun consume(context: FractoryContext,
+      type: TypeElement,
+      builder: Builder,
+      extras: Set<ExtensionArgs>) {
     // Get a mapping of model names -> GsonSupportMeta
     val metaMaps = extras
         .filter { it.contains(EXTRAS_KEY) }
@@ -291,14 +308,14 @@ class GsonSupport : FractoryExtension {
         .build()
 
     // Create the main create() method for the TypeAdapterFactory
-    val type = ParameterSpec
+    val typeParam = ParameterSpec
         .builder(ParameterizedTypeName.get(ClassName.get(TypeToken::class.java), t), "type")
         .build()
     val create = MethodSpec.methodBuilder("create")
         .addModifiers(PUBLIC)
         .addTypeVariable(t)
         .addAnnotation(Override::class.java)
-        .addParameters(ImmutableSet.of(gson, type))
+        .addParameters(ImmutableSet.of(gson, typeParam))
         .returns(result)
         /*
          * First we want to pull out the package and simple names
@@ -314,14 +331,14 @@ class GsonSupport : FractoryExtension {
         .addStatement("\$T<\$T> rawType = \$N.getRawType()",
             Class::class.java,
             WildcardTypeName.supertypeOf(t),
-            type)
+            typeParam)
         .addStatement("if (rawType.isPrimitive()) return null")
         .addStatement("if (!rawType.isAnnotationPresent(\$T.class)) return null",
-            FractoryNode::class.java)
+            FractoryConsumable::class.java)
         .addStatement("String packageName = rawType.getPackage().getName()")
 
     // Begin the switch
-    create.beginControlFlow("switch (packageName)", type)
+    create.beginControlFlow("switch (packageName)")
     modelsByPackage.forEach { packageName, entries ->
       // Create the package-specific method
       val packageCreatorMethod = MethodSpec.methodBuilder(
@@ -352,7 +369,7 @@ class GsonSupport : FractoryExtension {
     methods += typeAdapterCreator
     methods += create.build()
 
-    return methods
+    builder.addMethods(methods)
   }
 
   /**
@@ -415,7 +432,7 @@ class GsonSupport : FractoryExtension {
   }
 }
 
-class GsonSupportMetaAdapter : JsonAdapter<GsonSupportMeta>() {
+internal class GsonSupportMetaAdapter : JsonAdapter<GsonSupportMeta>() {
 
   companion object {
     private val NAMES = arrayOf("methodName", "argCount")
@@ -456,4 +473,4 @@ class GsonSupportMetaAdapter : JsonAdapter<GsonSupportMeta>() {
   }
 }
 
-data class GsonSupportMeta(val methodName: String, val argCount: Int)
+internal data class GsonSupportMeta(val methodName: String, val argCount: Int)

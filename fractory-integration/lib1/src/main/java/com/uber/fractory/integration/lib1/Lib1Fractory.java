@@ -18,11 +18,12 @@ package com.uber.fractory.integration.lib1;
 
 import com.google.gson.TypeAdapterFactory;
 import com.squareup.moshi.JsonAdapter;
-import com.uber.fractory.annotations.Fractory;
+import com.uber.fractory.annotations.FractoryProducer;
 
-@Fractory public abstract class Lib1Fractory implements TypeAdapterFactory, JsonAdapter.Factory {
+@FractoryProducer public abstract class Lib1Fractory
+    implements TypeAdapterFactory, JsonAdapter.Factory {
 
   public static Lib1Fractory create() {
-    return new Fractory_Lib1Fractory();
+    return new FractoryProducer_Lib1Fractory();
   }
 }

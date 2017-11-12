@@ -17,25 +17,10 @@
 package com.uber.fractory.annotations;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Annotation to indicate that a given class should generate a concrete implementation of
- * factories it implements that handles all the publicly denoted {@link FractoryNode} implementations of this
- * project.
- * <p>
- * <code><pre>
- *   // Gson example
- *   &#64;Fractory
- *   public abstract class FooFactory implements TypeAdapterFactory {
- *     public static FooFactory create() {
- *       return new Fractory_FooFactory();
- *     }
- *   }
- * </pre></code>
- */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.SOURCE)
-public @interface Fractory { }
+@Inherited @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME)
+public @interface FractoryConsumable {}

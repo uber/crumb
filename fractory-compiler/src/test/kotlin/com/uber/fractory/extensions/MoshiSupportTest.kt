@@ -31,10 +31,10 @@ class MoshiSupportTest {
   fun generatesJsonAdapterFactory() {
     val source1 = JavaFileObjects.forSourceString("test.Foo", """
 package test;
-import com.uber.fractory.annotations.FractoryNode;
+import com.uber.fractory.annotations.FractoryConsumable;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-@FractoryNode public abstract class Foo {
+@FractoryConsumable public abstract class Foo {
   public static JsonAdapter<Foo> jsonAdapter(Moshi moshi) {
     return null;
   }
@@ -44,10 +44,10 @@ import com.squareup.moshi.Moshi;
 
     val source2 = JavaFileObjects.forSourceString("test.Bar", """
 package test;
-import com.uber.fractory.annotations.FractoryNode;
+import com.uber.fractory.annotations.FractoryConsumable;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-@FractoryNode public abstract class Bar {
+@FractoryConsumable public abstract class Bar {
   public static JsonAdapter<Bar> jsonAdapter(Moshi moshi) {
     return null;
   }
@@ -57,9 +57,9 @@ import com.squareup.moshi.Moshi;
     // Param-less adapter method
     val source3 = JavaFileObjects.forSourceString("test.Baz", """
 package test;
-import com.uber.fractory.annotations.FractoryNode;
+import com.uber.fractory.annotations.FractoryConsumable;
 import com.squareup.moshi.JsonAdapter;
-@FractoryNode public abstract class Baz {
+@FractoryConsumable public abstract class Baz {
   public static JsonAdapter<Baz> jsonAdapter() {
     return null;
   }
@@ -68,9 +68,9 @@ import com.squareup.moshi.JsonAdapter;
     // Factory method
     val source4 = JavaFileObjects.forSourceString("test.BazFactory", """
 package test;
-import com.uber.fractory.annotations.FractoryNode;
+import com.uber.fractory.annotations.FractoryConsumable;
 import com.squareup.moshi.JsonAdapter;
-@FractoryNode public abstract class BazFactory {
+@FractoryConsumable public abstract class BazFactory {
   public static JsonAdapter.Factory factory() {
     return null;
   }
@@ -80,11 +80,11 @@ import com.squareup.moshi.JsonAdapter;
     val source5 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
 package test;
 import com.squareup.moshi.JsonAdapter;
-import com.uber.fractory.annotations.Fractory;
-@Fractory
+import com.uber.fractory.annotations.FractoryProducer;
+@FractoryProducer
 public abstract class MyAdapterFactory implements JsonAdapter.Factory {
   public static MyAdapterFactory create() {
-    return new Fractory_MyAdapterFactory();
+    return new FractoryProducer_MyAdapterFactory();
   }
 }""")
 
@@ -98,7 +98,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
 
-final class Fractory_MyAdapterFactory extends MyAdapterFactory {
+final class FractoryProducer_MyAdapterFactory extends MyAdapterFactory {
   @Override public JsonAdapter<?> create(Type type,
           Set<? extends Annotation> annotations,
           Moshi moshi) {

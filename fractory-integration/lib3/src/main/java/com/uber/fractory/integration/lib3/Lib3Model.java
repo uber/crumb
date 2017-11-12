@@ -21,9 +21,9 @@ import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import com.uber.fractory.annotations.FractoryNode;
+import com.uber.fractory.annotations.FractoryConsumable;
 
-@AutoValue @FractoryNode public abstract class Lib3Model {
+@AutoValue @FractoryConsumable public abstract class Lib3Model {
 
   abstract String foo();
 

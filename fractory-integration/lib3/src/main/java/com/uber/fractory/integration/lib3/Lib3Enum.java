@@ -22,14 +22,14 @@ import com.google.gson.stream.JsonWriter;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
-import com.uber.fractory.annotations.FractoryNode;
+import com.uber.fractory.annotations.FractoryConsumable;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-@FractoryNode public enum Lib3Enum {
+@FractoryConsumable public enum Lib3Enum {
   FOO;
 
   public static TypeAdapter<Lib3Enum> typeAdapter() {

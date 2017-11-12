@@ -31,10 +31,10 @@ class GsonSupportTest {
   fun generatesTypeAdapterFactory() {
     val source1 = JavaFileObjects.forSourceString("test.Foo", """
 package test;
-import com.uber.fractory.annotations.FractoryNode;
+import com.uber.fractory.annotations.FractoryConsumable;
 import com.google.gson.TypeAdapter;
 import com.google.gson.Gson;
-@FractoryNode public abstract class Foo {
+@FractoryConsumable public abstract class Foo {
   public static TypeAdapter<Foo> typeAdapter(Gson gson) {
       return null;
   }
@@ -44,10 +44,10 @@ import com.google.gson.Gson;
 
     val source2 = JavaFileObjects.forSourceString("test.Bar", """
 package test;
-import com.uber.fractory.annotations.FractoryNode;
+import com.uber.fractory.annotations.FractoryConsumable;
 import com.google.gson.TypeAdapter;
 import com.google.gson.Gson;
-@FractoryNode public abstract class Bar {
+@FractoryConsumable public abstract class Bar {
   public static TypeAdapter<Bar> jsonAdapter(Gson gson) {
     return null;
   }
@@ -57,15 +57,15 @@ import com.google.gson.Gson;
     val source3 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
 package test;
 import com.google.gson.TypeAdapterFactory;
-import com.uber.fractory.annotations.Fractory;
-@Fractory
+import com.uber.fractory.annotations.FractoryProducer;
+@FractoryProducer
 public abstract class MyAdapterFactory implements TypeAdapterFactory {
   public static MyAdapterFactory create() {
-      return new Fractory_MyAdapterFactory();
+      return new FractoryProducer_MyAdapterFactory();
         }
 }""")
 
-    val expected = JavaFileObjects.forSourceString("test.Fractory_MyAdapterFactory", """
+    val expected = JavaFileObjects.forSourceString("test.FractoryProducer_MyAdapterFactory", """
 package test;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
@@ -73,7 +73,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.Override;
 import java.lang.SuppressWarnings;
 
-final class Fractory_MyAdapterFactory extends MyAdapterFactory {
+final class FractoryProducer_MyAdapterFactory extends MyAdapterFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {

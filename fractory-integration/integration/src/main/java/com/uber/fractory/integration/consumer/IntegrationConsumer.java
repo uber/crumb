@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package com.uber.fractory.annotations;
+package com.uber.fractory.integration.consumer;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.google.gson.TypeAdapterFactory;
+import com.squareup.moshi.JsonAdapter;
+import com.uber.fractory.annotations.FractoryConsumer;
 
-/**
- * An annotation that indicates that the given type exposes hooks that a {@link Fractory} should read and
- * collect into its factory implementations.
- */
-@Inherited
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface FractoryNode { }
+@FractoryConsumer public abstract class IntegrationConsumer
+    implements TypeAdapterFactory, JsonAdapter.Factory {
+
+  public static IntegrationConsumer create() {
+    return new FractoryConsumer_IntegrationConsumer();
+  }
+}

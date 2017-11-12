@@ -31,9 +31,10 @@ import org.junit.Test;
 import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.TestCase.fail;
 
-public final class IntegrationCortexTest {
+public final class IntegrationConsumerTest {
 
-  // Expected JSON outputs. Note they're different because gson and moshi don't necessarily output keys in the same
+  // Expected JSON outputs. Note they're different because gson and moshi don't necessarily
+  // output keys in the same
   // order.
   private static final String EXPECTED_GSON_JSON = "{\"lib1Model\":{\"foo\":\"lib1Model\"},"
       + "\"lib1Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib2Enum\":"
@@ -42,16 +43,20 @@ public final class IntegrationCortexTest {
       + ":{\"foo\":\"lib1Model\"},\"lib2Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"}"
       + ",\"lib3Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"}}";
 
-  private final Gson gson = new GsonBuilder().registerTypeAdapterFactory(IntegrationCortex.create())
-      .create();
+  private final Gson gson =
+      new GsonBuilder().registerTypeAdapterFactory(IntegrationConsumer.create())
+          .create();
 
-  private final Moshi moshi = new Moshi.Builder().add(IntegrationCortex.create())
+  private final Moshi moshi = new Moshi.Builder().add(IntegrationConsumer.create())
       .build();
 
   @Test public void verifyGson() {
-    TestData data =
-        new TestData(Lib1Model.create("lib1Model"), Lib1Enum.FOO, Lib2Model.create("lib2Model"),
-            Lib2Enum.FOO, Lib3Model.create("lib3Model"), Lib3Enum.FOO);
+    TestData data = new TestData(Lib1Model.create("lib1Model"),
+        Lib1Enum.FOO,
+        Lib2Model.create("lib2Model"),
+        Lib2Enum.FOO,
+        Lib3Model.create("lib3Model"),
+        Lib3Enum.FOO);
 
     String json = gson.toJson(data);
     assertThat(json).isEqualTo(EXPECTED_GSON_JSON);
@@ -59,15 +64,18 @@ public final class IntegrationCortexTest {
     assertThat(data).isEqualTo(newData);
 
     // Another check to make sure we're not messing up the adapter on AutoValue_ prefixes
-    assertThat(gson.getAdapter(newData.lib1Model.getClass())).isInstanceOf(
-        Lib1Model.typeAdapter(gson)
-            .getClass());
+    assertThat(gson.getAdapter(newData.lib1Model.getClass())).isInstanceOf(Lib1Model.typeAdapter(
+        gson)
+        .getClass());
   }
 
   @Test public void verifyMoshi() {
-    TestData data =
-        new TestData(Lib1Model.create("lib1Model"), Lib1Enum.FOO, Lib2Model.create("lib2Model"),
-            Lib2Enum.FOO, Lib3Model.create("lib3Model"), Lib3Enum.FOO);
+    TestData data = new TestData(Lib1Model.create("lib1Model"),
+        Lib1Enum.FOO,
+        Lib2Model.create("lib2Model"),
+        Lib2Enum.FOO,
+        Lib3Model.create("lib3Model"),
+        Lib3Enum.FOO);
 
     String json = moshi.adapter(TestData.class)
         .toJson(data);
@@ -83,9 +91,9 @@ public final class IntegrationCortexTest {
 
     // Another check to make sure we're not messing up the adapter on AutoValue_ prefixes
     //noinspection ConstantConditions
-    assertThat(moshi.adapter(newData.lib1Model.getClass())).isInstanceOf(
-        Lib1Model.jsonAdapter(moshi)
-            .getClass());
+    assertThat(moshi.adapter(newData.lib1Model.getClass())).isInstanceOf(Lib1Model.jsonAdapter
+        (moshi)
+        .getClass());
   }
 
   public static class TestData {
@@ -97,8 +105,12 @@ public final class IntegrationCortexTest {
     public final Lib3Model lib3Model;
     public final Lib3Enum lib3Enum;
 
-    public TestData(Lib1Model lib1Model, Lib1Enum lib1Enum, Lib2Model lib2Model, Lib2Enum lib2Enum,
-        Lib3Model lib3Model, Lib3Enum lib3Enum) {
+    public TestData(Lib1Model lib1Model,
+        Lib1Enum lib1Enum,
+        Lib2Model lib2Model,
+        Lib2Enum lib2Enum,
+        Lib3Model lib3Model,
+        Lib3Enum lib3Enum) {
       this.lib1Model = lib1Model;
       this.lib1Enum = lib1Enum;
       this.lib2Model = lib2Model;

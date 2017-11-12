@@ -25,6 +25,7 @@ import com.squareup.javapoet.NameAllocator
 import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
+import com.squareup.javapoet.TypeSpec.Builder
 import com.squareup.javapoet.TypeVariableName
 import com.squareup.javapoet.WildcardTypeName
 import com.squareup.moshi.JsonAdapter
@@ -32,31 +33,32 @@ import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
 import com.uber.fractory.ExtensionArgs
-import com.uber.fractory.ExtensionArgsInput
+import com.uber.fractory.FractoryContext
 import com.uber.fractory.MoshiTypes
-import com.uber.fractory.annotations.FractoryNode
+import com.uber.fractory.ProducerMetadata
+import com.uber.fractory.annotations.FractoryConsumable
 import com.uber.fractory.asPackageAndName
+import com.uber.fractory.findElementsAnnotatedWith
 import com.uber.fractory.implementsInterface
 import com.uber.fractory.rawType
 import java.lang.Exception
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.Modifier.PUBLIC
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.ElementFilter
-import javax.lang.model.util.Elements
-import javax.lang.model.util.Types
 import javax.tools.Diagnostic
+import javax.tools.Diagnostic.Kind
 import kotlin.properties.Delegates
 
 /**
  * Moshi support for Fractory.
  */
-class MoshiSupport : FractoryExtension {
+class MoshiSupport : FractoryConsumerExtension, FractoryProducerExtension {
 
   companion object {
     private const val AV_PREFIX = "AutoValue_"
@@ -86,7 +88,15 @@ class MoshiSupport : FractoryExtension {
 
   override fun toString() = "MoshiSupport"
 
-  override fun isApplicable(processingEnv: ProcessingEnvironment, type: TypeElement): Boolean {
+  /**
+   * Determines whether or not a given type is applicable to this. Specifically, it will check if it has a
+   * static method returning a JsonAdapter.
+   *
+   * @param context FractoryContext
+   * @param type the type to check
+   * @return true if the type is applicable.
+   */
+  private fun isConsumableApplicable(context: FractoryContext, type: TypeElement): Boolean {
     // check that the class contains a public static method returning a JsonAdapter
     val jsonAdapterType = ParameterizedTypeName.get(
         ADAPTER_CLASS_NAME, TypeName.get(type.asType()))
@@ -108,34 +118,59 @@ class MoshiSupport : FractoryExtension {
         return true
       } else {
         val argument = returnedJsonAdapter.typeArguments[0]
-        processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
+        context.processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
             String.format(
                 "Found public static method returning JsonAdapter<%s> on %s class. Skipping MoshiJsonAdapter generation.",
                 argument, type))
       }
     } else {
-      processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
+      context.processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
           "Found public static method returning JsonAdapter with no type arguments, skipping MoshiJsonAdapter generation.")
     }
 
     return false
   }
 
-  override fun isTypeSupported(elementUtils: Elements, typeUtils: Types,
-      type: TypeElement): Boolean {
-    return type.implementsInterface<JsonAdapter.Factory>(elementUtils, typeUtils)
+  override fun isProducerApplicable(context: FractoryContext,
+      type: TypeElement,
+      annotations: Collection<AnnotationMirror>): Boolean {
+    return implementsJsonAdapterFactory(context, type)
   }
 
-  override fun createFractoryImplementationMethod(elements: List<Element>,
-      extras: ExtensionArgsInput): MethodSpec {
-    val type = TYPE_SPEC
-    val annotations = ANNOTATIONS_SPEC
+  override fun isConsumerApplicable(context: FractoryContext, type: TypeElement,
+      annotations: Collection<AnnotationMirror>): Boolean {
+    return implementsJsonAdapterFactory(context, type)
+  }
+
+  private fun implementsJsonAdapterFactory(context: FractoryContext,
+      type: TypeElement) = with(context.processingEnv) {
+    type.implementsInterface<JsonAdapter.Factory>(elementUtils, typeUtils)
+  }
+
+
+  override fun produce(context: FractoryContext, type: TypeElement, builder: Builder,
+      annotations: Collection<AnnotationMirror>): ProducerMetadata {
+    val elements = context.roundEnv.findElementsAnnotatedWith<FractoryConsumable>()
+        .filterIsInstance(TypeElement::class.java)
+        .filter { isConsumableApplicable(context, it) }
+
+    if (elements.isEmpty()) {
+      context.processingEnv.messager.printMessage(Kind.ERROR, """
+        |No @FractoryConsumable-annotated elements applicable for the given @FractoryProducer-annotated element with the current fractory extensions
+        |FractoryProducer: $type
+        |Extension: $this
+        """.trimMargin(), type)
+      return emptyMap()
+    }
+
+    val typeParam = TYPE_SPEC
+    val annotationsParam = ANNOTATIONS_SPEC
     val moshi = MOSHI_SPEC
 
     val create = MethodSpec.methodBuilder("create")
         .addModifiers(PUBLIC)
         .addAnnotation(Override::class.java)
-        .addParameters(ImmutableSet.of(type, annotations, moshi))
+        .addParameters(ImmutableSet.of(typeParam, annotationsParam, moshi))
         .returns(FACTORY_RETURN_TYPE_NAME)
 
     var classes: CodeBlock.Builder? = null
@@ -147,7 +182,7 @@ class MoshiSupport : FractoryExtension {
     var numFactories = 0
 
     // Avoid providing an adapter for an annotated type.
-    create.addStatement("if (!\$N.isEmpty()) return null", annotations)
+    create.addStatement("if (!\$N.isEmpty()) return null", annotationsParam)
 
     val modelsMap = mutableMapOf<String, MoshiSupportMeta>()
     for (element in elements) {
@@ -178,9 +213,9 @@ class MoshiSupport : FractoryExtension {
 
       if (elementTypeName is ParameterizedTypeName) {
         generics = generics ?: CodeBlock.builder()
-            .beginControlFlow("if (\$N instanceof \$T)", type, ParameterizedType::class.java)
+            .beginControlFlow("if (\$N instanceof \$T)", typeParam, ParameterizedType::class.java)
             .addStatement("\$T rawType = ((\$T) \$N).getRawType()", Type::class.java,
-                ParameterizedType::class.java, type)
+                ParameterizedType::class.java, typeParam)
 
         addControlFlowGeneric(generics!!, elementTypeName, element, numGenerics)
         numGenerics++
@@ -190,7 +225,7 @@ class MoshiSupport : FractoryExtension {
           val adapterMethodName = jsonAdapterMethod.simpleName.toString()
           classes = classes ?: CodeBlock.builder()
 
-          addControlFlow(classes!!, CodeBlock.of("\$N", type), elementTypeName, numClasses)
+          addControlFlow(classes!!, CodeBlock.of("\$N", typeParam), elementTypeName, numClasses)
           numClasses++
 
           val paramsCount = jsonAdapterMethod.parameters.size
@@ -225,11 +260,12 @@ class MoshiSupport : FractoryExtension {
     }
 
     create.addStatement("return null")
-    extras.put(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap))
-    return create.build()
+    builder.addMethod(create.build())
+    return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap)))
   }
 
-  override fun createCortexImplementationMethod(extras: Set<ExtensionArgs>): Set<MethodSpec> {
+  override fun consume(context: FractoryContext, type: TypeElement, builder: Builder,
+      extras: Set<ExtensionArgs>) {
     // Get a mapping of model names -> GsonSupportMeta
     val metaMaps = extras
         .filter { it.contains(EXTRAS_KEY) }
@@ -339,7 +375,7 @@ class MoshiSupport : FractoryExtension {
             TYPE_SPEC)
         .addStatement("if (rawType.isPrimitive()) return null")
         .addStatement("if (!rawType.isAnnotationPresent(\$T.class)) return null",
-            FractoryNode::class.java)
+            FractoryConsumable::class.java)
         .addStatement("String packageName = rawType.getPackage().getName()")
     // Begin the switch
     create.beginControlFlow("switch (packageName)", TYPE_SPEC)
@@ -377,7 +413,7 @@ class MoshiSupport : FractoryExtension {
     methods += jsonAdapterCreator
     methods += create.build()
 
-    return methods
+    builder.addMethods(methods)
   }
 
   /**
