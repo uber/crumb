@@ -16,10 +16,10 @@
 
 package com.uber.fractory
 
+import com.google.auto.common.MoreElements
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
 import javax.lang.model.element.Element
-import javax.lang.model.element.PackageElement
 import javax.lang.model.element.TypeElement
 
 /*
@@ -43,15 +43,8 @@ internal fun TypeElement.classNameOf(): String {
  *
  * @return the package name.
  */
-internal fun TypeElement.packageName(): String {
-  var localType = this
-  while (true) {
-    val enclosing = localType.enclosingElement
-    if (enclosing is PackageElement) {
-      return enclosing.qualifiedName.toString()
-    }
-    localType = enclosing as TypeElement
-  }
+internal fun Element.packageName(): String {
+  return MoreElements.getPackage(this).qualifiedName.toString()
 }
 
 /**

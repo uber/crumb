@@ -96,7 +96,8 @@ open class FractoryProcessor : AbstractProcessor() {
         .cast<TypeElement>()
         .forEach { producer ->
           val context = FractoryContext(processingEnv, roundEnv)
-          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(producer, FractoryQualifier::class.java)
+          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(producer,
+              FractoryQualifier::class.java)
           val applicableExtensions = producerExtensions
               .filter {
                 it.isProducerApplicable(context, producer, qualifierAnnotations)
@@ -112,12 +113,12 @@ open class FractoryProcessor : AbstractProcessor() {
           }
 
           val globalExtras = mutableMapOf<ExtensionName, ProducerMetadata>()
-          val adapterName = producer.classNameOf()
-          val packageName = producer.packageName()
           applicableExtensions.forEach { extension ->
             val extras = extension.produce(context, producer, qualifierAnnotations)
             globalExtras.put(extension.key(), extras)
           }
+          val adapterName = producer.classNameOf()
+          val packageName = producer.packageName()
           // Write metadata to resources for consumers to pick up
           val fractoryModel = FractoryModel("$packageName.$adapterName", globalExtras)
           val json = fractoryAdapter.toJson(fractoryModel)
@@ -157,7 +158,8 @@ open class FractoryProcessor : AbstractProcessor() {
     consumers.cast<TypeElement>()
         .forEach { consumer ->
           val context = FractoryContext(processingEnv, roundEnv)
-          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(consumer, FractoryQualifier::class.java)
+          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(consumer,
+              FractoryQualifier::class.java)
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, qualifierAnnotations)) {
               val extras = extrasByExtension[extension.key()] ?: setOf<ExtensionArgs>()

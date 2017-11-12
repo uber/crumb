@@ -37,4 +37,6 @@ import java.lang.annotation.Target;
  *   }
  * </pre></code>
  */
-@Target(ElementType.TYPE) @Retention(RetentionPolicy.CLASS) public @interface FractoryConsumer {}
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.CLASS)
+public @interface FractoryConsumer { }

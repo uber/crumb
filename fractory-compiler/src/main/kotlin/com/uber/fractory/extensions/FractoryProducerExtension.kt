@@ -25,7 +25,8 @@ interface FractoryProducerExtension : FractoryExtension {
    * @param annotations the Fractory annotations on this type
    * @return true if the type is applicable.
    */
-  fun isProducerApplicable(context: FractoryContext, type: TypeElement,
+  fun isProducerApplicable(context: FractoryContext,
+      type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean
 
   /**

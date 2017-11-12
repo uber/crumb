@@ -25,7 +25,8 @@ interface FractoryConsumerExtension : FractoryExtension {
    * @param annotations the Fractory annotations on this type
    * @return true if the type is applicable.
    */
-  fun isConsumerApplicable(context: FractoryContext, type: TypeElement,
+  fun isConsumerApplicable(context: FractoryContext,
+      type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean
 
   /**
