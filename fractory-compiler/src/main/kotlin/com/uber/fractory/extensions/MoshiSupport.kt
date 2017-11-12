@@ -34,7 +34,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import com.uber.fractory.ExtensionArgs
+import com.uber.fractory.ConsumerMetadata
 import com.uber.fractory.FractoryContext
 import com.uber.fractory.MoshiTypes
 import com.uber.fractory.ProducerMetadata
@@ -291,7 +291,7 @@ class MoshiSupport : FractoryConsumerExtension, FractoryProducerExtension {
 
   override fun consume(context: FractoryContext,
       type: TypeElement,
-      extras: Set<ExtensionArgs>) {
+      extras: Set<ConsumerMetadata>) {
     // Get a mapping of model names -> GsonSupportMeta
     val metaMaps = extras
         .filter { it.contains(EXTRAS_KEY) }

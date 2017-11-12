@@ -1,7 +1,7 @@
 package com.uber.fractory.extensions
 
 import com.squareup.javapoet.TypeSpec
-import com.uber.fractory.ExtensionArgs
+import com.uber.fractory.ConsumerMetadata
 import com.uber.fractory.FractoryContext
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.TypeElement
@@ -38,5 +38,5 @@ interface FractoryConsumerExtension : FractoryExtension {
    */
   fun consume(context: FractoryContext,
       type: TypeElement,
-      extras: Set<ExtensionArgs>)
+      extras: Set<ConsumerMetadata>)
 }

@@ -46,7 +46,7 @@ import javax.tools.Diagnostic.Kind.WARNING
 import kotlin.properties.Delegates
 
 typealias ExtensionKey = String
-typealias ExtensionArgs = Map<String, String>
+typealias ConsumerMetadata = Map<String, String>
 typealias ProducerMetadata = Map<String, String>
 typealias MoshiTypes = com.squareup.moshi.Types
 
@@ -150,7 +150,7 @@ class FractoryProcessor : AbstractProcessor() {
     }
 
     val producerMetadata = producerMetadataBlobs.map { fractoryAdapter.fromJson(it)!! }
-    val extrasByExtension = mutableMapOf<ExtensionKey, MutableSet<ExtensionArgs>>()
+    val extrasByExtension = mutableMapOf<ExtensionKey, MutableSet<ConsumerMetadata>>()
     producerMetadata.map { it.extras }
         .flatMap { it.entries }
         .forEach {
@@ -165,7 +165,7 @@ class FractoryProcessor : AbstractProcessor() {
               FractoryQualifier::class.java)
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, qualifierAnnotations)) {
-              val extras = extrasByExtension[extension.key()] ?: setOf<ExtensionArgs>()
+              val extras = extrasByExtension[extension.key()] ?: setOf<ConsumerMetadata>()
               extension.consume(context, consumer, extras)
             }
           }
@@ -208,7 +208,7 @@ internal class FractoryAdapter(moshi: Moshi) : JsonAdapter<FractoryModel>() {
     }
   }
 
-  private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ExtensionArgs>>(
+  private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ConsumerMetadata>>(
       MoshiTypes.newParameterizedType(
           Map::class.java,
           String::class.java,
@@ -218,7 +218,7 @@ internal class FractoryAdapter(moshi: Moshi) : JsonAdapter<FractoryModel>() {
 
   override fun fromJson(reader: JsonReader): FractoryModel {
     var name by Delegates.notNull<ExtensionKey>()
-    var extras by Delegates.notNull<Map<ExtensionKey, ExtensionArgs>>()
+    var extras by Delegates.notNull<Map<ExtensionKey, ConsumerMetadata>>()
     reader.beginObject()
     while (reader.hasNext()) {
       when (reader.selectName(OPTIONS)) {
@@ -255,7 +255,7 @@ internal inline fun <T> Iterable<*>.cast() = map { it as T }
 
 internal data class FractoryModel(
     val name: String,
-    val extras: Map<ExtensionKey, ExtensionArgs>)
+    val extras: Map<ExtensionKey, ConsumerMetadata>)
 
 fun String.asPackageAndName(): Pair<String, String> {
   val lastIndex = lastIndexOf(".")
