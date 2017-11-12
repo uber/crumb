@@ -45,7 +45,7 @@ import javax.tools.Diagnostic.Kind.ERROR
 import javax.tools.Diagnostic.Kind.WARNING
 import kotlin.properties.Delegates
 
-typealias ExtensionName = String
+typealias ExtensionKey = String
 typealias ExtensionArgs = Map<String, String>
 typealias ProducerMetadata = Map<String, String>
 typealias MoshiTypes = com.squareup.moshi.Types
@@ -115,7 +115,7 @@ class FractoryProcessor : AbstractProcessor() {
             return@forEach
           }
 
-          val globalExtras = mutableMapOf<ExtensionName, ProducerMetadata>()
+          val globalExtras = mutableMapOf<ExtensionKey, ProducerMetadata>()
           applicableExtensions.forEach { extension ->
             val extras = extension.produce(context, producer, qualifierAnnotations)
             globalExtras.put(extension.key(), extras)
@@ -150,7 +150,7 @@ class FractoryProcessor : AbstractProcessor() {
     }
 
     val producerMetadata = producerMetadataBlobs.map { fractoryAdapter.fromJson(it)!! }
-    val extrasByExtension = mutableMapOf<ExtensionName, MutableSet<ExtensionArgs>>()
+    val extrasByExtension = mutableMapOf<ExtensionKey, MutableSet<ExtensionArgs>>()
     producerMetadata.map { it.extras }
         .flatMap { it.entries }
         .forEach {
@@ -208,7 +208,7 @@ internal class FractoryAdapter(moshi: Moshi) : JsonAdapter<FractoryModel>() {
     }
   }
 
-  private val extrasAdapter = moshi.adapter<Map<ExtensionName, ExtensionArgs>>(
+  private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ExtensionArgs>>(
       MoshiTypes.newParameterizedType(
           Map::class.java,
           String::class.java,
@@ -217,8 +217,8 @@ internal class FractoryAdapter(moshi: Moshi) : JsonAdapter<FractoryModel>() {
               String::class.java)))
 
   override fun fromJson(reader: JsonReader): FractoryModel {
-    var name by Delegates.notNull<ExtensionName>()
-    var extras by Delegates.notNull<Map<ExtensionName, ExtensionArgs>>()
+    var name by Delegates.notNull<ExtensionKey>()
+    var extras by Delegates.notNull<Map<ExtensionKey, ExtensionArgs>>()
     reader.beginObject()
     while (reader.hasNext()) {
       when (reader.selectName(OPTIONS)) {
@@ -255,7 +255,7 @@ internal inline fun <T> Iterable<*>.cast() = map { it as T }
 
 internal data class FractoryModel(
     val name: String,
-    val extras: Map<ExtensionName, ExtensionArgs>)
+    val extras: Map<ExtensionKey, ExtensionArgs>)
 
 fun String.asPackageAndName(): Pair<String, String> {
   val lastIndex = lastIndexOf(".")
