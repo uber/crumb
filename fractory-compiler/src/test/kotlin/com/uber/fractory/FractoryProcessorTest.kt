@@ -27,114 +27,6 @@ import javax.tools.JavaFileObject
 class FractoryProcessorTest {
 
   @Test
-  fun notAbstractShouldFail() {
-    val source1 = JavaFileObjects.forSourceString("test.Foo", """
-package test;
-import com.uber.fractory.annotations.FractoryConsumable;
-import com.google.gson.TypeAdapter;
-import com.google.gson.Gson;
-@FractoryConsumable public abstract class Foo {
-  public static TypeAdapter<Foo> typeAdapter(Gson gson) {
-    return null;
-  }
-  public abstract String getName();
-  public abstract boolean isAwesome();
-}""")
-
-    val source2 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
-package test;
-import com.google.gson.TypeAdapterFactory;
-import com.uber.fractory.annotations.FractoryProducer;
-@FractoryProducer
-public class MyAdapterFactory implements TypeAdapterFactory {
-  public static TypeAdapterFactory create() {
-    return new FractoryProducer_MyAdapterFactory();
-  }
-}""")
-
-    assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
-        .that(ImmutableSet.of(source1, source2))
-        .processedWith(FractoryProcessor())
-        .failsToCompile()
-        .withErrorContaining("Must be abstract!")
-  }
-
-  @Test
-  fun testSearchUpComplexAncestry() {
-    val source1 = JavaFileObjects.forSourceString("test.Foo", """
-package test;
-import com.uber.fractory.annotations.FractoryConsumable;
-import com.google.gson.TypeAdapter;
-import com.google.gson.Gson;
-@FractoryConsumable public abstract class Foo {
-  public static TypeAdapter<Foo> typeAdapter(Gson gson) {
-    return null;
-  }
-  public abstract String getName();
-  public abstract boolean isAwesome();
-}""")
-
-    val source2 = JavaFileObjects.forSourceString("test.Bar", """
-package test;
-import com.uber.fractory.annotations.FractoryConsumable;
-import com.google.gson.TypeAdapter;
-import com.google.gson.Gson;
-@FractoryConsumable public abstract class Bar {
-  public static TypeAdapter<Bar> jsonAdapter(Gson gson) {
-    return null;
-  }
-  public abstract String getName();
-}""")
-
-    val source3 = JavaFileObjects.forSourceString("test.IMyAdapterFactoryBase", """
-package test;
-import com.google.gson.TypeAdapterFactory;
-public interface IMyAdapterFactoryBase extends TypeAdapterFactory {
-}""")
-
-    val source4 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
-package test;
-import com.google.gson.TypeAdapterFactory;
-import com.uber.fractory.annotations.FractoryProducer;
-@FractoryProducer
-public abstract class MyAdapterFactory implements IMyAdapterFactoryBase {
-  public static TypeAdapterFactory create() {
-    return new FractoryProducer_MyAdapterFactory();
-  }
-}""")
-
-    val expected = JavaFileObjects.forSourceString("test.FractoryProducer_MyAdapterFactory", """
-package test;
-import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
-import com.google.gson.reflect.TypeToken;
-import java.lang.Override;
-import java.lang.SuppressWarnings;
-
-final class FractoryProducer_MyAdapterFactory extends MyAdapterFactory {
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-    Class<T> rawType = (Class<T>) type.getRawType();
-    if (Foo.class.isAssignableFrom(rawType)) {
-      return (TypeAdapter<T>) Foo.typeAdapter(gson);
-    } else if (Bar.class.isAssignableFrom(rawType)) {
-      return (TypeAdapter<T>) Bar.jsonAdapter(gson);
-    } else {
-      return null;
-    }
-  }
-}""")
-
-    assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
-        .that(ImmutableSet.of(source1, source2, source3, source4))
-        .processedWith(FractoryProcessor())
-        .compilesWithoutError()
-        .and()
-        .generatesSources(expected)
-  }
-
-  @Test
   fun testNoMatchingModelsForFactoryShouldFail() {
     val modelName = "test.Foo"
     val model = JavaFileObjects.forSourceString(modelName, """
@@ -150,10 +42,12 @@ import com.uber.fractory.annotations.FractoryConsumable;
 package test;
 import com.google.gson.TypeAdapterFactory;
 import com.uber.fractory.annotations.FractoryProducer;
+import com.uber.fractory.annotations.extensions.GsonFactory;
+@GsonFactory
 @FractoryProducer
-public abstract class MyAdapterFactory implements TypeAdapterFactory {
+public abstract class MyAdapterFactory {
   public static TypeAdapterFactory create() {
-    return new FractoryProducer_MyAdapterFactory();
+    return new GsonProducer_MyAdapterFactory();
   }
 }""")
 
@@ -177,7 +71,7 @@ import com.uber.fractory.annotations.FractoryProducer;
 @FractoryProducer
 public abstract class MyAdapterFactory {
   public static TypeAdapterFactory create() {
-    return new FractoryProducer_MyAdapterFactory();
+    return new GsonProducer_MyAdapterFactory();
   }
 }""")
 

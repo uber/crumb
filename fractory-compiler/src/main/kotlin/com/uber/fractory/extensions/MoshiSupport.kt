@@ -16,16 +16,18 @@
 
 package com.uber.fractory.extensions
 
+import com.google.auto.common.MoreTypes
 import com.google.common.collect.ImmutableSet
 import com.squareup.javapoet.ArrayTypeName
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
+import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.NameAllocator
 import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
-import com.squareup.javapoet.TypeSpec.Builder
+import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.TypeVariableName
 import com.squareup.javapoet.WildcardTypeName
 import com.squareup.moshi.JsonAdapter
@@ -37,9 +39,11 @@ import com.uber.fractory.FractoryContext
 import com.uber.fractory.MoshiTypes
 import com.uber.fractory.ProducerMetadata
 import com.uber.fractory.annotations.FractoryConsumable
+import com.uber.fractory.annotations.extensions.MoshiFactory
 import com.uber.fractory.asPackageAndName
+import com.uber.fractory.classNameOf
 import com.uber.fractory.findElementsAnnotatedWith
-import com.uber.fractory.implementsInterface
+import com.uber.fractory.packageName
 import com.uber.fractory.rawType
 import java.lang.Exception
 import java.lang.reflect.ParameterizedType
@@ -48,6 +52,7 @@ import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
+import javax.lang.model.element.Modifier.FINAL
 import javax.lang.model.element.Modifier.PUBLIC
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.ElementFilter
@@ -63,6 +68,8 @@ class MoshiSupport : FractoryConsumerExtension, FractoryProducerExtension {
   companion object {
     private const val AV_PREFIX = "AutoValue_"
     private const val EXTRAS_KEY = "fractory.extensions.moshi"
+    private const val PRODUCER_PREFIX = "MoshiProducer_"
+    private const val CONSUMER_PREFIX = "MoshiConsumer_"
 
     private val ADAPTER_CLASS_NAME = ClassName.get(JsonAdapter::class.java)
     private val FACTORY_CLASS_NAME = ClassName.get(JsonAdapter.Factory::class.java)
@@ -131,24 +138,32 @@ class MoshiSupport : FractoryConsumerExtension, FractoryProducerExtension {
     return false
   }
 
+
+
   override fun isProducerApplicable(context: FractoryContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return implementsJsonAdapterFactory(context, type)
+    return hasMoshiFactoryAnnotation(context, annotations)
   }
 
-  override fun isConsumerApplicable(context: FractoryContext, type: TypeElement,
+  override fun isConsumerApplicable(context: FractoryContext,
+      type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return implementsJsonAdapterFactory(context, type)
+    return hasMoshiFactoryAnnotation(context, annotations)
   }
 
-  private fun implementsJsonAdapterFactory(context: FractoryContext,
-      type: TypeElement) = with(context.processingEnv) {
-    type.implementsInterface<JsonAdapter.Factory>(elementUtils, typeUtils)
+  private fun hasMoshiFactoryAnnotation(context: FractoryContext,
+      annotations: Collection<AnnotationMirror>): Boolean {
+    return annotations.any {
+      MoreTypes.equivalence()
+          .equivalent(it.annotationType,
+              context.processingEnv.elementUtils.getTypeElement(
+                  MoshiFactory::class.java.name).asType())
+    }
   }
 
-
-  override fun produce(context: FractoryContext, type: TypeElement, builder: Builder,
+  override fun produce(context: FractoryContext,
+      type: TypeElement,
       annotations: Collection<AnnotationMirror>): ProducerMetadata {
     val elements = context.roundEnv.findElementsAnnotatedWith<FractoryConsumable>()
         .filterIsInstance(TypeElement::class.java)
@@ -260,11 +275,22 @@ class MoshiSupport : FractoryConsumerExtension, FractoryProducerExtension {
     }
 
     create.addStatement("return null")
-    builder.addMethod(create.build())
+
+    val adapterName = type.classNameOf()
+    val packageName = type.packageName()
+    val factorySpec = TypeSpec.classBuilder(
+        ClassName.get(packageName, PRODUCER_PREFIX + adapterName))
+        .addModifiers(FINAL)
+        .addSuperinterface(TypeName.get(JsonAdapter.Factory::class.java))
+        .addMethod(create.build())
+        .build()
+    JavaFile.builder(packageName, factorySpec).build()
+        .writeTo(context.processingEnv.filer)
     return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap)))
   }
 
-  override fun consume(context: FractoryContext, type: TypeElement, builder: Builder,
+  override fun consume(context: FractoryContext,
+      type: TypeElement,
       extras: Set<ExtensionArgs>) {
     // Get a mapping of model names -> GsonSupportMeta
     val metaMaps = extras
@@ -413,7 +439,16 @@ class MoshiSupport : FractoryConsumerExtension, FractoryProducerExtension {
     methods += jsonAdapterCreator
     methods += create.build()
 
-    builder.addMethods(methods)
+    val adapterName = type.classNameOf()
+    val packageName = type.packageName()
+    val factorySpec = TypeSpec.classBuilder(
+        ClassName.get(packageName, CONSUMER_PREFIX + adapterName))
+        .addModifiers(FINAL)
+        .addSuperinterface(TypeName.get(JsonAdapter.Factory::class.java))
+        .addMethods(methods)
+        .build()
+    JavaFile.builder(packageName, factorySpec).build()
+        .writeTo(context.processingEnv.filer)
   }
 
   /**

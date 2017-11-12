@@ -81,10 +81,12 @@ import com.squareup.moshi.JsonAdapter;
 package test;
 import com.squareup.moshi.JsonAdapter;
 import com.uber.fractory.annotations.FractoryProducer;
+import com.uber.fractory.annotations.extensions.MoshiFactory;
+@MoshiFactory
 @FractoryProducer
-public abstract class MyAdapterFactory implements JsonAdapter.Factory {
-  public static MyAdapterFactory create() {
-    return new FractoryProducer_MyAdapterFactory();
+public abstract class MyAdapterFactory {
+  public static JsonAdapter.Factory create() {
+    return new MoshiProducer_MyAdapterFactory();
   }
 }""")
 
@@ -98,7 +100,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
 
-final class FractoryProducer_MyAdapterFactory extends MyAdapterFactory {
+final class MoshiProducer_MyAdapterFactory implements JsonAdapter.Factory {
   @Override public JsonAdapter<?> create(Type type,
           Set<? extends Annotation> annotations,
           Moshi moshi) {

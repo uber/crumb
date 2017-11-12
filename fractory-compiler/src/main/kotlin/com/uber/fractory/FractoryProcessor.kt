@@ -16,9 +16,7 @@
 
 package com.uber.fractory
 
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
+import com.google.auto.common.AnnotationMirrors
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
@@ -32,15 +30,11 @@ import com.uber.fractory.extensions.FractoryProducerExtension
 import com.uber.fractory.extensions.GsonSupport
 import com.uber.fractory.extensions.MoshiSupport
 import com.uber.fractory.packaging.GenerationalClassUtil
-import java.io.IOException
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
-import javax.lang.model.element.Modifier.ABSTRACT
-import javax.lang.model.element.Modifier.FINAL
-import javax.lang.model.element.Modifier.PUBLIC
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
@@ -58,11 +52,6 @@ typealias MoshiTypes = com.squareup.moshi.Types
  * Generates a Fractory that adapts all [FractoryConsumer] and [FractoryProducer] annotated types.
  */
 open class FractoryProcessor : AbstractProcessor() {
-
-  companion object {
-    private const val FRACTORY_PRODUCER_PREFIX = "FractoryProducer_"
-    private const val FRACTORY_CONSUMER_PREFIX = "FractoryConsumer_"
-  }
 
   private val fractoryAdapter = Moshi.Builder()
       .add(FractoryAdapter.FACTORY)
@@ -105,13 +94,9 @@ open class FractoryProcessor : AbstractProcessor() {
     val adaptorFactories = roundEnv.findElementsAnnotatedWith<FractoryProducer>()
     adaptorFactories
         .cast<TypeElement>()
-        .onEach { checkAbstract(it) }
         .forEach { producer ->
           val context = FractoryContext(processingEnv, roundEnv)
-          val qualifierAnnotations = producer.annotationMirrors
-              .filter {
-                it.annotationType.asElement().getAnnotation(FractoryQualifier::class.java) != null
-              }
+          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(producer, FractoryQualifier::class.java)
           val applicableExtensions = producerExtensions
               .filter {
                 it.isProducerApplicable(context, producer, qualifierAnnotations)
@@ -129,31 +114,17 @@ open class FractoryProcessor : AbstractProcessor() {
           val globalExtras = mutableMapOf<ExtensionName, ProducerMetadata>()
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
-          val factorySpecBuilder = TypeSpec.classBuilder(
-              ClassName.get(packageName, FRACTORY_PRODUCER_PREFIX + adapterName))
-              .addModifiers(FINAL)
-              .superclass(ClassName.get(packageName, adapterName))
-          val emptyFactory = factorySpecBuilder.build()
           applicableExtensions.forEach { extension ->
-            val extras: ProducerMetadata = extension.produce(context, producer, factorySpecBuilder,
-                qualifierAnnotations)
+            val extras = extension.produce(context, producer, qualifierAnnotations)
             globalExtras.put(extension.key(), extras)
           }
-          val factorySpec = factorySpecBuilder.build()
-          if (emptyFactory != factorySpec) {
-            val file = JavaFile.builder(packageName, factorySpec).build()
-            file.writeToFiler()?.run {
-              // Write metadata to resources for consumers to pick up
-              val fractoryModel = FractoryModel("$packageName.$adapterName", globalExtras)
-              val json = fractoryAdapter.toJson(fractoryModel)
-              GenerationalClassUtil.writeIntermediateFile(processingEnv,
-                  packageName,
-                  adapterName + GenerationalClassUtil.ExtensionFilter.FRACTORY.extension,
-                  json)
-            }
-          } else {
-            error(producer, "No modifications were made to this producer.")
-          }
+          // Write metadata to resources for consumers to pick up
+          val fractoryModel = FractoryModel("$packageName.$adapterName", globalExtras)
+          val json = fractoryAdapter.toJson(fractoryModel)
+          GenerationalClassUtil.writeIntermediateFile(processingEnv,
+              packageName,
+              adapterName + GenerationalClassUtil.ExtensionFilter.FRACTORY.extension,
+              json)
         }
   }
 
@@ -184,61 +155,16 @@ open class FractoryProcessor : AbstractProcessor() {
 
     // Iterate through the consumers to generate their implementations.
     consumers.cast<TypeElement>()
-        .onEach { checkAbstract(it) }
         .forEach { consumer ->
           val context = FractoryContext(processingEnv, roundEnv)
-          val qualifierAnnotations = consumer.annotationMirrors
-              .filter {
-                it.annotationType.asElement().getAnnotation(FractoryQualifier::class.java) != null
-              }
-          val adapterName = consumer.classNameOf()
-          val packageName = consumer.packageName()
-          val factorySpecBuilder = TypeSpec.classBuilder(
-              ClassName.get(packageName, FRACTORY_CONSUMER_PREFIX + adapterName))
-              .addModifiers(PUBLIC, FINAL)
-              .superclass(ClassName.get(packageName, adapterName))
-          val emptyFactory = factorySpecBuilder.build()
+          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(consumer, FractoryQualifier::class.java)
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, qualifierAnnotations)) {
               val extras = extrasByExtension[extension.key()] ?: setOf<ExtensionArgs>()
-              extension.consume(context, consumer, factorySpecBuilder, extras)
+              extension.consume(context, consumer, extras)
             }
           }
-
-          val factorySpec = factorySpecBuilder.build()
-          if (emptyFactory != factorySpec) {
-            JavaFile.builder(packageName, factorySpec).build()
-                .writeToFiler()
-          } else {
-            error(consumer, "No modifications were made to this consumer.")
-          }
         }
-  }
-
-  /**
-   * Writes a file to a filer or reports an error if it fails.
-   *
-   * @return true if successful, false if not.
-   */
-  private fun JavaFile.writeToFiler(): Unit? {
-    return try {
-      writeTo(processingEnv.filer)
-    } catch (e: IOException) {
-      error("Failed to write Fractory: " + e.localizedMessage)
-      null
-    }
-  }
-
-  /**
-   * Checks if an element is abstract or not and errors if not.
-   *
-   * @param element element to check
-   * @return true if abstract, false if not.
-   */
-  private fun checkAbstract(element: TypeElement) {
-    if (ABSTRACT !in element.modifiers) {
-      error(element, "Must be abstract!")
-    }
   }
 
   private fun error(message: String, vararg args: Any) {

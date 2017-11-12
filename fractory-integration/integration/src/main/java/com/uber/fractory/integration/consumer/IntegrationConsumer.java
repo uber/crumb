@@ -19,11 +19,19 @@ package com.uber.fractory.integration.consumer;
 import com.google.gson.TypeAdapterFactory;
 import com.squareup.moshi.JsonAdapter;
 import com.uber.fractory.annotations.FractoryConsumer;
+import com.uber.fractory.annotations.extensions.GsonFactory;
+import com.uber.fractory.annotations.extensions.MoshiFactory;
 
-@FractoryConsumer public abstract class IntegrationConsumer
-    implements TypeAdapterFactory, JsonAdapter.Factory {
+@GsonFactory
+@MoshiFactory
+@FractoryConsumer
+public abstract class IntegrationConsumer {
 
-  public static IntegrationConsumer create() {
-    return new FractoryConsumer_IntegrationConsumer();
+  public static TypeAdapterFactory gson() {
+    return new GsonConsumer_IntegrationConsumer();
+  }
+
+  public static JsonAdapter.Factory moshi() {
+    return new MoshiConsumer_IntegrationConsumer();
   }
 }

@@ -35,6 +35,7 @@ interface FractoryConsumerExtension : FractoryExtension {
    * @param type in-progress [TypeSpec.Builder].
    * @param extras extras.
    */
-  fun consume(context: FractoryContext, type: TypeElement, builder: TypeSpec.Builder,
+  fun consume(context: FractoryContext,
+      type: TypeElement,
       extras: Set<ExtensionArgs>)
 }

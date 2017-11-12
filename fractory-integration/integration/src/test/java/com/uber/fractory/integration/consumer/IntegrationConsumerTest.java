@@ -44,10 +44,10 @@ public final class IntegrationConsumerTest {
       + ",\"lib3Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"}}";
 
   private final Gson gson =
-      new GsonBuilder().registerTypeAdapterFactory(IntegrationConsumer.create())
+      new GsonBuilder().registerTypeAdapterFactory(IntegrationConsumer.gson())
           .create();
 
-  private final Moshi moshi = new Moshi.Builder().add(IntegrationConsumer.create())
+  private final Moshi moshi = new Moshi.Builder().add(IntegrationConsumer.moshi())
       .build();
 
   @Test public void verifyGson() {

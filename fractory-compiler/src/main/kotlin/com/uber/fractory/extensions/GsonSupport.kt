@@ -16,6 +16,7 @@
 
 package com.uber.fractory.extensions
 
+import com.google.auto.common.MoreTypes
 import com.google.common.collect.ImmutableSet
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
@@ -25,13 +26,13 @@ import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ArrayTypeName
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
+import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.NameAllocator
 import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
-import com.squareup.javapoet.TypeSpec.Builder
 import com.squareup.javapoet.TypeVariableName
 import com.squareup.javapoet.WildcardTypeName
 import com.squareup.moshi.JsonAdapter
@@ -43,14 +44,17 @@ import com.uber.fractory.FractoryContext
 import com.uber.fractory.MoshiTypes
 import com.uber.fractory.ProducerMetadata
 import com.uber.fractory.annotations.FractoryConsumable
+import com.uber.fractory.annotations.extensions.GsonFactory
 import com.uber.fractory.asPackageAndName
+import com.uber.fractory.classNameOf
 import com.uber.fractory.findElementsAnnotatedWith
-import com.uber.fractory.implementsInterface
+import com.uber.fractory.packageName
 import com.uber.fractory.rawType
 import java.lang.Exception
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
+import javax.lang.model.element.Modifier.FINAL
 import javax.lang.model.element.Modifier.PRIVATE
 import javax.lang.model.element.Modifier.PUBLIC
 import javax.lang.model.element.Modifier.STATIC
@@ -70,6 +74,8 @@ class GsonSupport : FractoryConsumerExtension, FractoryProducerExtension {
 
   companion object {
     private const val AV_PREFIX = "AutoValue_"
+    private const val PRODUCER_PREFIX = "GsonProducer_"
+    private const val CONSUMER_PREFIX = "GsonConsumer_"
     private const val EXTRAS_KEY = "fractory.extensions.gson"
   }
 
@@ -87,12 +93,23 @@ class GsonSupport : FractoryConsumerExtension, FractoryProducerExtension {
   override fun isProducerApplicable(context: FractoryContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return implementsTypeAdapterFactory(context, type)
+    return hasGsonFactoryAnnotation(context, annotations)
   }
 
-  private fun implementsTypeAdapterFactory(context: FractoryContext,
-      type: TypeElement) = with(context.processingEnv) {
-    type.implementsInterface<TypeAdapterFactory>(elementUtils, typeUtils)
+  override fun isConsumerApplicable(context: FractoryContext,
+      type: TypeElement,
+      annotations: Collection<AnnotationMirror>): Boolean {
+    return hasGsonFactoryAnnotation(context, annotations)
+  }
+
+  private fun hasGsonFactoryAnnotation(context: FractoryContext,
+      annotations: Collection<AnnotationMirror>): Boolean {
+    return annotations.any {
+      MoreTypes.equivalence()
+          .equivalent(it.annotationType,
+              context.processingEnv.elementUtils.getTypeElement(
+                  GsonFactory::class.java.name).asType())
+    }
   }
 
   /**
@@ -148,7 +165,6 @@ class GsonSupport : FractoryConsumerExtension, FractoryProducerExtension {
    */
   override fun produce(context: FractoryContext,
       type: TypeElement,
-      builder: TypeSpec.Builder,
       annotations: Collection<AnnotationMirror>): ProducerMetadata {
     val elements = context.roundEnv.findElementsAnnotatedWith<FractoryConsumable>()
         .filterIsInstance(TypeElement::class.java)
@@ -218,13 +234,17 @@ class GsonSupport : FractoryConsumerExtension, FractoryProducerExtension {
     create.addStatement("return null")
     create.endControlFlow()
 
-    builder.addMethod(create.build())
+    val adapterName = type.classNameOf()
+    val packageName = type.packageName()
+    val factorySpec = TypeSpec.classBuilder(
+        ClassName.get(packageName, PRODUCER_PREFIX + adapterName))
+        .addModifiers(FINAL)
+        .addSuperinterface(TypeName.get(TypeAdapterFactory::class.java))
+        .addMethod(create.build())
+        .build()
+    JavaFile.builder(packageName, factorySpec).build()
+        .writeTo(context.processingEnv.filer)
     return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap)))
-  }
-
-  override fun isConsumerApplicable(context: FractoryContext, type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
-    return implementsTypeAdapterFactory(context, type)
   }
 
   /**
@@ -236,7 +256,6 @@ class GsonSupport : FractoryConsumerExtension, FractoryProducerExtension {
    */
   override fun consume(context: FractoryContext,
       type: TypeElement,
-      builder: Builder,
       extras: Set<ExtensionArgs>) {
     // Get a mapping of model names -> GsonSupportMeta
     val metaMaps = extras
@@ -369,7 +388,16 @@ class GsonSupport : FractoryConsumerExtension, FractoryProducerExtension {
     methods += typeAdapterCreator
     methods += create.build()
 
-    builder.addMethods(methods)
+    val adapterName = type.classNameOf()
+    val packageName = type.packageName()
+    val factorySpec = TypeSpec.classBuilder(
+        ClassName.get(packageName, CONSUMER_PREFIX + adapterName))
+        .addModifiers(FINAL)
+        .addSuperinterface(TypeName.get(TypeAdapterFactory::class.java))
+        .addMethods(methods)
+        .build()
+    JavaFile.builder(packageName, factorySpec).build()
+        .writeTo(context.processingEnv.filer)
   }
 
   /**

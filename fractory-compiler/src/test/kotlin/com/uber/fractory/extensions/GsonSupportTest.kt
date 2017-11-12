@@ -58,22 +58,25 @@ import com.google.gson.Gson;
 package test;
 import com.google.gson.TypeAdapterFactory;
 import com.uber.fractory.annotations.FractoryProducer;
+import com.uber.fractory.annotations.extensions.GsonFactory;
+@GsonFactory
 @FractoryProducer
-public abstract class MyAdapterFactory implements TypeAdapterFactory {
-  public static MyAdapterFactory create() {
-      return new FractoryProducer_MyAdapterFactory();
+public abstract class MyAdapterFactory {
+  public static TypeAdapterFactory create() {
+      return new GsonProducer_MyAdapterFactory();
         }
 }""")
 
-    val expected = JavaFileObjects.forSourceString("test.FractoryProducer_MyAdapterFactory", """
+    val expected = JavaFileObjects.forSourceString("test.GsonProducer_MyAdapterFactory", """
 package test;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import java.lang.Override;
 import java.lang.SuppressWarnings;
 
-final class FractoryProducer_MyAdapterFactory extends MyAdapterFactory {
+final class GsonProducer_MyAdapterFactory implements TypeAdapterFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {

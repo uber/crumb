@@ -29,9 +29,9 @@ public final class Lib1FractoryTest {
 
   private static final String EXPECTED_MODEL_JSON = "{\"foo\":\"foo\"}";
   private static final String EXPECTED_ENUM_JSON = "\"foo\"";
-  private final Gson gson = new GsonBuilder().registerTypeAdapterFactory(Lib1Fractory.create())
+  private final Gson gson = new GsonBuilder().registerTypeAdapterFactory(Lib1Fractory.gson())
       .create();
-  private final Moshi moshi = new Moshi.Builder().add(Lib1Fractory.create())
+  private final Moshi moshi = new Moshi.Builder().add(Lib1Fractory.moshi())
       .build();
 
   @Test public void verifyGson() {

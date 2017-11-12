@@ -14,24 +14,13 @@
  * limitations under the License.
  */
 
-package com.uber.fractory.integration.lib1;
+package com.uber.fractory.annotations.extensions;
 
-import com.google.gson.TypeAdapterFactory;
-import com.squareup.moshi.JsonAdapter;
-import com.uber.fractory.annotations.FractoryProducer;
-import com.uber.fractory.annotations.extensions.GsonFactory;
-import com.uber.fractory.annotations.extensions.MoshiFactory;
+import com.uber.fractory.annotations.FractoryQualifier;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@GsonFactory
-@MoshiFactory
-@FractoryProducer
-public abstract class Lib1Fractory {
-
-  public static TypeAdapterFactory gson() {
-    return new GsonProducer_Lib1Fractory();
-  }
-
-  public static JsonAdapter.Factory moshi() {
-    return new MoshiProducer_Lib1Fractory();
-  }
-}
+@FractoryQualifier @Target(ElementType.TYPE) @Retention(RetentionPolicy.CLASS)
+public @interface MoshiFactory {}

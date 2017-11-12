@@ -37,7 +37,6 @@ interface FractoryProducerExtension : FractoryExtension {
    */
   fun produce(context: FractoryContext,
       type: TypeElement,
-      builder: TypeSpec.Builder,
       annotations: Collection<AnnotationMirror>): ProducerMetadata
 
 }
