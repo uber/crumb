@@ -18,68 +18,13 @@ package com.uber.fractory
 
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
-
 import javax.lang.model.element.Element
 import javax.lang.model.element.PackageElement
 import javax.lang.model.element.TypeElement
-import javax.lang.model.type.TypeKind
-import javax.lang.model.type.TypeMirror
-import javax.lang.model.util.Elements
-import javax.lang.model.util.Types
 
 /*
  * Internal utils for Fractory.
  */
-
-/**
- * Checks if a given `type` implements a given `targetInterface` anywhere in its ancestry.
- *
- * @param elementUtils Elements instance
- * @param typeUtils Types instance
- * @return true if it does implement it somewhere in its ancestry, false if not.
- */
-internal inline fun <reified T : Any> TypeElement.implementsInterface(
-    elementUtils: Elements,
-    typeUtils: Types): Boolean {
-  val targetInterface = T::class.java
-  var localType = this
-  if (!targetInterface.isInterface) {
-    throw IllegalArgumentException(targetInterface.name + " is not an interface!")
-  }
-  var typeMirror = localType.asType()
-  val typeElement = elementUtils.getTypeElement(targetInterface.canonicalName) ?: return false
-  val targetType = typeElement.asType()
-  if (!localType.interfaces.isEmpty() || typeMirror.kind != TypeKind.NONE) {
-    while (typeMirror.kind != TypeKind.NONE) {
-      if ((typeUtils.asElement(typeMirror) as TypeElement).implements(typeUtils, targetType)) {
-        return true
-      }
-      localType = typeUtils.asElement(typeMirror) as TypeElement
-      typeMirror = localType.superclass
-    }
-  }
-  return false
-}
-
-internal fun TypeElement.implements(typeUtils: Types, target: TypeMirror): Boolean {
-  // check if it implements valid interfaces
-  for (ifaceInput in interfaces) {
-    var iface = ifaceInput
-    while (iface.kind != TypeKind.NONE && iface.toString() != "java.lang.Object") {
-      if (typeUtils.isSameType(iface, target)) {
-        return true
-      }
-      // go up
-      val ifaceElement = typeUtils.asElement(iface) as TypeElement
-      if (ifaceElement.implements(typeUtils, target)) {
-        return true
-      }
-      // then move on
-      iface = ifaceElement.superclass
-    }
-  }
-  return false
-}
 
 /**
  * Returns the name of the given type, including any enclosing types but not the package.
