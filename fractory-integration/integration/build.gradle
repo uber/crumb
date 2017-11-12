@@ -31,7 +31,7 @@ targetCompatibility = JavaVersion.VERSION_1_8
 dependencies {
   api deps.misc.gson
   api deps.misc.moshi
-  apt project(":fractory")
+  apt project(":fractory-compiler")
   api project(":fractory-annotations")
   api project(":fractory-integration:lib1")
   api project(":fractory-integration:lib2")

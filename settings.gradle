@@ -15,7 +15,6 @@
  */
 
 rootProject.name = 'fractory-root'
-include ':fractory'
 include ':fractory-compiler'
 include ':fractory-annotations'
 include ':fractory-integration:integration'

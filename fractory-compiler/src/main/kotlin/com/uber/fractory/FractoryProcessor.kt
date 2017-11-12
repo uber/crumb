@@ -17,6 +17,7 @@
 package com.uber.fractory
 
 import com.google.auto.common.AnnotationMirrors
+import com.google.auto.service.AutoService
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
@@ -32,6 +33,7 @@ import com.uber.fractory.extensions.MoshiSupport
 import com.uber.fractory.packaging.GenerationalClassUtil
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
+import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
@@ -51,7 +53,8 @@ typealias MoshiTypes = com.squareup.moshi.Types
 /**
  * Generates a Fractory that adapts all [FractoryConsumer] and [FractoryProducer] annotated types.
  */
-open class FractoryProcessor : AbstractProcessor() {
+@AutoService(Processor::class)
+class FractoryProcessor : AbstractProcessor() {
 
   private val fractoryAdapter = Moshi.Builder()
       .add(FractoryAdapter.FACTORY)

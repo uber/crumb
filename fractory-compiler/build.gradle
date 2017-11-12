@@ -22,7 +22,8 @@ buildscript {
   }
 }
 
-apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.kapt'
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   kotlinOptions {
@@ -34,7 +35,9 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 dependencies {
+  kapt deps.apt.autoService
 
+  compile deps.apt.autoService
   compile deps.apt.autoCommon
   compile deps.misc.guava
   compile deps.misc.javapoet

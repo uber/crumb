@@ -32,7 +32,7 @@ dependencies {
   apt deps.apt.autoValue
   apt deps.apt.autoValueGson
   apt deps.apt.autoValueMoshi
-  apt project(":fractory")
+  apt project(":fractory-compiler")
   compileOnly deps.misc.jsr305
 
   implementation deps.apt.autoValueAnnotations
