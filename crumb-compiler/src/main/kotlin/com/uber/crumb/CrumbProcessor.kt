@@ -150,12 +150,11 @@ class CrumbProcessor : AbstractProcessor() {
     }
 
     val producerMetadata = producerMetadataBlobs.map { crumbAdapter.fromJson(it)!! }
-    val extrasByExtension = mutableMapOf<ExtensionKey, MutableSet<ConsumerMetadata>>()
-    producerMetadata.map { it.extras }
+    val metadataByExtension = producerMetadata
+        .map { it.extras }
         .flatMap { it.entries }
-        .forEach {
-          extrasByExtension.getOrPut(it.key, { mutableSetOf() }).add(it.value)
-        }
+        .groupBy({ it.key }) { it.value }
+        .mapValues { it.value.toSet() }
 
     // Iterate through the consumers to generate their implementations.
     consumers.cast<TypeElement>()
@@ -165,8 +164,8 @@ class CrumbProcessor : AbstractProcessor() {
               CrumbQualifier::class.java)
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, qualifierAnnotations)) {
-              val extras = extrasByExtension[extension.key()] ?: setOf<ConsumerMetadata>()
-              extension.consume(context, consumer, extras)
+              val metadata = metadataByExtension[extension.key()].orEmpty()
+              extension.consume(context, consumer, qualifierAnnotations, metadata)
             }
           }
         }

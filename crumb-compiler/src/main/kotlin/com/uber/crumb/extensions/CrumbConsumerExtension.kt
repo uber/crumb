@@ -38,5 +38,6 @@ interface CrumbConsumerExtension : CrumbExtension {
    */
   fun consume(context: CrumbContext,
       type: TypeElement,
-      extras: Set<ConsumerMetadata>)
+      annotations: Collection<AnnotationMirror>,
+      metadata: Set<ConsumerMetadata>)
 }

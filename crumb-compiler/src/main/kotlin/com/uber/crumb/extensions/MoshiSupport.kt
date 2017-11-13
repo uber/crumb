@@ -291,9 +291,10 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
   override fun consume(context: CrumbContext,
       type: TypeElement,
-      extras: Set<ConsumerMetadata>) {
+      annotations: Collection<AnnotationMirror>,
+      metadata: Set<ConsumerMetadata>) {
     // Get a mapping of model names -> GsonSupportMeta
-    val metaMaps = extras
+    val metaMaps = metadata
         .filter { it.contains(EXTRAS_KEY) }
         .map { metaMapAdapter.fromJson(it[EXTRAS_KEY]!!)!! }
         .flatMap { it.entries }
