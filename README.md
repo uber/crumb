@@ -54,7 +54,7 @@ are called into when a type is trying to produce metadata to write to the classp
   The `annotations` are any `@CrumbQualifier`-annotated annotations found on `type`. Extensions may use 
   whatever signaling they see fit though.
   * `produce(context: CrumbContext, type: TypeElement, annotations: Collection<AnnotationMirror>` -
-  This is the call to produce metadata, and just returns a Map<String, String> (`typealias`'d in 
+  This is the call to produce metadata, and just returns a `Map<String, String>` (`typealias`'d in 
   Kotlin to `ProducerMetadata`). Consumers can put whatever they want in this map (so be 
   responsible!). The `type` and `annotations` parameters are the same as from `isProducerApplicable()`.
 
@@ -69,7 +69,7 @@ are called into when a type is trying to consume metadata to from the classpath.
   The `annotations` are any `@CrumbQualifier`-annotated annotations found on `type`. Extensions may use 
   whatever signaling they see fit though.
   * `consume(context: CrumbContext, type: TypeElement, annotations: Collection<AnnotationMirror>, metadata: Set<ConsumerMetadata>)` -
-  This is the call to consume metadata, and is given a Set<Map<String, String>> (`typealias`'d in 
+  This is the call to consume metadata, and is given a `Set<Map<String, String>>` (`typealias`'d in 
   Kotlin to `ConsumerMetadata`). This is a set of all `ProducerMetadata` maps discovered on the 
   classpath returned for this extension's declared `key()`. The `type` and `annotations` parameters 
   are the same as from `isConsumerApplicable()`.
