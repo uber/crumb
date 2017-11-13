@@ -14,10 +14,24 @@
  * limitations under the License.
  */
 
-rootProject.name = 'crumb-root'
-include ':crumb-compiler'
-include ':crumb-annotations'
-include ':crumb-integration:integration'
-include ':crumb-integration:lib1'
-include ':crumb-integration:lib2'
-include ':crumb-integration:lib3'
+package com.uber.crumb.integration.lib3;
+
+import com.google.gson.TypeAdapterFactory;
+import com.squareup.moshi.JsonAdapter;
+import com.uber.crumb.annotations.CrumbProducer;
+import com.uber.crumb.annotations.extensions.GsonFactory;
+import com.uber.crumb.annotations.extensions.MoshiFactory;
+
+@GsonFactory
+@MoshiFactory
+@CrumbProducer
+public abstract class Lib3Producer {
+
+  public static TypeAdapterFactory gson() {
+    return new GsonProducer_Lib3Producer();
+  }
+
+  public static JsonAdapter.Factory moshi() {
+    return new MoshiProducer_Lib3Producer();
+  }
+}

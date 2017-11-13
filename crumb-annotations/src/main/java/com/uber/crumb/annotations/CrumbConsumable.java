@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-rootProject.name = 'crumb-root'
-include ':crumb-compiler'
-include ':crumb-annotations'
-include ':crumb-integration:integration'
-include ':crumb-integration:lib1'
-include ':crumb-integration:lib2'
-include ':crumb-integration:lib3'
+package com.uber.crumb.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Inherited
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface CrumbConsumable { }

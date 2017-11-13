@@ -13,11 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+buildscript {
+  repositories {
+    maven { url deps.build.repositories.plugins }
+  }
+  dependencies {
+    classpath deps.build.gradlePlugins.apt
+  }
+}
 
-rootProject.name = 'crumb-root'
-include ':crumb-compiler'
-include ':crumb-annotations'
-include ':crumb-integration:integration'
-include ':crumb-integration:lib1'
-include ':crumb-integration:lib2'
-include ':crumb-integration:lib3'
+apply plugin: "java-library"
+apply plugin: "net.ltgt.apt-idea"
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+  api deps.misc.gson
+  api deps.misc.moshi
+  apt project(":crumb-compiler")
+  api project(":crumb-annotations")
+  api project(":crumb-integration:lib1")
+  api project(":crumb-integration:lib2")
+  api project(":crumb-integration:lib3")
+
+  testCompile deps.test.truth
+}
