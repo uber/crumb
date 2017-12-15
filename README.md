@@ -230,13 +230,11 @@ Note that both extension examples are called `GsonExtension`. Each interface is 
 with the other, so you can make one extension that implements both interfaces for code sharing.
 
 ```java
+@AutoService({ConsumerExtension.class, ProducerExtension.class}) // Requires AutoService 1.0-rc4+
 public class GsonExtension implements ProducerExtension, ConsumerExtension {
   // ...
 }
 ```
-
-Note that this currently isn't supported if you use `AutoService`, but I've contributed a PR to do so
-[here](https://github.com/google/auto/pull/548).
 
 You can find a fleshed out version of this example under the `:integration` directory.
 
