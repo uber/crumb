@@ -23,6 +23,7 @@ Icon
 # KDE directory preferences
 .directory
 
+out/
 
 ###Android###
 
