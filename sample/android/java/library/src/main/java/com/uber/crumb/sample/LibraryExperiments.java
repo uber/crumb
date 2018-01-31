@@ -1,8 +1,8 @@
 package com.uber.crumb.sample;
 
-import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiment;
+import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments;
 
-@Experiment
+@Experiments
 public enum LibraryExperiments {
   XP_A,
   XP_C,
