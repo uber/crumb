@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.uber.crumb.extensions
+package com.uber.crumb.integration.compiler
 
 import com.google.auto.common.MoreTypes
+import com.google.auto.service.AutoService
 import com.google.common.collect.ImmutableSet
 import com.squareup.javapoet.ArrayTypeName
 import com.squareup.javapoet.ClassName
@@ -41,10 +42,8 @@ import com.uber.crumb.ProducerMetadata
 import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.extensions.MoshiFactory
 import com.uber.crumb.asPackageAndName
-import com.uber.crumb.classNameOf
-import com.uber.crumb.findElementsAnnotatedWith
-import com.uber.crumb.packageName
-import com.uber.crumb.rawType
+import com.uber.crumb.extensions.CrumbConsumerExtension
+import com.uber.crumb.extensions.CrumbProducerExtension
 import java.lang.Exception
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -63,6 +62,7 @@ import kotlin.properties.Delegates
 /**
  * Moshi support for Crumb.
  */
+@AutoService(value = [CrumbConsumerExtension::class, CrumbProducerExtension::class])
 class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
   companion object {
@@ -76,11 +76,13 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     private val TYPE_SPEC = ParameterSpec.builder(Type::class.java, "type").build()
     private val WILDCARD_TYPE_NAME = WildcardTypeName.subtypeOf(Annotation::class.java)
     private val ANNOTATIONS_SPEC = ParameterSpec.builder(
-        ParameterizedTypeName.get(ClassName.get(Set::class.java), WILDCARD_TYPE_NAME),
+        ParameterizedTypeName.get(ClassName.get(Set::class.java),
+            WILDCARD_TYPE_NAME),
         "annotations")
         .build()
     private val MOSHI_SPEC = ParameterSpec.builder(Moshi::class.java, "moshi").build()
-    private val FACTORY_RETURN_TYPE_NAME = ParameterizedTypeName.get(ADAPTER_CLASS_NAME,
+    private val FACTORY_RETURN_TYPE_NAME = ParameterizedTypeName.get(
+        ADAPTER_CLASS_NAME,
         WildcardTypeName.subtypeOf(TypeName.OBJECT))
   }
 
@@ -186,7 +188,8 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
         .addModifiers(PUBLIC)
         .addAnnotation(Override::class.java)
         .addParameters(ImmutableSet.of(typeParam, annotationsParam, moshi))
-        .returns(FACTORY_RETURN_TYPE_NAME)
+        .returns(
+            FACTORY_RETURN_TYPE_NAME)
 
     var classes: CodeBlock.Builder? = null
     var generics: CodeBlock.Builder? = null
@@ -208,7 +211,8 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
         val factoryMethodName = factoryMethod.simpleName.toString()
         factories = factories ?: CodeBlock.builder()
         if (numFactories == 0) {
-          factories!!.addStatement("\$T adapter", FACTORY_RETURN_TYPE_NAME)
+          factories!!.addStatement("\$T adapter",
+              FACTORY_RETURN_TYPE_NAME)
           factories.beginControlFlow(
               "if ((adapter = \$L.\$L().create(type, annotations, moshi)) != null)",
               element,
@@ -221,7 +225,8 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
         }
         factories.addStatement("return adapter")
         numFactories++
-        modelsMap.put(fqcn, MoshiSupportMeta(factoryMethodName, isFactory = true))
+        modelsMap[fqcn] = MoshiSupportMeta(factoryMethodName,
+            isFactory = true)
         continue
       }
       val elementTypeName = TypeName.get(element.asType())
@@ -252,7 +257,8 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
             classes.addStatement("return \$L.\$L()", element.simpleName,
                 jsonAdapterMethod.simpleName)
           }
-          modelsMap.put(fqcn, MoshiSupportMeta(adapterMethodName, argCount = paramsCount))
+          modelsMap[fqcn] = MoshiSupportMeta(adapterMethodName,
+              argCount = paramsCount)
         }
       }
     }
@@ -305,7 +311,7 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     metaMaps.entries
         .forEach {
           val (packageName, name) = it.key.asPackageAndName()
-          modelsByPackage.getOrPut(packageName, { mutableMapOf() }).put(name, it.value)
+          modelsByPackage.getOrPut(packageName, { mutableMapOf() })[name] = it.value
         }
 
     val methods = mutableSetOf<MethodSpec>()
@@ -371,8 +377,10 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
         .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
         .returns(String::class.java)
         .addParameter(String::class.java, "simpleName")
-        .beginControlFlow("if (simpleName.startsWith(\$S))", AV_PREFIX)
-        .addStatement("return simpleName.substring(\$S.length())", AV_PREFIX)
+        .beginControlFlow("if (simpleName.startsWith(\$S))",
+            AV_PREFIX)
+        .addStatement("return simpleName.substring(\$S.length())",
+            AV_PREFIX)
         .nextControlFlow("else")
         .addStatement("return simpleName")
         .endControlFlow()
@@ -381,8 +389,12 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     val create = MethodSpec.methodBuilder("create")
         .addModifiers(PUBLIC)
         .addAnnotation(Override::class.java)
-        .addParameters(ImmutableSet.of(TYPE_SPEC, ANNOTATIONS_SPEC, MOSHI_SPEC))
-        .returns(FACTORY_RETURN_TYPE_NAME)
+        .addParameters(ImmutableSet.of(
+            TYPE_SPEC,
+            ANNOTATIONS_SPEC,
+            MOSHI_SPEC))
+        .returns(
+            FACTORY_RETURN_TYPE_NAME)
         /*
          * First we want to pull out the package and simple names
          * The idea here is that we'll split on package names initially and then split on simple names in each
@@ -395,7 +407,8 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
          * possibly strip the AutoValue_ prefix if necessary.
          */
         .addComment("Avoid providing an adapter for an annotated type.")
-        .addStatement("if (!\$N.isEmpty()) return null", ANNOTATIONS_SPEC)
+        .addStatement("if (!\$N.isEmpty()) return null",
+            ANNOTATIONS_SPEC)
         .addStatement("\$T<?> rawType = \$T.getRawType(\$N)",
             Class::class.java,
             TypeName.get(MoshiTypes::class.java),
@@ -405,7 +418,8 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
             CrumbConsumable::class.java)
         .addStatement("String packageName = rawType.getPackage().getName()")
     // Begin the switch
-    create.beginControlFlow("switch (packageName)", TYPE_SPEC)
+    create.beginControlFlow("switch (packageName)",
+        TYPE_SPEC)
     modelsByPackage.forEach { packageName, entries ->
       // Create the package-specific method
       val packageCreatorMethod = MethodSpec.methodBuilder(
@@ -415,7 +429,9 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
           .returns(returnType)
           .addParameter(String::class.java, "name")
           .addParameters(ImmutableSet.of(
-              TYPE_SPEC, ANNOTATIONS_SPEC, MOSHI_SPEC))
+              TYPE_SPEC,
+              ANNOTATIONS_SPEC,
+              MOSHI_SPEC))
           .addCode(createPackageSwitch(packageName, entries, returnType))
           .build()
 
@@ -483,7 +499,8 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
                   .apply {
                     if (argCount == 1) {
                       // These need a moshi instance to defer to for other type adapters
-                      add(", \$N", MOSHI_SPEC)
+                      add(", \$N",
+                          MOSHI_SPEC)
                     }
                   }
               add(");\n")
@@ -565,7 +582,8 @@ class MoshiSupportMetaAdapter : JsonAdapter<MoshiSupportMeta>() {
     var isFactory = false
     reader.beginObject()
     while (reader.hasNext()) {
-      when (reader.selectName(OPTIONS)) {
+      when (reader.selectName(
+          OPTIONS)) {
         0 -> methodName = reader.nextString()
         1 -> argCount = reader.nextInt()
         2 -> isFactory = reader.nextBoolean()

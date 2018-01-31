@@ -14,28 +14,32 @@
  * limitations under the License.
  */
 buildscript {
-  repositories {
-    maven { url deps.build.repositories.plugins }
-  }
   dependencies {
-    classpath deps.build.gradlePlugins.apt
+    classpath deps.build.gradlePlugins.kotlin
   }
 }
 
-apply plugin: "java-library"
-apply plugin: "net.ltgt.apt-idea"
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.kapt'
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+  kotlinOptions {
+    jvmTarget = "1.8"
+    freeCompilerArgs = [
+        '-Xjsr305=strict'
+    ]
+  }
+}
 
 dependencies {
-  api deps.misc.gson
-  api deps.misc.moshi
-  apt project(":crumb-compiler")
-  api project(":crumb-annotations")
-  api project(":crumb-integration:lib1")
-  api project(":crumb-integration:lib2")
-  api project(":crumb-integration:lib3")
+  kapt deps.apt.autoService
 
-  testCompile deps.test.truth
+  compile deps.apt.autoService
+  compile deps.apt.autoCommon
+  compile deps.misc.guava
+  compile deps.misc.javapoet
+  compile deps.misc.gson
+  compile deps.misc.moshi
+  compile deps.kotlin.stdLibJre8
+  compile project(":crumb-compiler")
 }

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.uber.crumb.extensions
+package com.uber.crumb.integration.compiler
 
 import com.google.auto.common.MoreTypes
+import com.google.auto.service.AutoService
 import com.google.common.collect.ImmutableSet
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
@@ -46,10 +47,8 @@ import com.uber.crumb.ProducerMetadata
 import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.extensions.GsonFactory
 import com.uber.crumb.asPackageAndName
-import com.uber.crumb.classNameOf
-import com.uber.crumb.findElementsAnnotatedWith
-import com.uber.crumb.packageName
-import com.uber.crumb.rawType
+import com.uber.crumb.extensions.CrumbConsumerExtension
+import com.uber.crumb.extensions.CrumbProducerExtension
 import java.lang.Exception
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
@@ -70,6 +69,7 @@ typealias ModelName = String
 /**
  * Gson support for Crumb.
  */
+@AutoService(value = [CrumbConsumerExtension::class, CrumbProducerExtension::class])
 class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
   companion object {
@@ -227,7 +227,8 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
                 elementType, gson, params[1], typeParam)
           }
         }
-        modelsMap.put(fqcn, GsonSupportMeta(typeAdapterName, argCount))
+        modelsMap.put(fqcn,
+            GsonSupportMeta(typeAdapterName, argCount))
       }
     }
     create.nextControlFlow("else")
@@ -270,7 +271,7 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
     metaMaps.entries
         .forEach {
           val (packageName, name) = it.key.asPackageAndName()
-          modelsByPackage.getOrPut(packageName, { mutableMapOf() }).put(name, it.value)
+          modelsByPackage.getOrPut(packageName, { mutableMapOf() })[name] = it.value
         }
 
     val methods = mutableSetOf<MethodSpec>()
@@ -320,8 +321,10 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
         .addModifiers(PRIVATE, STATIC)
         .returns(String::class.java)
         .addParameter(String::class.java, "simpleName")
-        .beginControlFlow("if (simpleName.startsWith(\$S))", AV_PREFIX)
-        .addStatement("return simpleName.substring(\$S.length())", AV_PREFIX)
+        .beginControlFlow("if (simpleName.startsWith(\$S))",
+            AV_PREFIX)
+        .addStatement("return simpleName.substring(\$S.length())",
+            AV_PREFIX)
         .nextControlFlow("else")
         .addStatement("return simpleName")
         .endControlFlow()
@@ -480,7 +483,8 @@ internal class GsonSupportMetaAdapter : JsonAdapter<GsonSupportMeta>() {
     var argCount by Delegates.notNull<Int>()
     reader.beginObject()
     while (reader.hasNext()) {
-      when (reader.selectName(OPTIONS)) {
+      when (reader.selectName(
+          OPTIONS)) {
         0 -> methodName = reader.nextString()
         1 -> argCount = reader.nextInt()
         else -> throw IllegalArgumentException("Unrecognized name: ${reader.nextName()}")

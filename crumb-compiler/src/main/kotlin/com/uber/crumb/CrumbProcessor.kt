@@ -28,9 +28,8 @@ import com.uber.crumb.annotations.CrumbProducer
 import com.uber.crumb.annotations.CrumbQualifier
 import com.uber.crumb.extensions.CrumbConsumerExtension
 import com.uber.crumb.extensions.CrumbProducerExtension
-import com.uber.crumb.extensions.GsonSupport
-import com.uber.crumb.extensions.MoshiSupport
 import com.uber.crumb.packaging.GenerationalClassUtil
+import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.Processor
@@ -61,8 +60,8 @@ class CrumbProcessor : AbstractProcessor() {
       .build()
       .adapter(CrumbModel::class.java)
 
-  private val producerExtensions = listOf<CrumbProducerExtension>(GsonSupport(), MoshiSupport())
-  private val consumerExtensions = listOf<CrumbConsumerExtension>(GsonSupport(), MoshiSupport())
+  private val producerExtensions = ServiceLoader.load(CrumbProducerExtension::class.java).iterator().asSequence().toSet()
+  private val consumerExtensions = ServiceLoader.load(CrumbConsumerExtension::class.java).iterator().asSequence().toSet()
 
   private lateinit var typeUtils: Types
   private lateinit var elementUtils: Elements
@@ -94,8 +93,8 @@ class CrumbProcessor : AbstractProcessor() {
   }
 
   private fun processProducers(roundEnv: RoundEnvironment) {
-    val adaptorFactories = roundEnv.findElementsAnnotatedWith<CrumbProducer>()
-    adaptorFactories
+    val producers = roundEnv.findElementsAnnotatedWith<CrumbProducer>()
+    producers
         .cast<TypeElement>()
         .forEach { producer ->
           val context = CrumbContext(processingEnv, roundEnv)
@@ -109,7 +108,7 @@ class CrumbProcessor : AbstractProcessor() {
           if (applicableExtensions.isEmpty()) {
             error(producer, """
               |No extensions applicable for the given @CrumbProducer-annotated element
-              |Detected producers: [${adaptorFactories.joinToString { it.toString() }}]
+              |Detected producers: [${producers.joinToString { it.toString() }}]
               |Available extensions: [${producerExtensions.joinToString()}]
               """.trimMargin())
             return@forEach
@@ -118,7 +117,7 @@ class CrumbProcessor : AbstractProcessor() {
           val globalExtras = mutableMapOf<ExtensionKey, ProducerMetadata>()
           applicableExtensions.forEach { extension ->
             val extras = extension.produce(context, producer, qualifierAnnotations)
-            globalExtras.put(extension.key(), extras)
+            globalExtras[extension.key()] = extras
           }
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
@@ -207,7 +206,7 @@ internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
     }
   }
 
-  private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ConsumerMetadata>>(
+    private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ConsumerMetadata>>(
       MoshiTypes.newParameterizedType(
           Map::class.java,
           String::class.java,

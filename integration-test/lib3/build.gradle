@@ -33,9 +33,10 @@ dependencies {
   apt deps.apt.autoValueGson
   apt deps.apt.autoValueMoshi
   apt project(":crumb-compiler")
+  apt project(":integration-test:compiler")
   compileOnly deps.misc.jsr305
 
-  api deps.apt.autoValueAnnotations
+  implementation deps.apt.autoValueAnnotations
   api deps.misc.gson
   api deps.misc.moshi
 
