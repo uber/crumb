@@ -11,7 +11,7 @@ import javax.lang.model.element.TypeElement
  */
 interface CrumbProducerExtension : CrumbExtension {
 
-  fun supportedProducerAnnotations(): Set<Annotation> {
+  fun supportedProducerAnnotations(): Set<Class<out Annotation>> {
     return emptySet()
   }
 
