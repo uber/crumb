@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-apply plugin: "java-library"
+plugins {
+  id 'java-library'
+  id 'net.ltgt.errorprone' version '0.0.13'
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
