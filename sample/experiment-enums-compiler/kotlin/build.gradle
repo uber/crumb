@@ -19,6 +19,7 @@ buildscript {
   }
 }
 
+apply plugin: 'java-library'
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.kapt'
 

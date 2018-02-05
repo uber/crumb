@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-buildscript {
-  repositories {
-    maven { url deps.build.repositories.plugins }
-  }
-  dependencies {
-    classpath deps.build.gradlePlugins.apt
-  }
-}
 
-apply plugin: "java-library"
-apply plugin: "net.ltgt.apt-idea"
+plugins {
+  id 'java-library'
+  id 'net.ltgt.apt-idea' version '0.13'
+  id 'net.ltgt.errorprone' version '0.0.13'
+}
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
@@ -37,5 +32,5 @@ dependencies {
   implementation deps.misc.javapoet
   implementation deps.kotlin.stdLibJre8
   implementation project(":crumb-compiler")
-  compile project(":sample:experiment-enums-compiler:annotations")
+  api project(":sample:experiment-enums-compiler:annotations")
 }

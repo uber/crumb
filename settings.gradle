@@ -30,8 +30,8 @@ include ':sample:jvm:java:library'
 include ':sample:jvm:kotlin:app'
 include ':sample:jvm:kotlin:library'
 if (System.getenv("ANDROID_HOME") != null) {
-  include ':sample:android:java:app'
-  include ':sample:android:java:library'
-  include ':sample:android:kotlin:app'
-  include ':sample:android:kotlin:library'
+//  include ':sample:android:java:app'
+//  include ':sample:android:java:library'
+//  include ':sample:android:kotlin:app'
+//  include ':sample:android:kotlin:library'
 }

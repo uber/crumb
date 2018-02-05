@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-buildscript {
-  repositories {
-    maven { url deps.build.repositories.plugins }
-  }
-  dependencies {
-    classpath deps.build.gradlePlugins.apt
-  }
+plugins {
+  id 'java-library'
+  id 'net.ltgt.apt-idea' version '0.13'
+  id 'net.ltgt.errorprone' version '0.0.13'
 }
-
-apply plugin: "java-library"
-apply plugin: "net.ltgt.apt-idea"
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
