@@ -1,3 +1,5 @@
+import org.gradle.internal.jvm.Jvm
+
 /*
  * Copyright (c) 2017. Uber Technologies
  *
@@ -19,6 +21,7 @@ buildscript {
   }
 }
 
+apply plugin: 'java-library'
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.kapt'
 
@@ -42,4 +45,8 @@ dependencies {
   compile deps.misc.moshi
   compile deps.kotlin.stdLibJre8
   compile project(":crumb-compiler")
+
+  compileOnly files(Jvm.current().getToolsJar())
+  testCompile deps.test.compileTesting
+  testCompile files(Jvm.current().getToolsJar())
 }

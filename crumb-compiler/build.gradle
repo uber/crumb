@@ -1,3 +1,5 @@
+import org.gradle.internal.jvm.Jvm
+
 /*
  * Copyright (c) 2017. Uber Technologies
  *
@@ -13,9 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import org.gradle.internal.jvm.Jvm
-
 buildscript {
   dependencies {
     classpath deps.build.gradlePlugins.kotlin
@@ -47,6 +46,4 @@ dependencies {
   compile project(":crumb-annotations")
 
   compileOnly files(Jvm.current().getToolsJar())
-  testCompile deps.test.compileTesting
-  testCompile files(Jvm.current().getToolsJar())
 }

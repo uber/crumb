@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.uber.crumb
+package com.uber.crumb.integration.compiler
 
 import com.google.common.collect.ImmutableSet
 import com.google.common.truth.Truth.assertAbout
 import com.google.testing.compile.JavaFileObjects
 import com.google.testing.compile.JavaSourcesSubject
 import com.google.testing.compile.JavaSourcesSubjectFactory.javaSources
+import com.uber.crumb.CrumbProcessor
 import org.junit.Test
 import javax.tools.JavaFileObject
 

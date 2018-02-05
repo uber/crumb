@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uber.crumb.extensions
+package com.uber.crumb.integration.compiler
 
 import com.google.common.collect.ImmutableSet
 import com.google.common.truth.Truth.assertAbout
