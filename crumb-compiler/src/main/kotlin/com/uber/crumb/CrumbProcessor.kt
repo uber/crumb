@@ -23,6 +23,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
+import com.uber.crumb.CrumbProcessor.Companion.OPTION_EXTRA_LOCATIONS
+import com.uber.crumb.CrumbProcessor.Companion.OPTION_VERBOSE
 import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.CrumbConsumer
 import com.uber.crumb.annotations.CrumbProducer
@@ -30,6 +32,8 @@ import com.uber.crumb.annotations.CrumbQualifier
 import com.uber.crumb.extensions.CrumbConsumerExtension
 import com.uber.crumb.extensions.CrumbExtension
 import com.uber.crumb.extensions.CrumbProducerExtension
+import com.uber.crumb.packaging.CrumbLog
+import com.uber.crumb.packaging.CrumbLog.Client
 import com.uber.crumb.packaging.GenerationalClassUtil
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
@@ -37,12 +41,14 @@ import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
+import javax.annotation.processing.SupportedOptions
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 import javax.tools.Diagnostic
+import javax.tools.Diagnostic.Kind
 import javax.tools.Diagnostic.Kind.ERROR
 import javax.tools.Diagnostic.Kind.WARNING
 import kotlin.properties.Delegates
@@ -56,7 +62,20 @@ typealias MoshiTypes = com.squareup.moshi.Types
  * Processes all [CrumbConsumer] and [CrumbProducer] annotated types.
  */
 @AutoService(Processor::class)
+@SupportedOptions(OPTION_VERBOSE, OPTION_EXTRA_LOCATIONS)
 class CrumbProcessor : AbstractProcessor {
+
+  companion object {
+    /**
+     * Option to disable verbose logging
+     */
+    const val OPTION_VERBOSE = "crumb.options.verbose"
+
+    /**
+     * A colon-delimited list of extra locations to search in consumption.
+     */
+    const val OPTION_EXTRA_LOCATIONS = "crumb.options.extraLocations"
+  }
 
   private val crumbAdapter = Moshi.Builder()
       .add(CrumbAdapter.FACTORY)
@@ -105,6 +124,14 @@ class CrumbProcessor : AbstractProcessor {
     super.init(processingEnv)
     typeUtils = processingEnv.typeUtils
     elementUtils = processingEnv.elementUtils
+    if (processingEnv.options[OPTION_VERBOSE]?.toBoolean() == true) {
+      CrumbLog.setDebugLog(true)
+      CrumbLog.setClient(object : Client {
+        override fun printMessage(kind: Kind, message: String, element: Element?) {
+          processingEnv.messager.printMessage(kind, message, element)
+        }
+      })
+    }
     try {
       producerExtensions = ServiceLoader.load(CrumbProducerExtension::class.java,
           loaderForExtensions)
