@@ -17,8 +17,10 @@ import com.uber.crumb.extensions.CrumbProducerExtension;
 import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -108,15 +110,16 @@ public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbC
 
     FieldSpec mapField = FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(Map.class),
         TypeName.get(Class.class),
-        ParameterizedTypeName.get(Set.class, String.class)), "EXPERIMENTS", PUBLIC, STATIC, FINAL)
+        ParameterizedTypeName.get(List.class, String.class)), "EXPERIMENTS", PUBLIC, STATIC, FINAL)
         .initializer(CodeBlock.of("new $T<>()", LinkedHashMap.class))
         .build();
 
     CodeBlock.Builder staticInitBlock = CodeBlock.builder();
     experimentClasses.forEach((key, value) -> staticInitBlock.addStatement(
-        "$N.put($T.class, $T.asList($L)",
+        "$N.put($T.class, $T.asList($L))",
         mapField,
         TypeName.get(key.asType()),
+        TypeName.get(Arrays.class),
         String.join(", ",
             value.stream()
                 .map(s -> "\"" + s + "\"")
