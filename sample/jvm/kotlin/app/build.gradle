@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-buildscript {
-  dependencies {
-    classpath deps.build.gradlePlugins.kotlin
-  }
+plugins {
+  id 'java-library'
+  id 'org.jetbrains.kotlin.jvm'
+  id 'org.jetbrains.kotlin.kapt'
 }
-
-apply plugin: 'java-library'
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'org.jetbrains.kotlin.kapt'
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   kotlinOptions {

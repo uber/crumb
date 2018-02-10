@@ -13,6 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+pluginManagement {
+  apply from: file('gradle/dependencies.gradle')
+  resolutionStrategy {
+    eachPlugin {
+      switch (requested.id.id) {
+        case 'org.jetbrains.dokka':
+          useModule("org.jetbrains.dokka:dokka-gradle-plugin:${deps.versions.dokka}")
+          break
+        case 'org.jetbrains.dokka-android':
+          useModule("org.jetbrains.dokka:dokka-android-gradle-plugin:${deps.versions.dokka}")
+          break
+        case 'com.android.application':
+          useModule(deps.build.gradlePlugins.android)
+          break
+        case 'com.android.library':
+          useModule(deps.build.gradlePlugins.android)
+          break
+        case 'org.jetbrains.kotlin.android':
+          useModule(deps.build.gradlePlugins.kotlin)
+          break
+        case 'org.jetbrains.kotlin.jvm':
+          useModule(deps.build.gradlePlugins.kotlin)
+          break
+        case 'org.jetbrains.kotlin.kapt':
+          useModule(deps.build.gradlePlugins.kotlin)
+          break
+        case 'net.ltgt.errorprone':
+          useVersion(deps.versions.errorPronePlugin)
+          break
+        case 'net.ltgt.apt-idea':
+          useVersion(deps.versions.aptPlugin)
+          break
+      }
+    }
+  }
+  repositories {
+    jcenter()
+    google()
+    maven {
+      url deps.build.repositories.kotlinEap
+    }
+    gradlePluginPortal()
+  }
+}
 
 rootProject.name = 'crumb-root'
 include ':crumb-compiler'
