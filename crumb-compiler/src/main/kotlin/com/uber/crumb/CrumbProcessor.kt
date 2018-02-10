@@ -18,6 +18,7 @@ package com.uber.crumb
 
 import com.google.auto.common.AnnotationMirrors
 import com.google.auto.service.AutoService
+import com.google.common.annotations.VisibleForTesting
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
@@ -27,8 +28,10 @@ import com.uber.crumb.annotations.CrumbConsumer
 import com.uber.crumb.annotations.CrumbProducer
 import com.uber.crumb.annotations.CrumbQualifier
 import com.uber.crumb.extensions.CrumbConsumerExtension
+import com.uber.crumb.extensions.CrumbExtension
 import com.uber.crumb.extensions.CrumbProducerExtension
 import com.uber.crumb.packaging.GenerationalClassUtil
+import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
@@ -53,18 +56,37 @@ typealias MoshiTypes = com.squareup.moshi.Types
  * Processes all [CrumbConsumer] and [CrumbProducer] annotated types.
  */
 @AutoService(Processor::class)
-class CrumbProcessor : AbstractProcessor() {
+class CrumbProcessor : AbstractProcessor {
 
   private val crumbAdapter = Moshi.Builder()
       .add(CrumbAdapter.FACTORY)
       .build()
       .adapter(CrumbModel::class.java)
 
-  private val producerExtensions = ServiceLoader.load(CrumbProducerExtension::class.java).iterator().asSequence().toSet()
-  private val consumerExtensions = ServiceLoader.load(CrumbConsumerExtension::class.java).iterator().asSequence().toSet()
-
+  // Depending on how this CrumbProcessor was constructed, we might already have a list of
+  // extensions when init() is run, or, if `extensions` is null, we have a ClassLoader that will be
+  // used to get the list using the ServiceLoader API.
+  private var producerExtensions: Set<CrumbProducerExtension>
+  private var consumerExtensions: Set<CrumbConsumerExtension>
+  private var loaderForExtensions: ClassLoader? = null
   private lateinit var typeUtils: Types
   private lateinit var elementUtils: Elements
+
+  constructor() : this(CrumbProcessor::class.java.classLoader)
+
+  @VisibleForTesting
+  internal constructor(loaderForExtensions: ClassLoader) : super() {
+    this.producerExtensions = setOf()
+    this.consumerExtensions = setOf()
+    this.loaderForExtensions = loaderForExtensions
+  }
+
+  @VisibleForTesting
+  constructor(extensions: Iterable<CrumbExtension>) : super() {
+    this.loaderForExtensions = null
+    producerExtensions = extensions.filterIsInstance(CrumbProducerExtension::class.java).toSet()
+    consumerExtensions = extensions.filterIsInstance(CrumbConsumerExtension::class.java).toSet()
+  }
 
   override fun getSupportedAnnotationTypes(): Set<String> {
     return (listOf(CrumbConsumer::class, CrumbProducer::class, CrumbConsumable::class)
@@ -78,10 +100,34 @@ class CrumbProcessor : AbstractProcessor() {
     return SourceVersion.latestSupported()
   }
 
-  @Synchronized override fun init(processingEnv: ProcessingEnvironment) {
+  @Synchronized
+  override fun init(processingEnv: ProcessingEnvironment) {
     super.init(processingEnv)
     typeUtils = processingEnv.typeUtils
     elementUtils = processingEnv.elementUtils
+    try {
+      producerExtensions = ServiceLoader.load(CrumbProducerExtension::class.java,
+          loaderForExtensions)
+          .iterator().asSequence().toSet()
+      consumerExtensions = ServiceLoader.load(CrumbConsumerExtension::class.java,
+          loaderForExtensions)
+          .iterator().asSequence().toSet()
+      // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
+      // to discover any exceptions.
+    } catch (t: Throwable) {
+      val warning = StringBuilder()
+      warning.append(
+          "An exception occurred while looking for AutoValue extensions. " + "No extensions will function.")
+      if (t is ServiceConfigurationError) {
+        warning.append(" This may be due to a corrupt jar file in the compiler's classpath.")
+      }
+      warning.append(" Exception: ")
+          .append(t)
+      processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, warning.toString(), null)
+      producerExtensions = setOf()
+      consumerExtensions = setOf()
+    }
+
   }
 
   override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean {
@@ -206,7 +252,7 @@ internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
     }
   }
 
-    private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ConsumerMetadata>>(
+  private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ConsumerMetadata>>(
       MoshiTypes.newParameterizedType(
           Map::class.java,
           String::class.java,
@@ -245,8 +291,8 @@ class CrumbContext(val processingEnv: ProcessingEnvironment,
     val roundEnv: RoundEnvironment)
 
 /** Return a list of elements annotated with [T]. */
-internal inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element>
-    = getElementsAnnotatedWith(T::class.java)
+internal inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element> = getElementsAnnotatedWith(
+    T::class.java)
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 internal inline fun <T> Iterable<*>.cast() = map { it as T }
