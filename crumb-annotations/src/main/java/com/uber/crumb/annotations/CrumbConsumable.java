@@ -26,8 +26,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * A convenience annotation that can be used to indicate that this type should be
- * available to the Crumb processor and any of its extensions (since processors have to declare which
- * annotations they support).
+ * available to the Crumb processor and any of its extensions (since processors have to declare
+ * which annotations they support).
  */
 @Documented
 @Inherited
