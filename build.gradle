@@ -14,25 +14,57 @@
  * limitations under the License.
  */
 
-subprojects {
+plugins {
+  id 'com.diffplug.gradle.spotless'
+}
+
+allprojects {
   buildscript {
     repositories {
       jcenter()
+      google()
     }
   }
 
   repositories {
     jcenter()
+    google()
+  }
+}
+
+subprojects {
+  apply from: rootProject.file('gradle/dependencies.gradle')
+  apply plugin: 'com.diffplug.gradle.spotless'
+  spotless {
+    format 'misc', {
+      target '**/*.md', '**/.gitignore'
+
+      trimTrailingWhitespace()
+      indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
+      endWithNewline()
+    }
+    // Not yet, pending https://github.com/diffplug/spotless/issues/142
+    //    kotlin {
+    //      target "**/*.kt"
+    //      ktlint(deps.versions.ktlint)
+    //      licenseHeaderFile rootProject.file('spotless/copyright.kt')
+    //    }
+    java {
+      target "**/*.java"
+      googleJavaFormat(deps.versions.gjf)
+      licenseHeaderFile rootProject.file('spotless/copyright.java')
+      removeUnusedImports()
+    }
+    groovyGradle {
+      // same as groovy, but for .gradle (defaults to '*.gradle')
+      target '**/*.gradle'
+    }
   }
 }
 
 task wrapper(type: Wrapper) {
   gradleVersion = '4.5.1'
   distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
-
-task clean(type: Delete) {
-  delete rootProject.buildDir
 }
 
 apply from: 'gradle/dependencies.gradle'

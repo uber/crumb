@@ -19,7 +19,10 @@ def versions = [
     errorProne: '2.2.0',
     dokka: '0.9.16-eap-3',
     errorPronePlugin: '0.0.13',
-    kotlin: '1.2.21'
+    gjf: '1.5',
+    kotlin: '1.2.21',
+    ktlint: '0.15.0',
+    spotless: '3.9.0'
 ]
 
 ext.deps = [
