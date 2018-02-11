@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2018. Uber Technologies
+ *                            
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *                            
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *                            
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+  id 'java-library'
+  id 'net.ltgt.apt-idea'
+  id 'net.ltgt.errorprone'
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+  apt deps.apt.autoService
+
+  implementation deps.apt.autoService
+  implementation deps.apt.autoCommon
+  implementation deps.misc.guava
+  implementation deps.misc.javapoet
+  implementation deps.kotlin.stdLibJre8
+  implementation project(":crumb-compiler")
+  api project(":sample:experiment-enums-compiler:annotations")
+}

@@ -1,23 +1,81 @@
 /*
- * Copyright (c) 2017. Uber Technologies
- *
+ * Copyright (c) 2018. Uber Technologies
+ *                            
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ *                            
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *                            
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+pluginManagement {
+  apply from: file('gradle/dependencies.gradle')
+  resolutionStrategy {
+    eachPlugin {
+      switch (requested.id.id) {
+        case 'org.jetbrains.dokka':
+          useModule("org.jetbrains.dokka:dokka-gradle-plugin:${deps.versions.dokka}")
+          break
+        case 'org.jetbrains.dokka-android':
+          useModule("org.jetbrains.dokka:dokka-android-gradle-plugin:${deps.versions.dokka}")
+          break
+        case 'com.android.application':
+          useModule(deps.build.gradlePlugins.android)
+          break
+        case 'com.android.library':
+          useModule(deps.build.gradlePlugins.android)
+          break
+        case 'org.jetbrains.kotlin.android':
+          useModule(deps.build.gradlePlugins.kotlin)
+          break
+        case 'org.jetbrains.kotlin.jvm':
+          useModule(deps.build.gradlePlugins.kotlin)
+          break
+        case 'org.jetbrains.kotlin.kapt':
+          useModule(deps.build.gradlePlugins.kotlin)
+          break
+        case 'net.ltgt.errorprone':
+          useVersion(deps.versions.errorPronePlugin)
+          break
+        case 'net.ltgt.apt-idea':
+          useVersion(deps.versions.aptPlugin)
+          break
+      }
+    }
+  }
+  repositories {
+    jcenter()
+    google()
+    maven {
+      url deps.build.repositories.kotlinEap
+    }
+    gradlePluginPortal()
+  }
+}
 
 rootProject.name = 'crumb-root'
 include ':crumb-compiler'
 include ':crumb-annotations'
-include ':crumb-integration:integration'
-include ':crumb-integration:lib1'
-include ':crumb-integration:lib2'
-include ':crumb-integration:lib3'
+include ':integration-test:compiler'
+include ':integration-test:integration'
+include ':integration-test:lib1'
+include ':integration-test:lib2'
+include ':integration-test:lib3'
+include ':sample:experiment-enums-compiler:annotations'
+include ':sample:experiment-enums-compiler:java'
+include ':sample:experiment-enums-compiler:kotlin'
+include ':sample:jvm:java:app'
+include ':sample:jvm:java:library'
+//include ':sample:jvm:kotlin:app'
+//include ':sample:jvm:kotlin:library'
+if (System.getenv("ANDROID_HOME") != null) {
+  include ':sample:android:java:app'
+  include ':sample:android:java:library'
+//  include ':sample:android:kotlin:app'
+//  include ':sample:android:kotlin:library'
+}

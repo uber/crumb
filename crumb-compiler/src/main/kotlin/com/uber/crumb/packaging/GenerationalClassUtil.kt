@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2017. Uber Technologies
+ * Copyright (c) 2018. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,6 +20,7 @@ package com.uber.crumb.packaging
 
 import com.google.common.base.Preconditions
 import com.sun.tools.javac.processing.JavacProcessingEnvironment
+import com.uber.crumb.CrumbProcessor.Companion.OPTION_EXTRA_LOCATIONS
 import okio.Okio
 import java.io.File
 import java.io.IOException
@@ -28,7 +29,9 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
 import java.net.URISyntaxException
+import java.net.URL
 import java.net.URLClassLoader
+import java.nio.file.Files
 import java.util.zip.ZipFile
 import javax.annotation.processing.ProcessingEnvironment
 import javax.tools.JavaFileManager
@@ -51,7 +54,11 @@ object GenerationalClassUtil {
 
     val urlClassLoader = classLoader as URLClassLoader
     val objects = mutableSetOf<T>()
-    for (url in urlClassLoader.urLs) {
+    val extraLocations = env.options[OPTION_EXTRA_LOCATIONS]
+        ?.split(":")
+        ?.map { URL("file:$it") }
+        ?: emptyList()
+    for (url in (urlClassLoader.urLs + extraLocations)) {
       CrumbLog.d("checking url %s for intermediate data", url)
       try {
         val file = File(url.toURI())
@@ -138,11 +145,27 @@ object GenerationalClassUtil {
       fileName: String,
       objectToWrite: Serializable) {
     try {
-      val intermediate = processingEnv.filer.createResource(
-          StandardLocation.CLASS_OUTPUT,
-          packageName,
-          fileName)
-      intermediate.openOutputStream().use { ios ->
+      // Try to write to kapt generated if present, otherwise fall back to standard filer output
+      val intermediate = processingEnv.options["kapt.kotlin.generated"]?.let(::File)
+          ?.toPath()
+          ?.let {
+            var outputDirectory = it
+            if (packageName.isNotEmpty()) {
+              for (packageComponent in packageName.split('.').dropLastWhile { it.isEmpty() }) {
+                outputDirectory = outputDirectory.resolve(packageComponent)
+              }
+              Files.createDirectories(outputDirectory)
+            }
+            val outputPath = outputDirectory.resolve(fileName)
+            Files.newOutputStream(outputPath)
+          }
+          ?: processingEnv.filer.createResource(
+              StandardLocation.CLASS_OUTPUT,
+              packageName,
+              fileName)
+              .openOutputStream()
+
+      intermediate.use { ios ->
         ObjectOutputStream(ios).use { oos ->
           oos.writeObject(objectToWrite)
           CrumbLog.d("wrote intermediate file %s %s", packageName, fileName)
