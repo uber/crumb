@@ -64,6 +64,8 @@ ext.deps = [
         errorProneAnnotations: "com.google.errorprone:error_prone_annotations:${versions.errorProne}",
         javapoet: "com.squareup:javapoet:1.10.0",
         jsr305: 'com.google.code.findbugs:jsr305:3.0.2',
+        kotlinMetadata: 'me.eugeniomarletti:kotlin-metadata:1.2.1',
+        kotlinpoet: 'com.squareup:kotlinpoet:0.6.0',
         gson: "com.google.code.gson:gson:2.8.1",
         guava: "com.google.guava:guava:23.6-jre",
         moshi: "com.squareup.moshi:moshi:1.5.0",
