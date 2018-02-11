@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2018. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.annotations;
 
 import java.lang.annotation.Documented;
@@ -25,12 +24,12 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * A convenience annotation that can be used to indicate that this type should be
- * available to the Crumb processor and any of its extensions (since processors have to declare
- * which annotations they support).
+ * A convenience annotation that can be used to indicate that this type should be available to the
+ * Crumb processor and any of its extensions (since processors have to declare which annotations
+ * they support).
  */
 @Documented
 @Inherited
 @Target(TYPE)
 @Retention(RUNTIME)
-public @interface CrumbConsumable { }
+public @interface CrumbConsumable {}

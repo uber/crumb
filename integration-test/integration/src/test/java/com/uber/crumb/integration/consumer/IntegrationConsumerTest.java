@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2018. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.integration.consumer;
+
+import static com.google.common.truth.Truth.assertThat;
+import static junit.framework.TestCase.fail;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,35 +30,35 @@ import com.uber.crumb.integration.lib3.Lib3Model;
 import java.io.IOException;
 import org.junit.Test;
 
-import static com.google.common.truth.Truth.assertThat;
-import static junit.framework.TestCase.fail;
-
 public final class IntegrationConsumerTest {
 
   // Expected JSON outputs. Note they're different because gson and moshi don't necessarily
   // output keys in the same
   // order.
-  private static final String EXPECTED_GSON_JSON = "{\"lib1Model\":{\"foo\":\"lib1Model\"},"
-      + "\"lib1Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib2Enum\":"
-      + "\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"},\"lib3Enum\":\"foo\"}";
-  private static final String EXPECTED_MOSHI_JSON = "{\"lib1Enum\":\"foo\",\"lib1Model\""
-      + ":{\"foo\":\"lib1Model\"},\"lib2Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"}"
-      + ",\"lib3Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"}}";
+  private static final String EXPECTED_GSON_JSON =
+      "{\"lib1Model\":{\"foo\":\"lib1Model\"},"
+          + "\"lib1Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib2Enum\":"
+          + "\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"},\"lib3Enum\":\"foo\"}";
+  private static final String EXPECTED_MOSHI_JSON =
+      "{\"lib1Enum\":\"foo\",\"lib1Model\""
+          + ":{\"foo\":\"lib1Model\"},\"lib2Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"}"
+          + ",\"lib3Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"}}";
 
   private final Gson gson =
-      new GsonBuilder().registerTypeAdapterFactory(IntegrationConsumer.gson())
-          .create();
+      new GsonBuilder().registerTypeAdapterFactory(IntegrationConsumer.gson()).create();
 
-  private final Moshi moshi = new Moshi.Builder().add(IntegrationConsumer.moshi())
-      .build();
+  private final Moshi moshi = new Moshi.Builder().add(IntegrationConsumer.moshi()).build();
 
-  @Test public void verifyGson() {
-    TestData data = new TestData(Lib1Model.create("lib1Model"),
-        Lib1Enum.FOO,
-        Lib2Model.create("lib2Model"),
-        Lib2Enum.FOO,
-        Lib3Model.create("lib3Model"),
-        Lib3Enum.FOO);
+  @Test
+  public void verifyGson() {
+    TestData data =
+        new TestData(
+            Lib1Model.create("lib1Model"),
+            Lib1Enum.FOO,
+            Lib2Model.create("lib2Model"),
+            Lib2Enum.FOO,
+            Lib3Model.create("lib3Model"),
+            Lib3Enum.FOO);
 
     String json = gson.toJson(data);
     assertThat(json).isEqualTo(EXPECTED_GSON_JSON);
@@ -64,26 +66,26 @@ public final class IntegrationConsumerTest {
     assertThat(data).isEqualTo(newData);
 
     // Another check to make sure we're not messing up the adapter on AutoValue_ prefixes
-    assertThat(gson.getAdapter(newData.lib1Model.getClass())).isInstanceOf(Lib1Model.typeAdapter(
-        gson)
-        .getClass());
+    assertThat(gson.getAdapter(newData.lib1Model.getClass()))
+        .isInstanceOf(Lib1Model.typeAdapter(gson).getClass());
   }
 
-  @Test public void verifyMoshi() {
-    TestData data = new TestData(Lib1Model.create("lib1Model"),
-        Lib1Enum.FOO,
-        Lib2Model.create("lib2Model"),
-        Lib2Enum.FOO,
-        Lib3Model.create("lib3Model"),
-        Lib3Enum.FOO);
+  @Test
+  public void verifyMoshi() {
+    TestData data =
+        new TestData(
+            Lib1Model.create("lib1Model"),
+            Lib1Enum.FOO,
+            Lib2Model.create("lib2Model"),
+            Lib2Enum.FOO,
+            Lib3Model.create("lib3Model"),
+            Lib3Enum.FOO);
 
-    String json = moshi.adapter(TestData.class)
-        .toJson(data);
+    String json = moshi.adapter(TestData.class).toJson(data);
     assertThat(json).isEqualTo(EXPECTED_MOSHI_JSON);
     TestData newData = null;
     try {
-      newData = moshi.adapter(TestData.class)
-          .fromJson(json);
+      newData = moshi.adapter(TestData.class).fromJson(json);
     } catch (IOException e) {
       fail("Moshi deserialization failed: " + e.getMessage());
     }
@@ -91,9 +93,8 @@ public final class IntegrationConsumerTest {
 
     // Another check to make sure we're not messing up the adapter on AutoValue_ prefixes
     //noinspection ConstantConditions
-    assertThat(moshi.adapter(newData.lib1Model.getClass())).isInstanceOf(Lib1Model.jsonAdapter
-        (moshi)
-        .getClass());
+    assertThat(moshi.adapter(newData.lib1Model.getClass()))
+        .isInstanceOf(Lib1Model.jsonAdapter(moshi).getClass());
   }
 
   public static class TestData {
@@ -105,7 +106,8 @@ public final class IntegrationConsumerTest {
     public final Lib3Model lib3Model;
     public final Lib3Enum lib3Enum;
 
-    public TestData(Lib1Model lib1Model,
+    public TestData(
+        Lib1Model lib1Model,
         Lib1Enum lib1Enum,
         Lib2Model lib2Model,
         Lib2Enum lib2Enum,
@@ -119,7 +121,8 @@ public final class IntegrationConsumerTest {
       this.lib3Enum = lib3Enum;
     }
 
-    @Override public boolean equals(Object o) {
+    @Override
+    public boolean equals(Object o) {
       if (this == o) {
         return true;
       }
@@ -147,7 +150,8 @@ public final class IntegrationConsumerTest {
       return lib3Enum == testData.lib3Enum;
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
       int result = lib1Model.hashCode();
       result = 31 * result + lib1Enum.hashCode();
       result = 31 * result + lib2Model.hashCode();
