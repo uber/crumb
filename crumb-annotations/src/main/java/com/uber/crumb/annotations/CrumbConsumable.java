@@ -16,13 +16,21 @@
 
 package com.uber.crumb.annotations;
 
-import java.lang.annotation.ElementType;
+import java.lang.annotation.Documented;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+/**
+ * A convenience annotation that can be used to indicate that this type should be
+ * available to the Crumb processor and any of its extensions (since processors have to declare which
+ * annotations they support).
+ */
+@Documented
 @Inherited
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
+@Target(TYPE)
+@Retention(RUNTIME)
 public @interface CrumbConsumable { }

@@ -16,10 +16,18 @@
 
 package com.uber.crumb.annotations;
 
-import java.lang.annotation.ElementType;
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.ANNOTATION_TYPE) @Retention(RetentionPolicy.CLASS)
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.RetentionPolicy.CLASS;
+
+/**
+ * This annotation can be used on custom other annotations to indicate that they
+ * are relevant for Crumb and given to extensions in their APIs.
+ */
+@Documented
+@Target(ANNOTATION_TYPE)
+@Retention(CLASS)
 public @interface CrumbQualifier {}
