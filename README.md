@@ -76,43 +76,38 @@ are called into when a type is trying to consume metadata to from the classpath.
 
 ## Example
 
-Gson is a popular JSON serialization library for the JVM. Its basic building blocks are 
-`TypeAdapter` and `TypeAdapterFactory`, where the latter is just a factory that returns 
-`TypeAdapter` implementations for a given Class/Type/etc. These adapters and factories must be 
-registered with a Gson instance in order for them to be delegated to. If you are in a multi-module
-project setup, or have otherwise multiple dependencies that expose adapters for serialization, this
-can be inconvenient to have to manually wire up. It's error-prone, tedious, and adds friction.
+Say you document experiments in an app using enums, and want to collect all these from various 
+libraries at the app level to surface in an experimentation configuration.
 
-Crumb can make this manageable by writing metadata about those downstream `TypeAdapterFactory`s to
-the classpath for the consuming application to read.
+You could manually keep track of all these experiments, but that'd be pretty annoying. Instead,
+let's automate this with Crumb.
 
-Say you have a factory like so in Library A
+A given experiment enum looks like this in our library:
 
 ```java
-public class LibraryAFactory implements TypeAdapterFactory {
-  // ...
-  public static LibraryAFactory create() {
-    // ...
-  }
+public enum LibraryAExperiments {
+  FOO,
+  BAR,
+  BAZ
 }
 ```
 
-We could write a Crumb extension that reads this and writes its location to the classpath.
+We could write a Crumb extension that reads this and writes its location to the classpath. Let's
+define an `@Experiments` annotation and mark this.
 
 ```java
-@GsonFactory
+@Experiments
 @CrumbProducer
-public class LibraryAFactory implements TypeAdapterFactory {
-  // ...
-  public static LibraryAFactory create() {
-    // ...
-  }
+public enum LibraryAExperiments {
+  FOO,
+  BAR,
+  BAZ
 }
 ```
 
 `@CrumbProducer` is a required annotation to indicate to `CrumbProcessor` that this element is 
 important for producing metadata.
-`@GsonFactory` is a custom annotation that our extension looks for in its `isProducerApplicable` 
+`@Experiments` is a custom annotation that our extension looks for in its `isProducerApplicable` 
 check. If we annotate this annotation with `@CrumbQualifier`, the `CrumbProcessor` will give it 
 directly to extensions for reference. You can define any custom annotation you want. Extensions also
 have direct access to the `TypeElement`, so you can really use any signaling you want.
@@ -122,28 +117,27 @@ in our extension?
 
 ```java
 @AutoService(ProducerExtension.class)
-public class GsonExtension implements ProducerExtension {
+public class ExperimentsCompiler implements ProducerExtension {
   
   @Override
   public String key() {
-    return "GsonExtension";
+    return "ExperimentsCompiler";
   }
   
   @Override
   public boolean isProducerApplicable(CrumbContext context,
       TypeElement type,
       Collection<AnnotationMirror> annotations) {
-    // Check for the GsonFactory annotation here
+    // Check for the Experiments annotation here
   }
   
   @Override
   public Map<String, String> produce(CrumbContext context,
       TypeElement type,
       Collection<AnnotationMirror> annotations) {
-    String fullyQualifiedName = type.getQualifiedName();
-    Map<String, String> metadata = new HashMap<>();
-    metadata.put("pathToClass", fullyQualifiedName);
-    return metadata;
+    // <Error checking>
+    return ImmutableMap.of(METADATA_KEY,
+            type.getQualifiedName().toString());
   }
 }
 ```
@@ -152,50 +146,54 @@ And that's it! Crumb will take the returned metadata and make it available to an
 also declared the key returned by `key()`. `context` is a holder class with access to the current 
 `ProcessingEnvironment` and `RoundEnvironment`, `type` is the `@CrumbProducer`-annotated type, and 
 `annotations` are the `@CrumbQualifier`-annotated annotations found on that `type`. For convenience,
-we're going to assume that all of these factories have a static `create()` method.
+we're going to assume that all of these holders have a static `experiments()` method.
 
-What about the consumer side? We can make one top-level `TypeAdapterFactory` that just delegates to
-discovered downstream factories. We can generate this code directly with Javapoet, so we'll make the
-factory abstract and implement `TypeAdapterFactory`, then generate the implementation as a subclass.
+What about the consumer side? We can make one top-level `ExperimentsHolder` class that just delegates to
+discovered downstream experiments. We can generate this code directly with JavaPoet, so we'll make the
+holder class abstract, then generate the implementation as a subclass.
 Our desired API looks like this:
 
 ```java
-public abstract class MyApplicationFactory implements TypeAdapterFactory {
-  public static MyApplicationFactory create() {
-    return new Generated_MyApplicationFactory(); // This class is generated!
+public abstract class ExperimentsHolder {
+
+  public static Map<Class, List<String>> experiments() {
+    return Experiments_ExperimentsHolder.EXPERIMENTS;
   }
+
 }
 ```
 
 Let's wire Crumb here. The symmetric counterpart to `@CrumbProducer` is `@CrumbConsumer`. We can reuse
-the `@GsonFactory` annotation here too since the `@CrumbConsumer` annotation signals that this is not
+the `@Experiments` annotation here too since the `@CrumbConsumer` annotation signals that this is not
 a producer context.
 
 ```java
-@GsonFactory
 @CrumbConsumer
-public abstract class MyApplicationFactory implements TypeAdapterFactory {
-  public static MyApplicationFactory create() {
-    return new Generated_MyApplicationFactory(); // This class is generated!
+@Experiments
+public abstract class ExperimentsHolder {
+
+  public static Map<Class, List<String>> experiments() {
+    return Experiments_ExperimentsHolder.EXPERIMENTS;
   }
+
 }
 ```
 
 This is all the information we need for our extension
 ```java
 @AutoService(ConsumerExtension.class)
-public class GsonExtension implements ConsumerExtension {
+public class ExperimentsCompiler implements ConsumerExtension {
   
   @Override
   public String key() {
-    return "GsonExtension";
+    return "ExperimentsCompiler";
   }
   
   @Override
   public boolean isConsumerApplicable(CrumbContext context,
       TypeElement type,
       Collection<AnnotationMirror> annotations) {
-    // Check for the GsonFactory annotation here
+    // Check for the Experiments annotation here
   }
   
   @Override
@@ -204,10 +202,21 @@ public class GsonExtension implements ConsumerExtension {
       Collection<AnnotationMirror> annotations,
       Set<Map<String, String>> metadata) {
     // Each map is an instance of the Map we returned in the producer above
-    for (Map<String, String> map : metadata) {
-      String fullyQualifiedName = map.get("pathToClass");
-      // Use the fully qualified name to statically reference the downstream type!
-    }
+    
+    // Map of enum TypeElement to its members
+    Map<TypeElement, Set<String>> experimentClasses = metadata.stream()
+            .map(data -> data.get(METADATA_KEY))
+            .map(enumClass -> context.getProcessingEnv()
+                .getElementUtils()
+                .getTypeElement(enumClass))
+            .collect(toMap(typeElement -> typeElement,
+                typeElement -> typeElement.getEnclosedElements()
+                    .stream()
+                    .filter(e -> e.getKind() == ElementKind.ENUM_CONSTANT)
+                    .map(Object::toString)
+                    .collect(toSet())));
+    
+    // Now that we have each enum class and their members, use 'em!
   }
 }
 ```
@@ -216,27 +225,26 @@ This closes the loop from our producers to the consumer. Ultimately, we could le
 generate a backing implementation that looks like this:
 
 ```java
-public final class Generated_MyApplicationFactory extends MyApplicationFactory {
-  public final TypeAdapterFactory libraryAFactory = LibraryAFactory.create(); // Extracted from Crumb
-  
-  @Override
-  public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-    // ...
+public final class Experiments_ExperimentsHolder extends ExperimentsHolder {
+  public static final Map<Class, List<String>> EXPERIMENTS = new LinkedHashMap<>();
+
+  static {
+    EXPERIMENTS.put(LibraryExperiments.class, Arrays.asList("FOO", "BAR", "BAZ"));
   }
 }
 ```
 
-Note that both extension examples are called `GsonExtension`. Each interface is fully interoperable
+Note that both extension examples are called `ExperimentsCompiler`. Each interface is fully interoperable
 with the other, so you can make one extension that implements both interfaces for code sharing.
 
 ```java
-@AutoService({ConsumerExtension.class, ProducerExtension.class}) // Requires AutoService 1.0-rc4+
-public class GsonExtension implements ProducerExtension, ConsumerExtension {
+@AutoService({ProducerExtension.class, ConsumerExtension.class})
+public class ExperimentsCompiler implements ProducerExtension, ConsumerExtension {
   // ...
 }
 ```
 
-You can find a fleshed out version of this example under the `:integration` directory.
+You can find a fleshed out version of this example under the `:sample` directory.
 
 ### Download
 
