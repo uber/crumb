@@ -35,7 +35,8 @@ dependencies {
   compile deps.apt.autoService
   compile deps.apt.autoCommon
   compile deps.misc.guava
-  compile deps.misc.javapoet
+  compile deps.misc.kotlinMetadata
+  compile deps.misc.kotlinpoet
   compile deps.kotlin.stdLibJre8
   compile project(":crumb-compiler")
   compile project(":sample:experiment-enums-compiler:annotations")
