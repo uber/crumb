@@ -40,7 +40,7 @@ import com.uber.crumb.CrumbContext
 import com.uber.crumb.MoshiTypes
 import com.uber.crumb.ProducerMetadata
 import com.uber.crumb.annotations.CrumbConsumable
-import com.uber.crumb.annotations.extensions.MoshiFactory
+import com.uber.crumb.integration.annotations.MoshiFactory
 import com.uber.crumb.asPackageAndName
 import com.uber.crumb.extensions.CrumbConsumerExtension
 import com.uber.crumb.extensions.CrumbProducerExtension

@@ -45,7 +45,7 @@ import com.uber.crumb.CrumbContext
 import com.uber.crumb.MoshiTypes
 import com.uber.crumb.ProducerMetadata
 import com.uber.crumb.annotations.CrumbConsumable
-import com.uber.crumb.annotations.extensions.GsonFactory
+import com.uber.crumb.integration.annotations.GsonFactory
 import com.uber.crumb.asPackageAndName
 import com.uber.crumb.extensions.CrumbConsumerExtension
 import com.uber.crumb.extensions.CrumbProducerExtension

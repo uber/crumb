@@ -327,10 +327,3 @@ internal inline fun <T> Iterable<*>.cast() = map { it as T }
 internal data class CrumbModel(
     val name: String,
     val extras: Map<ExtensionKey, ConsumerMetadata>)
-
-fun String.asPackageAndName(): Pair<String, String> {
-  val lastIndex = lastIndexOf(".")
-  val modelPackage = substring(0, lastIndex)
-  val modelSimpleName = substring(lastIndex + 1)
-  return Pair(modelPackage, modelSimpleName)
-}

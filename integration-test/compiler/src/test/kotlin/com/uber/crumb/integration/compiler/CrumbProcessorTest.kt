@@ -43,7 +43,7 @@ import com.uber.crumb.annotations.CrumbConsumable;
 package test;
 import com.google.gson.TypeAdapterFactory;
 import com.uber.crumb.annotations.CrumbProducer;
-import com.uber.crumb.annotations.extensions.GsonFactory;
+import com.uber.crumb.integration.annotations.GsonFactory;
 @GsonFactory
 @CrumbProducer
 public abstract class MyAdapterFactory {

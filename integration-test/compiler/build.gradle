@@ -42,6 +42,7 @@ dependencies {
   compile deps.misc.moshi
   compile deps.kotlin.stdLibJre8
   compile project(":crumb-compiler")
+  compile project(":integration-test:annotations")
 
   compileOnly files(Jvm.current().getToolsJar())
   testCompile deps.test.compileTesting

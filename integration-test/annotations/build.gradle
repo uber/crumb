@@ -16,27 +16,12 @@
 
 plugins {
   id 'java-library'
-  id 'net.ltgt.apt-idea'
   id 'net.ltgt.errorprone'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
 
 dependencies {
-  apt deps.apt.autoValue
-  apt deps.apt.autoValueGson
-  apt deps.apt.autoValueMoshi
-  apt project(":crumb-compiler")
-  apt project(":integration-test:compiler")
-  compileOnly deps.misc.jsr305
-
-  implementation deps.apt.autoValueAnnotations
-  api deps.misc.gson
-  api deps.misc.moshi
-
-  api project(":crumb-annotations")
-  api project(":integration-test:annotations")
-
-  testCompile deps.test.truth
+  api project(':crumb-annotations')
 }

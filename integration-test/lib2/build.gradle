@@ -36,6 +36,7 @@ dependencies {
   api deps.misc.moshi
 
   api project(":crumb-annotations")
+  api project(":integration-test:annotations")
 
   testCompile deps.test.truth
 }

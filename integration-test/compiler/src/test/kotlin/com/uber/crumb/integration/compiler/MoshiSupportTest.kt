@@ -81,7 +81,7 @@ import com.squareup.moshi.JsonAdapter;
 package test;
 import com.squareup.moshi.JsonAdapter;
 import com.uber.crumb.annotations.CrumbProducer;
-import com.uber.crumb.annotations.extensions.MoshiFactory;
+import com.uber.crumb.integration.annotations.MoshiFactory;
 @MoshiFactory
 @CrumbProducer
 public abstract class MyAdapterFactory {

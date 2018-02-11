@@ -60,5 +60,12 @@ internal fun Element.rawType(): TypeName {
 }
 
 /** Return a list of elements annotated with [T]. */
-internal inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element>
-    = getElementsAnnotatedWith(T::class.java)
+internal inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element> = getElementsAnnotatedWith(
+    T::class.java)
+
+internal fun String.asPackageAndName(): Pair<String, String> {
+  val lastIndex = lastIndexOf(".")
+  val modelPackage = substring(0, lastIndex)
+  val modelSimpleName = substring(lastIndex + 1)
+  return Pair(modelPackage, modelSimpleName)
+}

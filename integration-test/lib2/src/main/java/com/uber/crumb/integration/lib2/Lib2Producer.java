@@ -19,8 +19,8 @@ package com.uber.crumb.integration.lib2;
 import com.google.gson.TypeAdapterFactory;
 import com.squareup.moshi.JsonAdapter;
 import com.uber.crumb.annotations.CrumbProducer;
-import com.uber.crumb.annotations.extensions.GsonFactory;
-import com.uber.crumb.annotations.extensions.MoshiFactory;
+import com.uber.crumb.integration.annotations.GsonFactory;
+import com.uber.crumb.integration.annotations.MoshiFactory;
 
 @GsonFactory
 @MoshiFactory

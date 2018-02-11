@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uber.crumb.annotations.extensions;
+package com.uber.crumb.integration.annotations;
 
 import com.uber.crumb.annotations.CrumbQualifier;
 import java.lang.annotation.ElementType;
