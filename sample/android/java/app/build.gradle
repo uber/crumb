@@ -43,5 +43,5 @@ dependencies {
   annotationProcessor project(":sample:experiment-enums-compiler:java")
   compile project(":crumb-annotations")
   compile project(":sample:android:java:library")
-  compile 'com.android.support:appcompat-v7:27.0.2'
+  compile deps.misc.appCompat
 }

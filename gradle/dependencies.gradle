@@ -61,6 +61,7 @@ ext.deps = [
     ],
 
     misc: [
+        appCompat: 'com.android.support:appcompat-v7:27.0.2',
         errorProneAnnotations: "com.google.errorprone:error_prone_annotations:${versions.errorProne}",
         javapoet: "com.squareup:javapoet:1.10.0",
         jsr305: 'com.google.code.findbugs:jsr305:3.0.2',
