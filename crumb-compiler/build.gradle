@@ -19,6 +19,7 @@ import org.gradle.internal.jvm.Jvm
 plugins {
   id 'org.jetbrains.kotlin.jvm'
   id 'org.jetbrains.kotlin.kapt'
+  id 'org.jetbrains.dokka'
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -45,3 +46,5 @@ dependencies {
 
   compileOnly files(Jvm.current().getToolsJar())
 }
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
