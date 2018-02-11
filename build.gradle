@@ -56,7 +56,6 @@ subprojects {
       removeUnusedImports()
     }
     groovyGradle {
-      // same as groovy, but for .gradle (defaults to '*.gradle')
       target '**/*.gradle'
     }
   }
