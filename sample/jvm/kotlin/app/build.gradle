@@ -29,9 +29,16 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   }
 }
 
+kapt {
+  arguments {
+    arg('crumb.options.verbose', "true")
+    arg('crumb.options.extraLocations', "${projectDir.parentFile}/library/build/generated/source/kaptKotlin/main")
+  }
+}
+
 dependencies {
   kapt project(":crumb-compiler")
-  kapt project(":sample:experiment-enums-compiler:java")
+  kapt project(":sample:experiment-enums-compiler:kotlin")
   compile project(":crumb-annotations")
   compile project(":sample:jvm:kotlin:library")
 }
