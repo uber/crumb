@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package com.uber.crumb.extensions
+package com.uber.crumb.compiler.api
 
-import com.squareup.javapoet.TypeSpec
-import com.uber.crumb.ConsumerMetadata
-import com.uber.crumb.CrumbContext
+import com.uber.crumb.annotations.CrumbConsumer
+import com.uber.crumb.annotations.CrumbQualifier
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.TypeElement
 
 /**
- * Interface for CrumbConsumer extensions.
+ * Interface for [CrumbConsumer] extensions.
  */
 interface CrumbConsumerExtension : CrumbExtension {
 
+  /**
+   * Supported consumer annotations, if any, that the CrumbProcessor should collect on this
+   * extension's behalf. Empty by default.
+   */
   fun supportedConsumerAnnotations(): Set<Class<out Annotation>> {
     return emptySet()
   }
@@ -34,11 +37,11 @@ interface CrumbConsumerExtension : CrumbExtension {
   /**
    * Determines whether or not a given type is applicable to this.
    *
-   * Note: If you need anything from the processingEnv, it is recommended to save it here.
+   * *Note:* If you need anything from the processingEnv for later, it is recommended to save it here.
    *
-   * @param context CrumbContext
-   * @param type the type to check
-   * @param annotations the Crumb annotations on this type
+   * @param context the [CrumbContext].
+   * @param type the type to check.
+   * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return true if the type is applicable.
    */
   fun isConsumerApplicable(context: CrumbContext,
@@ -46,11 +49,12 @@ interface CrumbConsumerExtension : CrumbExtension {
       annotations: Collection<AnnotationMirror>): Boolean
 
   /**
-   * Creates a cortex implementation method for the extension.
+   * Invoked to tell this extension to consume the set of collected [ConsumerMetadata].
    *
-   * @param context CrumbContext
-   * @param type in-progress [TypeSpec.Builder].
-   * @param extras extras.
+   * @param context the [CrumbContext].
+   * @param type the type this is consuming on.
+   * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
+   * @param metadata collected metadata associated with this extension.
    */
   fun consume(context: CrumbContext,
       type: TypeElement,

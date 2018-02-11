@@ -29,9 +29,13 @@ import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.CrumbConsumer
 import com.uber.crumb.annotations.CrumbProducer
 import com.uber.crumb.annotations.CrumbQualifier
-import com.uber.crumb.extensions.CrumbConsumerExtension
-import com.uber.crumb.extensions.CrumbExtension
-import com.uber.crumb.extensions.CrumbProducerExtension
+import com.uber.crumb.compiler.api.ConsumerMetadata
+import com.uber.crumb.compiler.api.CrumbConsumerExtension
+import com.uber.crumb.compiler.api.CrumbContext
+import com.uber.crumb.compiler.api.CrumbExtension
+import com.uber.crumb.compiler.api.CrumbProducerExtension
+import com.uber.crumb.compiler.api.ExtensionKey
+import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.packaging.CrumbLog
 import com.uber.crumb.packaging.CrumbLog.Client
 import com.uber.crumb.packaging.GenerationalClassUtil
@@ -53,10 +57,7 @@ import javax.tools.Diagnostic.Kind.ERROR
 import javax.tools.Diagnostic.Kind.WARNING
 import kotlin.properties.Delegates
 
-typealias ExtensionKey = String
-typealias ConsumerMetadata = Map<String, String>
-typealias ProducerMetadata = Map<String, String>
-typealias MoshiTypes = com.squareup.moshi.Types
+internal typealias MoshiTypes = com.squareup.moshi.Types
 
 /**
  * Processes all [CrumbConsumer] and [CrumbProducer] annotated types.
@@ -313,9 +314,6 @@ internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
     }
   }
 }
-
-class CrumbContext(val processingEnv: ProcessingEnvironment,
-    val roundEnv: RoundEnvironment)
 
 /** Return a list of elements annotated with [T]. */
 internal inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element> = getElementsAnnotatedWith(

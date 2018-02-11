@@ -121,7 +121,7 @@ final class MoshiProducer_MyAdapterFactory implements JsonAdapter.Factory {
 }""")
     assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources()).that(
         ImmutableSet.of(source1, source2, source3, source4, source5))
-        .processedWith(CrumbProcessor())
+        .processedWith(CrumbProcessor(listOf(MoshiSupport())))
         .compilesWithoutError()
         .and()
         .generatesSources(expected)

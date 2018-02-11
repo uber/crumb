@@ -31,6 +31,6 @@ dependencies {
   implementation deps.misc.guava
   implementation deps.misc.javapoet
   implementation deps.kotlin.stdLibJre8
-  implementation project(":crumb-compiler")
+  implementation project(":crumb-compiler-api")
   api project(":sample:experiment-enums-compiler:annotations")
 }

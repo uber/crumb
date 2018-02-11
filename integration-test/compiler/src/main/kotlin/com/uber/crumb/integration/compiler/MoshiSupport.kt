@@ -35,15 +35,13 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import com.uber.crumb.ConsumerMetadata
-import com.uber.crumb.CrumbContext
-import com.uber.crumb.MoshiTypes
-import com.uber.crumb.ProducerMetadata
 import com.uber.crumb.annotations.CrumbConsumable
+import com.uber.crumb.compiler.api.ConsumerMetadata
+import com.uber.crumb.compiler.api.CrumbConsumerExtension
+import com.uber.crumb.compiler.api.CrumbContext
+import com.uber.crumb.compiler.api.CrumbProducerExtension
+import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.integration.annotations.MoshiFactory
-import com.uber.crumb.asPackageAndName
-import com.uber.crumb.extensions.CrumbConsumerExtension
-import com.uber.crumb.extensions.CrumbProducerExtension
 import java.lang.Exception
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -139,7 +137,6 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     return false
   }
-
 
 
   override fun isProducerApplicable(context: CrumbContext,

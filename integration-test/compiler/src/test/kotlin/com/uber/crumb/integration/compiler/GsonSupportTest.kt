@@ -93,7 +93,7 @@ final class GsonProducer_MyAdapterFactory implements TypeAdapterFactory {
 
     assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
         .that(ImmutableSet.of(source1, source2, source3))
-        .processedWith(CrumbProcessor())
+        .processedWith(CrumbProcessor(listOf(GsonSupport())))
         .compilesWithoutError()
         .and()
         .generatesSources(expected)

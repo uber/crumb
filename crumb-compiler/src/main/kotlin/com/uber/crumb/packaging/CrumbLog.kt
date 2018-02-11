@@ -25,7 +25,7 @@ import javax.tools.Diagnostic.Kind
 /**
  * Tiny logger implementation for debugging, borrowed from databinding.
  */
-object CrumbLog {
+internal object CrumbLog {
 
   var isDebugEnabled = false
   private val SYSTEM_CLIENT: Client = object : Client {

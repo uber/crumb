@@ -23,9 +23,7 @@ import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 
-/*
- * Copied from TypeElementExt.
- */
+internal typealias MoshiTypes = com.squareup.moshi.Types
 
 /**
  * Returns the name of the given type, including any enclosing types but not the package.

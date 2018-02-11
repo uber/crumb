@@ -41,10 +41,11 @@ dependencies {
   compile deps.misc.gson
   compile deps.misc.moshi
   compile deps.kotlin.stdLibJre8
-  compile project(":crumb-compiler")
+  compile project(":crumb-compiler-api")
   compile project(":integration-test:annotations")
 
   compileOnly files(Jvm.current().getToolsJar())
+  testCompile project(":crumb-compiler")
   testCompile deps.test.compileTesting
   testCompile files(Jvm.current().getToolsJar())
 }

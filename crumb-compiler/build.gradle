@@ -41,6 +41,7 @@ dependencies {
   compile deps.misc.moshi
   compile deps.kotlin.stdLibJre8
   compile project(":crumb-annotations")
+  compile project(':crumb-compiler-api')
 
   compileOnly files(Jvm.current().getToolsJar())
 }

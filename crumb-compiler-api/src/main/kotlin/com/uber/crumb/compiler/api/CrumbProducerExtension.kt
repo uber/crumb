@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.uber.crumb.extensions
+package com.uber.crumb.compiler.api
 
-import com.squareup.javapoet.TypeSpec
-import com.uber.crumb.CrumbContext
-import com.uber.crumb.ProducerMetadata
+import com.uber.crumb.annotations.CrumbProducer
+import com.uber.crumb.annotations.CrumbQualifier
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.TypeElement
 
@@ -27,18 +26,22 @@ import javax.lang.model.element.TypeElement
  */
 interface CrumbProducerExtension : CrumbExtension {
 
+  /**
+   * Supported producer annotations, if any, that the CrumbProcessor should collect on this
+   * extension's behalf. Empty by default.
+   */
   fun supportedProducerAnnotations(): Set<Class<out Annotation>> {
     return emptySet()
   }
 
   /**
-   * Determines whether or not a given type is applicable to this.
+   * Determines whether or not a given type is applicable to this extension.
    *
-   * Note: If you need anything from the processingEnv, it is recommended to save it here.
+   * *Note:* If you need anything from the processingEnv for later, it is recommended to save it here.
    *
-   * @param context CrumbContext
-   * @param type the type to check
-   * @param annotations the Crumb annotations on this type
+   * @param context the [CrumbContext].
+   * @param type the type to check.
+   * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return true if the type is applicable.
    */
   fun isProducerApplicable(context: CrumbContext,
@@ -46,11 +49,12 @@ interface CrumbProducerExtension : CrumbExtension {
       annotations: Collection<AnnotationMirror>): Boolean
 
   /**
-   * Invoked to tell the
+   * Invoked to request this extension's [ProducerMetadata].
    *
-   * @param context CrumbContext
-   * @param builder in-progress [TypeSpec.Builder].
-   * @return the arguments
+   * @param context the [CrumbContext].
+   * @param type the type this is producing from.
+   * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
+   * @return the aggregated [ProducerMetadata].
    */
   fun produce(context: CrumbContext,
       type: TypeElement,

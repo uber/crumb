@@ -54,7 +54,7 @@ public abstract class MyAdapterFactory {
 
     assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
         .that(ImmutableSet.of(model, factory))
-        .processedWith(CrumbProcessor())
+        .processedWith(CrumbProcessor(listOf(GsonSupport(), MoshiSupport())))
         .failsToCompile()
         .withErrorContaining("""
           |No @CrumbConsumable-annotated elements applicable for the given @CrumbProducer-annotated element with the current crumb extensions
@@ -78,7 +78,7 @@ public abstract class MyAdapterFactory {
 
     assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
         .that(ImmutableSet.of(factory))
-        .processedWith(CrumbProcessor())
+        .processedWith(CrumbProcessor(listOf(GsonSupport(), MoshiSupport())))
         .failsToCompile()
         .withErrorContaining("""
           |No extensions applicable for the given @CrumbProducer-annotated element
