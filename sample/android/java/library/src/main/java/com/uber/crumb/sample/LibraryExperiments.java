@@ -1,7 +1,9 @@
 package com.uber.crumb.sample;
 
+import com.uber.crumb.annotations.CrumbProducer;
 import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments;
 
+@CrumbProducer
 @Experiments
 public enum LibraryExperiments {
   XP_A,
