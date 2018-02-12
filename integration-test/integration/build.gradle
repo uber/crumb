@@ -26,8 +26,8 @@ targetCompatibility = JavaVersion.VERSION_1_8
 dependencies {
   api deps.misc.gson
   api deps.misc.moshi
-  apt project(":crumb-compiler")
-  apt project(":integration-test:compiler")
+  annotationProcessor project(":crumb-compiler")
+  annotationProcessor project(":integration-test:compiler")
   api project(":crumb-annotations")
   api project(":integration-test:lib1")
   api project(":integration-test:lib2")

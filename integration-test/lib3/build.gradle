@@ -24,11 +24,11 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-  apt deps.apt.autoValue
-  apt deps.apt.autoValueGson
-  apt deps.apt.autoValueMoshi
-  apt project(":crumb-compiler")
-  apt project(":integration-test:compiler")
+  annotationProcessor deps.apt.autoValue
+  annotationProcessor deps.apt.autoValueGson
+  annotationProcessor deps.apt.autoValueMoshi
+  annotationProcessor project(":crumb-compiler")
+  annotationProcessor project(":integration-test:compiler")
   compileOnly deps.misc.jsr305
 
   implementation deps.apt.autoValueAnnotations

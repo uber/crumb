@@ -24,7 +24,7 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-  apt deps.apt.autoService
+  annotationProcessor deps.apt.autoService
 
   implementation deps.apt.autoService
   implementation deps.apt.autoCommon

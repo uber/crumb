@@ -15,7 +15,7 @@
  */
 
 def versions = [
-    aptPlugin: '0.13',
+    aptPlugin: '0.14',
     errorProne: '2.2.0',
     dokka: '0.9.16-eap-3',
     errorPronePlugin: '0.0.13',
