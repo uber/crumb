@@ -21,10 +21,10 @@ There are four annotations in the `:annotations` artifact:
 metadata.
 
 `@CrumbConsumer` - This annotation signals to the processor that this element is used to consume
-metadata from downstream.
+metadata.
 
-`@CrumbQualifier` - This annotation can be used on custom other annotations to indicate that they
-are relevant for Crumb and given to extensions in their APIs.
+`@CrumbQualifier` - This annotation can be used on custom annotations to indicate that they
+are relevant for Crumb and used by extensions.
 
 `@CrumbConsumable` - A convenience annotation that can be used to indicate that this type should be
 available to the Crumb processor and any of its extensions (since processors have to declare which
@@ -33,8 +33,7 @@ annotations they support).
 #### Extensions API
 
 There are two extension interfaces that follow a Producer/Consumer symmetry. The API (and compiler
-implementation) are in Kotlin, but seamlessly interoperable with Java. The API is SPI-based, so you
-can wire up your implementation with something like [AutoService][autoservice].
+implementation) is in Kotlin, but seamlessly interoperable with Java. The API is SPI-based, so implementations can be wired up with something like [AutoService][autoservice].
 
 Both interfaces extend from a `CrumbExtension` base interface, that just has a method `key()`. This
 method has a default implementation in Kotlin that just returns the fully qualified class name of 
@@ -45,7 +44,7 @@ useful information like references to the `ProcessingEnvironment` or `RoundEnvir
 
 `CrumbProducerExtension` - This interface is used to declare a producer extension. These extensions
 are called into when a type is trying to produce metadata to write to the classpath. The API is:
-  * `supportedProducerAnnotations()` - Returns a list of supported annotations. Has a default 
+  * `supportedProducerAnnotations()` - Returns a set of supported annotations. Has a default 
   implementation in Kotlin (empty), and is used to indicate to the compiler which annotations
   should be included in processing (since annotation processors have to declared which annotations 
   they need).
@@ -60,7 +59,7 @@ are called into when a type is trying to produce metadata to write to the classp
 
 `CrumbConsumerExtension` - This interface is used to declare a consumer extension. These extensions
 are called into when a type is trying to consume metadata to from the classpath. The API is:
-  * `supportedConsumerAnnotations()` - Returns a list of supported annotations. Has a default 
+  * `supportedConsumerAnnotations()` - Returns a set of supported annotations. Has a default 
   implementation in Kotlin (empty), and is used to indicate to the compiler which annotations
   should be included in processing (since annotation processors have to declared which annotations 
   they need).
