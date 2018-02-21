@@ -15,13 +15,11 @@
  */
 package com.uber.crumb.sample;
 
-import com.uber.crumb.annotations.CrumbConsumer;
-import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments;
+import com.uber.crumb.sample.experimentsenumscompiler.annotations.ExperimentsCollector;
 import java.util.List;
 import java.util.Map;
 
-@CrumbConsumer
-@Experiments
+@ExperimentsCollector
 public abstract class ExperimentsHolder {
 
   public static Map<Class, List<String>> experiments() {
