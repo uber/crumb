@@ -29,7 +29,7 @@ import com.uber.crumb.compiler.api.CrumbContext
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
-import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments
+import com.uber.crumb.sample.experimentsenumscompiler.annotations.ExperimentsCollector
 import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
 import me.eugeniomarletti.kotlin.metadata.classKind
 import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
@@ -53,7 +53,7 @@ import javax.tools.Diagnostic.Kind.ERROR
 class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
   companion object {
-    private val EXPERIMENTS_NAME = Experiments::class.java.canonicalName
+    private val EXPERIMENTS_NAME = ExperimentsCollector::class.java.canonicalName
     private const val METADATA_KEY: ExtensionKey = "ExperimentsCompiler"
   }
 
@@ -86,7 +86,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${Experiments::class.java.simpleName} is only applicable on enums when consuming!",
+              "@${ExperimentsCollector::class.java.simpleName} is only applicable on enums when consuming!",
               type)
       return
     }
@@ -97,7 +97,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${Experiments::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
+              "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
               type)
       return
     }
@@ -110,7 +110,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${Experiments::class.java.simpleName} can't be applied to $type: must be a Kotlin object class",
+              "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a Kotlin object class",
               type)
       return
     }
@@ -160,16 +160,18 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${Experiments::class.java.simpleName} is only applicable on enums when producing!",
+              "@${ExperimentsCollector::class.java.simpleName} is only applicable on enums when producing!",
               type)
       return emptyMap()
     }
     return mapOf(METADATA_KEY to type.qualifiedName.toString())
   }
 
-  override fun supportedConsumerAnnotations(): Set<Class<out Annotation>> = setOf(Experiments::class.java)
+  override fun supportedConsumerAnnotations(): Set<Class<out Annotation>> = setOf(
+      ExperimentsCollector::class.java)
 
-  override fun supportedProducerAnnotations(): Set<Class<out Annotation>> = setOf(Experiments::class.java)
+  override fun supportedProducerAnnotations(): Set<Class<out Annotation>> = setOf(
+      ExperimentsCollector::class.java)
 
   override fun key() = METADATA_KEY
 }
