@@ -252,7 +252,7 @@ so via the `packagingOptions` closure:
 
 ```gradle
 packagingOptions {
-  exclude "META-INF/com-uber-crumb/**"
+  exclude "META-INF/com.uber.crumb/**"
 }
 ```
 

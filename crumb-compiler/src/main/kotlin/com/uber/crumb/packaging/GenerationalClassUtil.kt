@@ -44,7 +44,7 @@ import javax.tools.StandardLocation
  */
 object GenerationalClassUtil {
 
-  private const val CRUMB_PREFIX = "META-INF/com-uber-crumb/"
+  private const val CRUMB_PREFIX = "META-INF/com.uber.crumb/"
 
   fun <T : Serializable> loadObjects(filter: ExtensionFilter, env: ProcessingEnvironment): Set<T> {
     val fileManager = (env as JavacProcessingEnvironment).context.get(JavaFileManager::class.java)
