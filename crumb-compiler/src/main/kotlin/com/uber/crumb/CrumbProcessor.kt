@@ -29,23 +29,12 @@ import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.CrumbConsumer
 import com.uber.crumb.annotations.CrumbProducer
 import com.uber.crumb.annotations.CrumbQualifier
-import com.uber.crumb.compiler.api.ConsumerMetadata
-import com.uber.crumb.compiler.api.CrumbConsumerExtension
-import com.uber.crumb.compiler.api.CrumbContext
-import com.uber.crumb.compiler.api.CrumbExtension
-import com.uber.crumb.compiler.api.CrumbProducerExtension
-import com.uber.crumb.compiler.api.ExtensionKey
-import com.uber.crumb.compiler.api.ProducerMetadata
+import com.uber.crumb.compiler.api.*
 import com.uber.crumb.packaging.CrumbLog
 import com.uber.crumb.packaging.CrumbLog.Client
 import com.uber.crumb.packaging.GenerationalClassUtil
-import java.util.ServiceConfigurationError
-import java.util.ServiceLoader
-import javax.annotation.processing.AbstractProcessor
-import javax.annotation.processing.ProcessingEnvironment
-import javax.annotation.processing.Processor
-import javax.annotation.processing.RoundEnvironment
-import javax.annotation.processing.SupportedOptions
+import java.util.*
+import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
@@ -167,7 +156,13 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   private fun processProducers(roundEnv: RoundEnvironment) {
-    val producers = roundEnv.findElementsAnnotatedWith<CrumbProducer>()
+    val crumbProducers = roundEnv.findElementsAnnotatedWith<CrumbProducer>()
+    val crumbProducerAnnotatedProducers =
+        producerExtensions.flatMap { it.supportedProducerAnnotations() }
+            .filter { it.getAnnotation(CrumbProducer::class.java) != null }
+            .flatMap { roundEnv.getElementsAnnotatedWith(it) }
+    val producers = crumbProducers + crumbProducerAnnotatedProducers
+
     producers
         .cast<TypeElement>()
         .forEach { producer ->
@@ -206,7 +201,12 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   private fun processConsumers(roundEnv: RoundEnvironment) {
-    val consumers = roundEnv.findElementsAnnotatedWith<CrumbConsumer>()
+    val crumbConsumers = roundEnv.findElementsAnnotatedWith<CrumbConsumer>()
+    val crumbConsumerAnnotatedConsumers =
+        consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
+            .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
+            .flatMap { roundEnv.getElementsAnnotatedWith(it) }
+    val consumers = crumbConsumers + crumbConsumerAnnotatedConsumers
     if (consumers.isEmpty()) {
       return
     }
