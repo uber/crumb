@@ -18,7 +18,6 @@ package com.uber.crumb.sample.experimentenumscompiler
 
 import com.google.auto.common.MoreElements.asType
 import com.google.auto.service.AutoService
-import com.google.common.collect.ImmutableSet
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
@@ -168,11 +167,9 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     return mapOf(METADATA_KEY to type.qualifiedName.toString())
   }
 
-  override fun supportedConsumerAnnotations(): Set<Class<out Annotation>> =
-      ImmutableSet.of<Class<out Annotation>>(Experiments::class.java)
+  override fun supportedConsumerAnnotations(): Set<Class<out Annotation>> = setOf(Experiments::class.java)
 
-  override fun supportedProducerAnnotations(): Set<Class<out Annotation>> =
-      ImmutableSet.of<Class<out Annotation>>(Experiments::class.java)
+  override fun supportedProducerAnnotations(): Set<Class<out Annotation>> = setOf(Experiments::class.java)
 
   override fun key() = METADATA_KEY
 }
