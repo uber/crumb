@@ -245,6 +245,17 @@ public class ExperimentsCompiler implements ProducerExtension, ConsumerExtension
 
 You can find a fleshed out version of this example under the `:sample` directory.
 
+### Packaging
+
+If compiling into an Android app, you probably want to exclude the crumbs from the APK. You can do
+so via the `packagingOptions` closure:
+
+```gradle
+packagingOptions {
+  exclude "META-INF/com.uber.crumb/**"
+}
+```
+
 ### Download
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.uber.crumb/crumb-compiler.svg)](https://mvnrepository.com/artifact/com.uber.crumb/crumb-compiler)

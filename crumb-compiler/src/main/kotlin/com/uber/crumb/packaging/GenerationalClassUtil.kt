@@ -31,7 +31,6 @@ import java.io.Serializable
 import java.net.URISyntaxException
 import java.net.URL
 import java.net.URLClassLoader
-import java.nio.file.Files
 import java.util.zip.ZipFile
 import javax.annotation.processing.ProcessingEnvironment
 import javax.tools.JavaFileManager
@@ -44,6 +43,8 @@ import javax.tools.StandardLocation
  * Adapted from the DataBinding lib: https://android.googlesource.com/platform/frameworks/data-binding/+/master
  */
 object GenerationalClassUtil {
+
+  private const val CRUMB_PREFIX = "META-INF/com.uber.crumb/"
 
   fun <T : Serializable> loadObjects(filter: ExtensionFilter, env: ProcessingEnvironment): Set<T> {
     val fileManager = (env as JavacProcessingEnvironment).context.get(JavaFileManager::class.java)
@@ -144,25 +145,11 @@ object GenerationalClassUtil {
       fileName: String,
       objectToWrite: Serializable) {
     try {
-      // Try to write to kapt generated if present, otherwise fall back to standard filer output
-      val intermediate = processingEnv.options["kapt.kotlin.generated"]?.let(::File)
-          ?.toPath()
-          ?.let {
-            var outputDirectory = it
-            if (packageName.isNotEmpty()) {
-              for (packageComponent in packageName.split('.').dropLastWhile { it.isEmpty() }) {
-                outputDirectory = outputDirectory.resolve(packageComponent)
-              }
-              Files.createDirectories(outputDirectory)
-            }
-            val outputPath = outputDirectory.resolve(fileName)
-            Files.newOutputStream(outputPath)
-          }
-          ?: processingEnv.filer.createResource(
-              StandardLocation.CLASS_OUTPUT,
-              packageName,
-              fileName)
-              .openOutputStream()
+      val intermediate = processingEnv.filer.createResource(
+          StandardLocation.CLASS_OUTPUT,
+          "",
+          "$CRUMB_PREFIX$packageName/$fileName")
+          .openOutputStream()
 
       intermediate.use { ios ->
         ObjectOutputStream(ios).use { oos ->
