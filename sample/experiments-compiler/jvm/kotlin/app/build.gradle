@@ -27,9 +27,17 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   }
 }
 
+kapt {
+  arguments {
+    arg('crumb.options.verbose', "true")
+    arg('crumb.options.extraLocations',
+        "${projectDir.parentFile}/library/build/libs/META-INF/com.uber.crumb")
+  }
+}
+
 dependencies {
   kapt project(":crumb-compiler")
-  kapt project(":sample:experiment-enums-compiler:kotlin")
+  kapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
   compile project(":crumb-annotations")
-  compile project(":sample:experiment-enums-compiler:annotations")
+  compile project(":sample:experiments-compiler:jvm:kotlin:library")
 }

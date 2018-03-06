@@ -15,18 +15,14 @@
 */
 
 plugins {
-  id 'com.android.application'
-  id 'org.jetbrains.kotlin.android'
-  id 'org.jetbrains.kotlin.kapt'
+  id 'com.android.library'
 }
-apply from: rootProject.file('gradle/config-kotlin-sources.gradle')
 
 android {
   compileSdkVersion deps.build.compileSdkVersion
   buildToolsVersion deps.build.buildToolsVersion
 
   defaultConfig {
-    applicationId "com.uber.crumb.sample.app"
     minSdkVersion deps.build.minSdkVersion
     targetSdkVersion deps.build.targetSdkVersion
   }
@@ -37,22 +33,9 @@ android {
   }
 }
 
-kapt {
-  arguments {
-    arg('crumb.options.verbose', "true")
-    arg('crumb.options.extraLocations',
-        "${projectDir.parentFile}/library/build/libs/META-INF/com.uber.crumb")
-  }
-}
-
-repositories {
-  google()
-}
-
 dependencies {
-  kapt project(":crumb-compiler")
-  kapt project(":sample:experiment-enums-compiler:kotlin")
+  annotationProcessor project(":crumb-compiler")
+  annotationProcessor project(":sample:experiments-compiler:experiment-enums-compiler:java")
   compile project(":crumb-annotations")
-  compile project(":sample:android:kotlin:library")
-  compile deps.misc.appCompat
+  compile project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }

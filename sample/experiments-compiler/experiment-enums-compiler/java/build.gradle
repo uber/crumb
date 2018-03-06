@@ -15,26 +15,21 @@
 */
 
 plugins {
-  id 'org.jetbrains.kotlin.jvm'
-  id 'org.jetbrains.kotlin.kapt'
+  id 'java-library'
+  id 'net.ltgt.errorprone'
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-  kotlinOptions {
-    jvmTarget = "1.8"
-    freeCompilerArgs = ['-Xjsr305=strict']
-  }
-}
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-  kapt deps.apt.autoService
+  annotationProcessor deps.apt.autoService
 
-  compile deps.apt.autoService
-  compile deps.apt.autoCommon
-  compile deps.misc.guava
-  compile deps.misc.kotlinMetadata
-  compile deps.misc.kotlinpoet
-  compile deps.kotlin.stdLibJre8
-  compile project(":crumb-compiler")
-  compile project(":sample:experiment-enums-compiler:annotations")
+  implementation deps.apt.autoService
+  implementation deps.apt.autoCommon
+  implementation deps.misc.guava
+  implementation deps.misc.javapoet
+  implementation deps.kotlin.stdLibJre8
+  implementation project(":crumb-compiler-api")
+  api project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }

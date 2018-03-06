@@ -40,8 +40,8 @@ repositories {
 
 dependencies {
   annotationProcessor project(":crumb-compiler")
-  annotationProcessor project(":sample:experiment-enums-compiler:java")
+  annotationProcessor project(":sample:experiments-compiler:experiment-enums-compiler:java")
   compile project(":crumb-annotations")
-  compile project(":sample:android:java:library")
+  compile project(":sample:experiments-compiler:android:java:library")
   compile deps.misc.appCompat
 }

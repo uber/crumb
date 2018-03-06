@@ -15,27 +15,17 @@
 */
 
 plugins {
-  id 'com.android.library'
+  id 'java-library'
+  id 'net.ltgt.errorprone'
+  id 'net.ltgt.apt-idea'
 }
 
-android {
-  compileSdkVersion deps.build.compileSdkVersion
-  buildToolsVersion deps.build.buildToolsVersion
-
-  defaultConfig {
-    minSdkVersion deps.build.minSdkVersion
-    targetSdkVersion deps.build.targetSdkVersion
-  }
-  compileOptions {
-    // TODO Go to 1.8 + D8 on AGP 3.x
-    sourceCompatibility JavaVersion.VERSION_1_7
-    targetCompatibility JavaVersion.VERSION_1_7
-  }
-}
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
   annotationProcessor project(":crumb-compiler")
-  annotationProcessor project(":sample:experiment-enums-compiler:java")
-  compile project(":crumb-annotations")
-  compile project(":sample:experiment-enums-compiler:annotations")
+  annotationProcessor project(":sample:experiments-compiler:experiment-enums-compiler:java")
+  api project(":crumb-annotations")
+  api project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }
