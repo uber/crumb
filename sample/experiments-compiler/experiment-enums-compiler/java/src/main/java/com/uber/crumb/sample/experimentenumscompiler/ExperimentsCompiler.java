@@ -15,7 +15,7 @@
  */
 package com.uber.crumb.sample.experimentenumscompiler;
 
-import static com.google.auto.common.MoreElements.asType;
+import static com.google.auto.common.MoreElements.isAnnotationPresent;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -61,35 +61,18 @@ import javax.tools.Diagnostic;
 @AutoService({CrumbProducerExtension.class, CrumbConsumerExtension.class})
 public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbConsumerExtension {
 
-  private static final ImmutableSet<String> EXPERIMENTS_ANNOTATION_NAMES =
-      ImmutableSet.<String>builder()
-          .add(Experiments.class.getCanonicalName())
-          .add(ExperimentsCollector.class.getCanonicalName())
-          .build();
   private static final String METADATA_KEY = "ExperimentsCompiler";
 
   @Override
   public boolean isConsumerApplicable(
       CrumbContext context, TypeElement type, Collection<? extends AnnotationMirror> annotations) {
-    return isExperimentsAnnotationPresent(annotations);
+    return isAnnotationPresent(type, ExperimentsCollector.class);
   }
 
   @Override
   public boolean isProducerApplicable(
       CrumbContext context, TypeElement type, Collection<? extends AnnotationMirror> annotations) {
-    return isExperimentsAnnotationPresent(annotations);
-  }
-
-  private boolean isExperimentsAnnotationPresent(
-      Collection<? extends AnnotationMirror> annotations) {
-    for (AnnotationMirror annotation : annotations) {
-      TypeElement annotationTypeElement = asType(annotation.getAnnotationType().asElement());
-      if (EXPERIMENTS_ANNOTATION_NAMES.contains(
-          annotationTypeElement.getQualifiedName().toString())) {
-        return true;
-      }
-    }
-    return false;
+    return isAnnotationPresent(type, Experiments.class);
   }
 
   @Override

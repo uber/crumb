@@ -16,11 +16,11 @@
 
 package com.uber.crumb.sample.experimentenumscompiler
 
-import com.google.auto.common.MoreElements.asType
+import com.google.auto.common.MoreElements.isAnnotationPresent
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
-import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import com.uber.crumb.compiler.api.ConsumerMetadata
@@ -44,7 +44,6 @@ import javax.lang.model.element.ElementKind.ENUM
 import javax.lang.model.element.ElementKind.ENUM_CONSTANT
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic.Kind.ERROR
-import kotlin.reflect.KClass
 
 /**
  * A simple crumb producer/consumer that reads "experiment enums" from libraries and writes a
@@ -55,29 +54,19 @@ import kotlin.reflect.KClass
 class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
   companion object {
-    private val EXPERIMENT_ANNOTATIONS = setOf(ExperimentsCollector::class.java.canonicalName,
-        Experiments::class.java.canonicalName)
     private const val METADATA_KEY: ExtensionKey = "ExperimentsCompiler"
   }
 
   override fun isConsumerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return isAnnotationPresent(annotations, ExperimentsCollector::class)
+    return isAnnotationPresent(type, ExperimentsCollector::class.java)
   }
 
   override fun isProducerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return isAnnotationPresent(annotations, Experiments::class)
-  }
-
-  private fun isAnnotationPresent(annotations: Collection<AnnotationMirror>, clazz: KClass<out Annotation>): Boolean {
-    val fqcn = clazz.java.canonicalName
-    return annotations
-        .asSequence()
-        .map { asType(it.annotationType.asElement()) }
-        .any { it.qualifiedName.toString() == fqcn }
+    return isAnnotationPresent(type, Experiments::class.java)
   }
 
   override fun consume(context: CrumbContext,
@@ -139,20 +128,20 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     val initializerValues = experimentClasses
         .keys
         .map { it.asClassName() }
-    val mapProperty = PropertySpec.builder("EXPERIMENTS",
-        ParameterizedTypeName.get(Map::class.asClassName(),
+    val mapFunction = FunSpec.builder("experiments")
+        .receiver(type.asClassName())
+        .returns(ParameterizedTypeName.get(Map::class.asClassName(),
             Class::class.asTypeName(),
             ParameterizedTypeName.get(List::class.asClassName(),
                 String::class.asTypeName())))
-        .receiver(type.asClassName())
-        .initializer("mapOf($initializerCode)", initializerValues)
+        .addStatement("return mapOf($initializerCode)", initializerValues)
         .build()
 
     // Generate the file
     val generatedDir = context.processingEnv.options[kaptGeneratedOption]?.let(::File)
         ?: throw IllegalStateException("Could not resolve kotlin generated directory!")
     FileSpec.builder(packageName, "${type.simpleName}_Experiments")
-        .addProperty(mapProperty)
+        .addFunction(mapFunction)
         .build()
         .writeTo(generatedDir)
   }
