@@ -76,12 +76,12 @@ include ':sample:experiments-compiler:experiment-enums-compiler:kotlin'
 include ':sample:experiments-compiler:jvm:java:app'
 include ':sample:experiments-compiler:jvm:java:library'
 //include ':sample:experiments-compiler:jvm:kotlin:app'
-//include ':sample:experiments-compiler:jvm:kotlin:library'
+include ':sample:experiments-compiler:jvm:kotlin:library'
 if (System.getenv("ANDROID_HOME") != null) {
   include ':sample:experiments-compiler:android:java:app'
   include ':sample:experiments-compiler:android:java:library'
 //  include ':sample:experiments-compiler:android:kotlin:app'
-//  include ':sample:experiments-compiler:android:kotlin:library'
+  include ':sample:experiments-compiler:android:kotlin:library'
 }
 
 // Plugins Compiler
