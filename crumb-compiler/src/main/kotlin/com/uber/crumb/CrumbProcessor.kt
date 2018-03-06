@@ -173,17 +173,26 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   private fun processProducers(roundEnv: RoundEnvironment) {
+    val context = CrumbContext(processingEnv, roundEnv)
     val producers = producerExtensions.flatMap { it.supportedProducerAnnotations() }
         .filter { it.getAnnotation(CrumbProducer::class.java) != null }
         .flatMap { roundEnv.getElementsAnnotatedWith(it) }
+        .cast<TypeElement>()
+        .map {
+          val qualifierAnnotations = it.annotatedAnnotations<CrumbQualifier>()
+          val producerAnnotations = it.annotatedAnnotations<CrumbProducer>()
+          val crumbAnnotations = producerAnnotations + qualifierAnnotations
+          return@map it to crumbAnnotations
+        }
+        .distinctBy { it.first } // Cover for types with multiple producer annotations
+        .filter { (type, annotations) ->
+          producerExtensions.any {
+            it.isProducerApplicable(context, type, annotations)
+          }
+        }
 
     producers
-        .cast<TypeElement>()
-        .forEach { producer ->
-          val context = CrumbContext(processingEnv, roundEnv)
-          val qualifierAnnotations = producer.annotatedAnnotations<CrumbQualifier>()
-          val producerAnnotations = producer.annotatedAnnotations<CrumbProducer>()
-          val crumbAnnotations = producerAnnotations + qualifierAnnotations
+        .forEach { (producer, crumbAnnotations) ->
           val applicableExtensions = producerExtensions
               .filter { it.isProducerApplicable(context, producer, crumbAnnotations) }
 
@@ -214,9 +223,23 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   private fun processConsumers(roundEnv: RoundEnvironment) {
+    val context = CrumbContext(processingEnv, roundEnv)
     val consumers = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
         .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
         .flatMap { roundEnv.getElementsAnnotatedWith(it) }
+        .cast<TypeElement>()
+        .map {
+          val qualifierAnnotations = it.annotatedAnnotations<CrumbQualifier>()
+          val consumerAnnotations = it.annotatedAnnotations<CrumbConsumer>()
+          val crumbAnnotations = consumerAnnotations + qualifierAnnotations
+          return@map it to crumbAnnotations
+        }
+        .distinctBy { it.first } // Cover for types with multiple consumer annotations
+        .filter { (type, annotations) ->
+          consumerExtensions.any {
+            it.isConsumerApplicable(context, type, annotations)
+          }
+        }
     if (consumers.isEmpty()) {
       return
     }
@@ -227,7 +250,7 @@ class CrumbProcessor : AbstractProcessor {
         processingEnv)
 
     if (producerMetadataBlobs.isEmpty()) {
-      message(WARNING, consumers.iterator().next(),
+      message(WARNING, consumers.map { it.first }.iterator().next(),
           "No @CrumbProducer metadata found on the classpath.")
       return
     }
@@ -240,12 +263,8 @@ class CrumbProcessor : AbstractProcessor {
         .mapValues { it.value.toSet() }
 
     // Iterate through the consumers to generate their implementations.
-    consumers.cast<TypeElement>()
-        .forEach { consumer ->
-          val context = CrumbContext(processingEnv, roundEnv)
-          val qualifierAnnotations = consumer.annotatedAnnotations<CrumbQualifier>()
-          val consumerAnnotations = consumer.annotatedAnnotations<CrumbConsumer>()
-          val crumbAnnotations = consumerAnnotations + qualifierAnnotations
+    consumers
+        .forEach { (consumer, crumbAnnotations) ->
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, crumbAnnotations)) {
               val metadata = metadataByExtension[extension.key()].orEmpty()
