@@ -19,7 +19,7 @@ def versions = [
     dokka: '0.9.16',
     errorPronePlugin: '0.0.13',
     gjf: '1.5',
-    kotlin: '1.2.21',
+    kotlin: '1.2.30',
     ktlint: '0.15.0',
     spotless: '3.9.0'
 ]
