@@ -37,14 +37,6 @@ android {
   }
 }
 
-kapt {
-  arguments {
-//    arg('crumb.options.verbose', "true")
-//    arg('crumb.options.extraLocations',
-//        "${projectDir.parentFile}/library/build/libs/META-INF/com.uber.crumb")
-  }
-}
-
 repositories {
   google()
 }
