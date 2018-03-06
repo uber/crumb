@@ -29,6 +29,7 @@ import com.uber.crumb.compiler.api.CrumbContext
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
+import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments
 import com.uber.crumb.sample.experimentsenumscompiler.annotations.ExperimentsCollector
 import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
 import me.eugeniomarletti.kotlin.metadata.classKind
@@ -53,7 +54,8 @@ import javax.tools.Diagnostic.Kind.ERROR
 class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
   companion object {
-    private val EXPERIMENTS_NAME = ExperimentsCollector::class.java.canonicalName
+    private val EXPERIMENT_ANNOTATIONS = setOf(ExperimentsCollector::class.java.canonicalName,
+        Experiments::class.java.canonicalName)
     private const val METADATA_KEY: ExtensionKey = "ExperimentsCompiler"
   }
 
@@ -73,7 +75,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     return annotations
         .asSequence()
         .map { asType(it.annotationType.asElement()) }
-        .any { it.qualifiedName.contentEquals(EXPERIMENTS_NAME) }
+        .any { it.qualifiedName.toString() in EXPERIMENT_ANNOTATIONS }
   }
 
   override fun consume(context: CrumbContext,
@@ -86,7 +88,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${ExperimentsCollector::class.java.simpleName} is only applicable on enums when consuming!",
+              "@${ExperimentsCollector::class.java.simpleName} is only applicable on classes when consuming!",
               type)
       return
     }
@@ -160,7 +162,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${ExperimentsCollector::class.java.simpleName} is only applicable on enums when producing!",
+              "@${Experiments::class.java.simpleName} is only applicable on enums when producing!",
               type)
       return emptyMap()
     }
@@ -171,7 +173,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       ExperimentsCollector::class.java)
 
   override fun supportedProducerAnnotations(): Set<Class<out Annotation>> = setOf(
-      ExperimentsCollector::class.java)
+      Experiments::class.java)
 
   override fun key() = METADATA_KEY
 }
