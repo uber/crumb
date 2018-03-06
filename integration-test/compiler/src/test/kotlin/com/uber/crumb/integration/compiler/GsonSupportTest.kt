@@ -58,7 +58,7 @@ import com.google.gson.Gson;
 package test;
 import com.google.gson.TypeAdapterFactory;
 import com.uber.crumb.integration.annotations.GsonFactory;
-@GsonFactory
+@GsonFactory(GsonFactory.Type.PRODUCER)
 public abstract class MyAdapterFactory {
   public static TypeAdapterFactory create() {
       return new GsonProducer_MyAdapterFactory();
