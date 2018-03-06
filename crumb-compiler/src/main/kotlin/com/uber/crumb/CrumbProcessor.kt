@@ -169,8 +169,7 @@ class CrumbProcessor : AbstractProcessor {
     processProducers(roundEnv)
     processConsumers(roundEnv)
 
-    // return true, we're the only ones that care about these annotations.
-    return true
+    return false
   }
 
   private fun processProducers(roundEnv: RoundEnvironment) {
