@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2018. Uber Technologies
- *                            
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *                            
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- *                            
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,16 +68,34 @@ include ':integration-test:integration'
 include ':integration-test:lib1'
 include ':integration-test:lib2'
 include ':integration-test:lib3'
-include ':sample:experiment-enums-compiler:annotations'
-include ':sample:experiment-enums-compiler:java'
-include ':sample:experiment-enums-compiler:kotlin'
-include ':sample:jvm:java:app'
-include ':sample:jvm:java:library'
-//include ':sample:jvm:kotlin:app'
-//include ':sample:jvm:kotlin:library'
+
+// Experiments Compiler
+include ':sample:experiments-compiler:experiment-enums-compiler:annotations'
+include ':sample:experiments-compiler:experiment-enums-compiler:java'
+include ':sample:experiments-compiler:experiment-enums-compiler:kotlin'
+include ':sample:experiments-compiler:jvm:java:app'
+include ':sample:experiments-compiler:jvm:java:library'
+//include ':sample:experiments-compiler:jvm:kotlin:app'
+include ':sample:experiments-compiler:jvm:kotlin:library'
 if (System.getenv("ANDROID_HOME") != null) {
-  include ':sample:android:java:app'
-  include ':sample:android:java:library'
-//  include ':sample:android:kotlin:app'
-//  include ':sample:android:kotlin:library'
+  include ':sample:experiments-compiler:android:java:app'
+  include ':sample:experiments-compiler:android:java:library'
+//  include ':sample:experiments-compiler:android:kotlin:app'
+  include ':sample:experiments-compiler:android:kotlin:library'
+}
+
+// Plugins Compiler
+include ':sample:plugins-compiler:feature-api'
+include ':sample:plugins-compiler:plugins-compiler:annotations'
+include ':sample:plugins-compiler:plugins-compiler:java'
+include ':sample:plugins-compiler:plugins-compiler:kotlin'
+include ':sample:plugins-compiler:jvm:java:app'
+include ':sample:plugins-compiler:jvm:java:library'
+include ':sample:plugins-compiler:jvm:kotlin:app'
+include ':sample:plugins-compiler:jvm:kotlin:library'
+if (System.getenv("ANDROID_HOME") != null) {
+  include ':sample:plugins-compiler:android:java:app'
+  include ':sample:plugins-compiler:android:java:library'
+  include ':sample:plugins-compiler:android:kotlin:app'
+  include ':sample:plugins-compiler:android:kotlin:library'
 }
