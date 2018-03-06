@@ -152,7 +152,7 @@ class CrumbProcessor : AbstractProcessor {
     } catch (t: Throwable) {
       val warning = StringBuilder()
       warning.append(
-          "An exception occurred while looking for AutoValue extensions. " + "No extensions will function.")
+          "An exception occurred while looking for Crumb extensions. " + "No extensions will function.")
       if (t is ServiceConfigurationError) {
         warning.append(" This may be due to a corrupt jar file in the compiler's classpath.")
       }
