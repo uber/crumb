@@ -92,6 +92,8 @@ class CrumbProcessor : AbstractProcessor {
   private lateinit var typeUtils: Types
   private lateinit var elementUtils: Elements
 
+  private lateinit var supportedTypes: Set<String>
+
   constructor() : this(CrumbProcessor::class.java.classLoader)
 
   @VisibleForTesting
@@ -109,11 +111,7 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   override fun getSupportedAnnotationTypes(): Set<String> {
-    return (listOf(CrumbConsumer::class, CrumbProducer::class, CrumbConsumable::class)
-        + producerExtensions.flatMap { it.supportedProducerAnnotations() }.map { it::class }
-        + consumerExtensions.flatMap { it.supportedConsumerAnnotations() }.map { it::class })
-        .map { it.java.name }
-        .toSet()
+    return supportedTypes
   }
 
   override fun getSupportedSourceVersion(): SourceVersion {
@@ -134,14 +132,24 @@ class CrumbProcessor : AbstractProcessor {
       })
     }
     try {
+      // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
+      // to discover any exceptions.
       producerExtensions = ServiceLoader.load(CrumbProducerExtension::class.java,
           loaderForExtensions)
           .iterator().asSequence().toSet()
       consumerExtensions = ServiceLoader.load(CrumbConsumerExtension::class.java,
           loaderForExtensions)
           .iterator().asSequence().toSet()
-      // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
-      // to discover any exceptions.
+      val producerAnnotatedAnnotations = producerExtensions.flatMap { it.supportedProducerAnnotations() }
+          .filter { it.getAnnotation(CrumbProducer::class.java) != null }
+      val consumerAnnotatedAnnotations = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
+          .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
+      val baseCrumbAnnotations = listOf(CrumbConsumer::class, CrumbProducer::class,
+          CrumbConsumable::class)
+          .map { it.java }
+      supportedTypes = (baseCrumbAnnotations + producerAnnotatedAnnotations + consumerAnnotatedAnnotations)
+          .map { it.name }
+          .toSet()
     } catch (t: Throwable) {
       val warning = StringBuilder()
       warning.append(
@@ -180,10 +188,11 @@ class CrumbProcessor : AbstractProcessor {
           val context = CrumbContext(processingEnv, roundEnv)
           val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(producer,
               CrumbQualifier::class.java)
+          val producerAnnotations = AnnotationMirrors.getAnnotatedAnnotations(producer,
+              CrumbProducer::class.java)
+          val crumbAnnotations = producerAnnotations + qualifierAnnotations
           val applicableExtensions = producerExtensions
-              .filter {
-                it.isProducerApplicable(context, producer, qualifierAnnotations)
-              }
+              .filter { it.isProducerApplicable(context, producer, crumbAnnotations) }
 
           if (applicableExtensions.isEmpty()) {
             error(producer, """
@@ -196,7 +205,7 @@ class CrumbProcessor : AbstractProcessor {
 
           val globalExtras = mutableMapOf<ExtensionKey, ProducerMetadata>()
           applicableExtensions.forEach { extension ->
-            val extras = extension.produce(context, producer, qualifierAnnotations)
+            val extras = extension.produce(context, producer, crumbAnnotations)
             globalExtras[extension.key()] = extras
           }
           val adapterName = producer.classNameOf()
@@ -246,10 +255,13 @@ class CrumbProcessor : AbstractProcessor {
           val context = CrumbContext(processingEnv, roundEnv)
           val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(consumer,
               CrumbQualifier::class.java)
+          val consumerAnnotations = AnnotationMirrors.getAnnotatedAnnotations(consumer,
+              CrumbConsumer::class.java)
+          val crumbAnnotations = consumerAnnotations + qualifierAnnotations
           consumerExtensions.forEach { extension ->
-            if (extension.isConsumerApplicable(context, consumer, qualifierAnnotations)) {
+            if (extension.isConsumerApplicable(context, consumer, crumbAnnotations)) {
               val metadata = metadataByExtension[extension.key()].orEmpty()
-              extension.consume(context, consumer, qualifierAnnotations, metadata)
+              extension.consume(context, consumer, crumbAnnotations, metadata)
             }
           }
         }
