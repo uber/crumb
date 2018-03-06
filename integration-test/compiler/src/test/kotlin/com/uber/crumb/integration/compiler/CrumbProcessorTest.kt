@@ -42,10 +42,8 @@ import com.uber.crumb.annotations.CrumbConsumable;
     val factory = JavaFileObjects.forSourceString(factoryName, """
 package test;
 import com.google.gson.TypeAdapterFactory;
-import com.uber.crumb.annotations.CrumbProducer;
 import com.uber.crumb.integration.annotations.GsonFactory;
 @GsonFactory
-@CrumbProducer
 public abstract class MyAdapterFactory {
   public static TypeAdapterFactory create() {
     return new GsonProducer_MyAdapterFactory();
@@ -68,8 +66,6 @@ public abstract class MyAdapterFactory {
     val factoryName = "test.MyAdapterFactory"
     val factory = JavaFileObjects.forSourceString(factoryName, """
 package test;
-import com.uber.crumb.annotations.CrumbProducer;
-@CrumbProducer
 public abstract class MyAdapterFactory {
   public static TypeAdapterFactory create() {
     return new GsonProducer_MyAdapterFactory();

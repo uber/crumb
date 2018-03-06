@@ -15,13 +15,23 @@
  */
 package com.uber.crumb.integration.annotations;
 
-import com.uber.crumb.annotations.CrumbQualifier;
+import com.uber.crumb.annotations.CrumbConsumer;
+import com.uber.crumb.annotations.CrumbProducer;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@CrumbQualifier
+@CrumbProducer
+@CrumbConsumer
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.CLASS)
-public @interface GsonFactory {}
+public @interface GsonFactory {
+
+  Type value();
+
+  enum Type {
+    PRODUCER,
+    CONSUMER
+  }
+}

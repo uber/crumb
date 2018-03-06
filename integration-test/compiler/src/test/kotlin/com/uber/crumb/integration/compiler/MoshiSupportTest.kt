@@ -80,10 +80,8 @@ import com.squareup.moshi.JsonAdapter;
     val source5 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
 package test;
 import com.squareup.moshi.JsonAdapter;
-import com.uber.crumb.annotations.CrumbProducer;
 import com.uber.crumb.integration.annotations.MoshiFactory;
 @MoshiFactory
-@CrumbProducer
 public abstract class MyAdapterFactory {
   public static JsonAdapter.Factory create() {
     return new MoshiProducer_MyAdapterFactory();
