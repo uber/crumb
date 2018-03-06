@@ -16,7 +16,7 @@
 
 def versions = [
     errorProne: '2.2.0',
-    dokka: '0.9.16-eap-3',
+    dokka: '0.9.16',
     errorPronePlugin: '0.0.13',
     gjf: '1.5',
     kotlin: '1.2.21',
@@ -43,10 +43,6 @@ ext.deps = [
         minSdkVersion: 14,
         targetSdkVersion: 27,
         errorProne: "com.google.errorprone:error_prone_core:${versions.errorProne}",
-
-        repositories: [
-            kotlinEap: 'https://dl.bintray.com/kotlin/kotlin-eap'
-        ],
 
         gradlePlugins: [
             android: 'com.android.tools.build:gradle:2.3.0',
