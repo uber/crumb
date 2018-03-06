@@ -105,8 +105,8 @@ class CrumbProcessor : AbstractProcessor {
   @VisibleForTesting
   constructor(extensions: Iterable<CrumbExtension>) : super() {
     this.loaderForExtensions = null
-    producerExtensions = extensions.filterIsInstance(CrumbProducerExtension::class.java).toSet()
-    consumerExtensions = extensions.filterIsInstance(CrumbConsumerExtension::class.java).toSet()
+    producerExtensions = extensions.filterIsInstance<CrumbProducerExtension>().toSet()
+    consumerExtensions = extensions.filterIsInstance<CrumbConsumerExtension>().toSet()
   }
 
   override fun getSupportedAnnotationTypes(): Set<String> {
