@@ -15,9 +15,7 @@
  */
 package com.uber.crumb.sample
 
-import com.uber.crumb.annotations.CrumbConsumer
-import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments
+import com.uber.crumb.sample.experimentsenumscompiler.annotations.ExperimentsCollector
 
-@CrumbConsumer
-@Experiments
+@ExperimentsCollector
 object ExperimentsHolder

@@ -47,6 +47,8 @@ import com.uber.crumb.compiler.api.CrumbContext
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.integration.annotations.GsonFactory
+import com.uber.crumb.integration.annotations.GsonFactory.Type.CONSUMER
+import com.uber.crumb.integration.annotations.GsonFactory.Type.PRODUCER
 import java.lang.Exception
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
@@ -88,16 +90,22 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
   override fun toString() = "GsonSupport"
 
+  override fun supportedConsumerAnnotations() = setOf(GsonFactory::class.java)
+
+  override fun supportedProducerAnnotations() = setOf(GsonFactory::class.java)
+
   override fun isProducerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
     return hasGsonFactoryAnnotation(context, annotations)
+        && type.getAnnotation(GsonFactory::class.java)?.value == PRODUCER
   }
 
   override fun isConsumerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
     return hasGsonFactoryAnnotation(context, annotations)
+        && type.getAnnotation(GsonFactory::class.java)?.value == CONSUMER
   }
 
   private fun hasGsonFactoryAnnotation(context: CrumbContext,

@@ -17,13 +17,11 @@ package com.uber.crumb.integration.lib3;
 
 import com.google.gson.TypeAdapterFactory;
 import com.squareup.moshi.JsonAdapter;
-import com.uber.crumb.annotations.CrumbProducer;
 import com.uber.crumb.integration.annotations.GsonFactory;
 import com.uber.crumb.integration.annotations.MoshiFactory;
 
-@GsonFactory
-@MoshiFactory
-@CrumbProducer
+@GsonFactory(GsonFactory.Type.PRODUCER)
+@MoshiFactory(MoshiFactory.Type.PRODUCER)
 public abstract class Lib3Producer {
 
   public static TypeAdapterFactory gson() {

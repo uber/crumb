@@ -42,6 +42,8 @@ import com.uber.crumb.compiler.api.CrumbContext
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.integration.annotations.MoshiFactory
+import com.uber.crumb.integration.annotations.MoshiFactory.Type.CONSUMER
+import com.uber.crumb.integration.annotations.MoshiFactory.Type.PRODUCER
 import java.lang.Exception
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -138,17 +140,22 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     return false
   }
 
+  override fun supportedConsumerAnnotations() = setOf(MoshiFactory::class.java)
+
+  override fun supportedProducerAnnotations() = setOf(MoshiFactory::class.java)
 
   override fun isProducerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
     return hasMoshiFactoryAnnotation(context, annotations)
+        && type.getAnnotation(MoshiFactory::class.java)?.value == PRODUCER
   }
 
   override fun isConsumerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
     return hasMoshiFactoryAnnotation(context, annotations)
+        && type.getAnnotation(MoshiFactory::class.java)?.value == CONSUMER
   }
 
   private fun hasMoshiFactoryAnnotation(context: CrumbContext,

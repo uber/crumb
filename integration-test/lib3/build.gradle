@@ -16,8 +16,8 @@
 
 plugins {
   id 'java-library'
-  id 'net.ltgt.apt-idea'
   id 'net.ltgt.errorprone'
+  id 'net.ltgt.apt-idea'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8

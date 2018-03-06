@@ -39,6 +39,7 @@ import com.uber.crumb.compiler.api.CrumbConsumerExtension;
 import com.uber.crumb.compiler.api.CrumbContext;
 import com.uber.crumb.compiler.api.CrumbProducerExtension;
 import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments;
+import com.uber.crumb.sample.experimentsenumscompiler.annotations.ExperimentsCollector;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -60,7 +61,11 @@ import javax.tools.Diagnostic;
 @AutoService({CrumbProducerExtension.class, CrumbConsumerExtension.class})
 public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbConsumerExtension {
 
-  private static final String EXPERIMENTS_NAME = Experiments.class.getCanonicalName();
+  private static final ImmutableSet<String> EXPERIMENTS_ANNOTATION_NAMES =
+      ImmutableSet.<String>builder()
+          .add(Experiments.class.getCanonicalName())
+          .add(ExperimentsCollector.class.getCanonicalName())
+          .build();
   private static final String METADATA_KEY = "ExperimentsCompiler";
 
   @Override
@@ -79,7 +84,8 @@ public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbC
       Collection<? extends AnnotationMirror> annotations) {
     for (AnnotationMirror annotation : annotations) {
       TypeElement annotationTypeElement = asType(annotation.getAnnotationType().asElement());
-      if (annotationTypeElement.getQualifiedName().contentEquals(EXPERIMENTS_NAME)) {
+      if (EXPERIMENTS_ANNOTATION_NAMES.contains(
+          annotationTypeElement.getQualifiedName().toString())) {
         return true;
       }
     }
@@ -101,7 +107,7 @@ public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbC
           .printMessage(
               Diagnostic.Kind.ERROR,
               "@"
-                  + Experiments.class.getSimpleName()
+                  + ExperimentsCollector.class.getSimpleName()
                   + " is only applicable on classes when consuming!",
               type);
       return;
@@ -196,7 +202,7 @@ public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbC
 
   @Override
   public Set<Class<? extends Annotation>> supportedConsumerAnnotations() {
-    return ImmutableSet.of(Experiments.class);
+    return ImmutableSet.of(ExperimentsCollector.class);
   }
 
   @Override

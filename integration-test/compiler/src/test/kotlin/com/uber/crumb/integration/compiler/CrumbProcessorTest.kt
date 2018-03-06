@@ -42,10 +42,8 @@ import com.uber.crumb.annotations.CrumbConsumable;
     val factory = JavaFileObjects.forSourceString(factoryName, """
 package test;
 import com.google.gson.TypeAdapterFactory;
-import com.uber.crumb.annotations.CrumbProducer;
 import com.uber.crumb.integration.annotations.GsonFactory;
-@GsonFactory
-@CrumbProducer
+@GsonFactory(GsonFactory.Type.PRODUCER)
 public abstract class MyAdapterFactory {
   public static TypeAdapterFactory create() {
     return new GsonProducer_MyAdapterFactory();
@@ -60,30 +58,6 @@ public abstract class MyAdapterFactory {
           |No @CrumbConsumable-annotated elements applicable for the given @CrumbProducer-annotated element with the current crumb extensions
           |  CrumbProducer: $factoryName
           |  Extension: GsonSupport
-        """.trimMargin())
-  }
-
-  @Test
-  fun noMatchingExtensionsShouldFail() {
-    val factoryName = "test.MyAdapterFactory"
-    val factory = JavaFileObjects.forSourceString(factoryName, """
-package test;
-import com.uber.crumb.annotations.CrumbProducer;
-@CrumbProducer
-public abstract class MyAdapterFactory {
-  public static TypeAdapterFactory create() {
-    return new GsonProducer_MyAdapterFactory();
-  }
-}""")
-
-    assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
-        .that(ImmutableSet.of(factory))
-        .processedWith(CrumbProcessor(listOf(GsonSupport(), MoshiSupport())))
-        .failsToCompile()
-        .withErrorContaining("""
-          |No extensions applicable for the given @CrumbProducer-annotated element
-          |  Detected producers: [$factoryName]
-          |  Available extensions: [GsonSupport, MoshiSupport]
         """.trimMargin())
   }
 

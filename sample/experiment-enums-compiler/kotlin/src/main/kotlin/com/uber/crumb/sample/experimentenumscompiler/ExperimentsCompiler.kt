@@ -18,7 +18,6 @@ package com.uber.crumb.sample.experimentenumscompiler
 
 import com.google.auto.common.MoreElements.asType
 import com.google.auto.service.AutoService
-import com.google.common.collect.ImmutableSet
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
@@ -31,6 +30,7 @@ import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments
+import com.uber.crumb.sample.experimentsenumscompiler.annotations.ExperimentsCollector
 import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
 import me.eugeniomarletti.kotlin.metadata.classKind
 import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
@@ -44,6 +44,7 @@ import javax.lang.model.element.ElementKind.ENUM
 import javax.lang.model.element.ElementKind.ENUM_CONSTANT
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic.Kind.ERROR
+import kotlin.reflect.KClass
 
 /**
  * A simple crumb producer/consumer that reads "experiment enums" from libraries and writes a
@@ -54,27 +55,29 @@ import javax.tools.Diagnostic.Kind.ERROR
 class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
   companion object {
-    private val EXPERIMENTS_NAME = Experiments::class.java.canonicalName
+    private val EXPERIMENT_ANNOTATIONS = setOf(ExperimentsCollector::class.java.canonicalName,
+        Experiments::class.java.canonicalName)
     private const val METADATA_KEY: ExtensionKey = "ExperimentsCompiler"
   }
 
   override fun isConsumerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return isExperimentsAnnotationPresent(annotations)
+    return isAnnotationPresent(annotations, ExperimentsCollector::class)
   }
 
   override fun isProducerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return isExperimentsAnnotationPresent(annotations)
+    return isAnnotationPresent(annotations, Experiments::class)
   }
 
-  private fun isExperimentsAnnotationPresent(annotations: Collection<AnnotationMirror>): Boolean {
+  private fun isAnnotationPresent(annotations: Collection<AnnotationMirror>, clazz: KClass<out Annotation>): Boolean {
+    val fqcn = clazz.java.canonicalName
     return annotations
         .asSequence()
         .map { asType(it.annotationType.asElement()) }
-        .any { it.qualifiedName.contentEquals(EXPERIMENTS_NAME) }
+        .any { it.qualifiedName.toString() == fqcn }
   }
 
   override fun consume(context: CrumbContext,
@@ -87,7 +90,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${Experiments::class.java.simpleName} is only applicable on enums when consuming!",
+              "@${ExperimentsCollector::class.java.simpleName} is only applicable on classes when consuming!",
               type)
       return
     }
@@ -98,7 +101,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${Experiments::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
+              "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
               type)
       return
     }
@@ -111,7 +114,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${Experiments::class.java.simpleName} can't be applied to $type: must be a Kotlin object class",
+              "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a Kotlin object class",
               type)
       return
     }
@@ -168,11 +171,11 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     return mapOf(METADATA_KEY to type.qualifiedName.toString())
   }
 
-  override fun supportedConsumerAnnotations(): Set<Class<out Annotation>> =
-      ImmutableSet.of<Class<out Annotation>>(Experiments::class.java)
+  override fun supportedConsumerAnnotations(): Set<Class<out Annotation>> = setOf(
+      ExperimentsCollector::class.java)
 
-  override fun supportedProducerAnnotations(): Set<Class<out Annotation>> =
-      ImmutableSet.of<Class<out Annotation>>(Experiments::class.java)
+  override fun supportedProducerAnnotations(): Set<Class<out Annotation>> = setOf(
+      Experiments::class.java)
 
   override fun key() = METADATA_KEY
 }

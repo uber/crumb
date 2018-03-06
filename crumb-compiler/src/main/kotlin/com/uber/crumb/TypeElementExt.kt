@@ -16,9 +16,8 @@
 
 package com.uber.crumb
 
+import com.google.auto.common.AnnotationMirrors
 import com.google.auto.common.MoreElements
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeName
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 
@@ -48,12 +47,7 @@ internal fun Element.packageName(): String {
 }
 
 /**
- * @return the raw type. Useful if it's a parameterized type.
+ * @return annotations on this element that are annotated with type [T].
  */
-internal fun Element.rawType(): TypeName {
-  var type = TypeName.get(asType())
-  if (type is ParameterizedTypeName) {
-    type = type.rawType
-  }
-  return type
-}
+internal inline fun <reified T : Annotation> Element.annotatedAnnotations()
+    = AnnotationMirrors.getAnnotatedAnnotations(this, T::class.java)

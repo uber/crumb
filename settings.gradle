@@ -43,7 +43,7 @@ pluginManagement {
           useVersion(deps.versions.errorPronePlugin)
           break
         case 'net.ltgt.apt-idea':
-          useVersion(deps.versions.aptPlugin)
+          useVersion("0.15")
           break
         case 'com.diffplug.gradle.spotless':
           useVersion(deps.versions.spotless)
@@ -54,9 +54,6 @@ pluginManagement {
   repositories {
     jcenter()
     google()
-    maven {
-      url deps.build.repositories.kotlinEap
-    }
     gradlePluginPortal()
   }
 }

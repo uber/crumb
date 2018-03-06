@@ -13,25 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.crumb.integration.annotations;
+package com.uber.crumb.sample.experimentsenumscompiler.annotations;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.CLASS;
 
 import com.uber.crumb.annotations.CrumbConsumer;
-import com.uber.crumb.annotations.CrumbProducer;
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@CrumbProducer
 @CrumbConsumer
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.CLASS)
-public @interface GsonFactory {
-
-  Type value();
-
-  enum Type {
-    PRODUCER,
-    CONSUMER
-  }
-}
+@Retention(CLASS)
+@Target(TYPE)
+public @interface ExperimentsCollector {}

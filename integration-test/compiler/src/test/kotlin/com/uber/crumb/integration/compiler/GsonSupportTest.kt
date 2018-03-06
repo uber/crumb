@@ -57,10 +57,8 @@ import com.google.gson.Gson;
     val source3 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
 package test;
 import com.google.gson.TypeAdapterFactory;
-import com.uber.crumb.annotations.CrumbProducer;
 import com.uber.crumb.integration.annotations.GsonFactory;
-@GsonFactory
-@CrumbProducer
+@GsonFactory(GsonFactory.Type.PRODUCER)
 public abstract class MyAdapterFactory {
   public static TypeAdapterFactory create() {
       return new GsonProducer_MyAdapterFactory();

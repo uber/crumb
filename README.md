@@ -17,14 +17,14 @@ extensions can focus on doing whatever it is they need to do!
 
 There are four annotations in the `:annotations` artifact:
 
-`@CrumbProducer` - This annotation signals to the processor that this element is used to produce
-metadata.
+`@CrumbProducer` - This annotation can be used on custom annotations to signal to the 
+processor that elements annotated with the custom annotation are used to produce metadata.
 
-`@CrumbConsumer` - This annotation signals to the processor that this element is used to consume
-metadata.
+`@CrumbConsumer` - This annotation can be used on custom annotations to signal to the 
+processor that elements annotated with the custom annotation are used to consume metadata.
 
-`@CrumbQualifier` - This annotation can be used on custom annotations to indicate that they
-are relevant for Crumb and used by extensions.
+`@CrumbQualifier` - This annotation can be used on custom annotations to indicate that elements
+annotated with the custom annotation are relevant for Crumb and used by extensions.
 
 `@CrumbConsumable` - A convenience annotation that can be used to indicate that this type should be
 available to the Crumb processor and any of its extensions (since processors have to declare which
@@ -92,11 +92,18 @@ public enum LibraryAExperiments {
 ```
 
 We could write a Crumb extension that reads this and writes its location to the classpath. Let's
-define an `@Experiments` annotation and mark this.
+define an `@Experiments` annotation to mark this.
+
+```java
+@CrumbProducer
+public @interface Experiments {}
+```
+
+We annotate it with `@CrumbProducer` so that the `CrumbProcessor` knows that this `@Experiments` 
+annotation is used to produce metadata. Now we can apply this annotation to our enum:
 
 ```java
 @Experiments
-@CrumbProducer
 public enum LibraryAExperiments {
   FOO,
   BAR,
@@ -104,12 +111,9 @@ public enum LibraryAExperiments {
 }
 ```
 
-`@CrumbProducer` is a required annotation to indicate to `CrumbProcessor` that this element is 
-important for producing metadata.
 `@Experiments` is a custom annotation that our extension looks for in its `isProducerApplicable` 
-check. If we annotate this annotation with `@CrumbQualifier`, the `CrumbProcessor` will give it 
-directly to extensions for reference. You can define any custom annotation you want. Extensions also
-have direct access to the `TypeElement`, so you can really use any signaling you want.
+check. You can define any custom annotation you want. Extensions also have direct access to the 
+`TypeElement`, so you can really use any signaling of your choice.
 
 So now we've indicated on the type that we want information extracted and stored. How does this look
 in our extension?
@@ -127,7 +131,7 @@ public class ExperimentsCompiler implements ProducerExtension {
   public boolean isProducerApplicable(CrumbContext context,
       TypeElement type,
       Collection<AnnotationMirror> annotations) {
-    // Check for the Experiments annotation here
+    // Check for the @Experiments annotation here
   }
   
   @Override
@@ -142,10 +146,12 @@ public class ExperimentsCompiler implements ProducerExtension {
 ```
 
 And that's it! Crumb will take the returned metadata and make it available to any extension that 
-also declared the key returned by `key()`. `context` is a holder class with access to the current 
-`ProcessingEnvironment` and `RoundEnvironment`, `type` is the `@CrumbProducer`-annotated type, and 
-`annotations` are the `@CrumbQualifier`-annotated annotations found on that `type`. For convenience,
-we're going to assume that all of these holders have a static `experiments()` method.
+also declared the key returned by `key()`. 
+  * `context` is a holder class with access to the current `ProcessingEnvironment` and 
+  `RoundEnvironment`
+  * `type` is the `@CrumbProducer`-annotated type (`LibraryAExperiments`)
+  * `annotations` are the `@CrumbQualifier`-annotated annotations found on that `type`. For 
+  convenience, we're going to assume that all of these holders have a static `experiments()` method.
 
 What about the consumer side? We can make one top-level `ExperimentsHolder` class that just delegates to
 discovered downstream experiments. We can generate this code directly with JavaPoet, so we'll make the
@@ -162,13 +168,17 @@ public abstract class ExperimentsHolder {
 }
 ```
 
-Let's wire Crumb here. The symmetric counterpart to `@CrumbProducer` is `@CrumbConsumer`. We can reuse
-the `@Experiments` annotation here too since the `@CrumbConsumer` annotation signals that this is not
-a producer context.
+Let's wire Crumb here. The symmetric counterpart to `@CrumbProducer` is `@CrumbConsumer`. We can make a similar annotation here for consuming:
 
 ```java
 @CrumbConsumer
-@Experiments
+public @interface ExperimentsCollector {}
+```
+
+Then add this annotation to our holder:
+
+```java
+@ExperimentsCollector
 public abstract class ExperimentsHolder {
 
   public static Map<Class, List<String>> experiments() {
@@ -178,7 +188,8 @@ public abstract class ExperimentsHolder {
 }
 ```
 
-This is all the information we need for our extension
+This is all the information we need for our extension!
+
 ```java
 @AutoService(ConsumerExtension.class)
 public class ExperimentsCompiler implements ConsumerExtension {
@@ -192,7 +203,7 @@ public class ExperimentsCompiler implements ConsumerExtension {
   public boolean isConsumerApplicable(CrumbContext context,
       TypeElement type,
       Collection<AnnotationMirror> annotations) {
-    // Check for the Experiments annotation here
+    // Check for the ExperimentsCollector annotation here
   }
   
   @Override
@@ -220,7 +231,7 @@ public class ExperimentsCompiler implements ConsumerExtension {
 }
 ```
 
-This closes the loop from our producers to the consumer. Ultimately, we could leverage JavaPoet to 
+This closes the loop from our producers to the consumer. Ultimately, we could leverage `JavaPoet` to 
 generate a backing implementation that looks like this:
 
 ```java
@@ -233,8 +244,9 @@ public final class Experiments_ExperimentsHolder extends ExperimentsHolder {
 }
 ```
 
-Note that both extension examples are called `ExperimentsCompiler`. Each interface is fully interoperable
-with the other, so you can make one extension that implements both interfaces for code sharing.
+Note that both extension examples are called `ExperimentsCompiler`. Each interface is fully 
+interoperable with the other, so you could make one extension that implements both interfaces for 
+code sharing.
 
 ```java
 @AutoService({ProducerExtension.class, ConsumerExtension.class})
@@ -262,6 +274,7 @@ packagingOptions {
 ```gradle
 compile 'com.uber.crumb:crumb-annotations:x.y.z'
 compile 'com.uber.crumb:crumb-compiler:x.y.z'
+compile 'com.uber.crumb:crumb-compiler-api:x.y.z'
 ```
 
 Snapshots of the development version are available in [Sonatype's snapshots repository][snapshots].

@@ -16,7 +16,6 @@
 
 package com.uber.crumb
 
-import com.google.auto.common.AnnotationMirrors
 import com.google.auto.service.AutoService
 import com.google.common.annotations.VisibleForTesting
 import com.squareup.moshi.JsonAdapter
@@ -92,6 +91,8 @@ class CrumbProcessor : AbstractProcessor {
   private lateinit var typeUtils: Types
   private lateinit var elementUtils: Elements
 
+  private lateinit var supportedTypes: Set<String>
+
   constructor() : this(CrumbProcessor::class.java.classLoader)
 
   @VisibleForTesting
@@ -104,16 +105,12 @@ class CrumbProcessor : AbstractProcessor {
   @VisibleForTesting
   constructor(extensions: Iterable<CrumbExtension>) : super() {
     this.loaderForExtensions = null
-    producerExtensions = extensions.filterIsInstance(CrumbProducerExtension::class.java).toSet()
-    consumerExtensions = extensions.filterIsInstance(CrumbConsumerExtension::class.java).toSet()
+    producerExtensions = extensions.filterIsInstance<CrumbProducerExtension>().toSet()
+    consumerExtensions = extensions.filterIsInstance<CrumbConsumerExtension>().toSet()
   }
 
   override fun getSupportedAnnotationTypes(): Set<String> {
-    return (listOf(CrumbConsumer::class, CrumbProducer::class, CrumbConsumable::class)
-        + producerExtensions.flatMap { it.supportedProducerAnnotations() }.map { it::class }
-        + consumerExtensions.flatMap { it.supportedConsumerAnnotations() }.map { it::class })
-        .map { it.java.name }
-        .toSet()
+    return supportedTypes
   }
 
   override fun getSupportedSourceVersion(): SourceVersion {
@@ -134,18 +131,28 @@ class CrumbProcessor : AbstractProcessor {
       })
     }
     try {
+      // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
+      // to discover any exceptions.
       producerExtensions = ServiceLoader.load(CrumbProducerExtension::class.java,
           loaderForExtensions)
           .iterator().asSequence().toSet()
       consumerExtensions = ServiceLoader.load(CrumbConsumerExtension::class.java,
           loaderForExtensions)
           .iterator().asSequence().toSet()
-      // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
-      // to discover any exceptions.
+      val producerAnnotatedAnnotations = producerExtensions.flatMap { it.supportedProducerAnnotations() }
+          .filter { it.getAnnotation(CrumbProducer::class.java) != null }
+      val consumerAnnotatedAnnotations = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
+          .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
+      val baseCrumbAnnotations = listOf(CrumbConsumer::class, CrumbProducer::class,
+          CrumbConsumable::class)
+          .map { it.java }
+      supportedTypes = (baseCrumbAnnotations + producerAnnotatedAnnotations + consumerAnnotatedAnnotations)
+          .map { it.name }
+          .toSet()
     } catch (t: Throwable) {
       val warning = StringBuilder()
       warning.append(
-          "An exception occurred while looking for AutoValue extensions. " + "No extensions will function.")
+          "An exception occurred while looking for Crumb extensions. " + "No extensions will function.")
       if (t is ServiceConfigurationError) {
         warning.append(" This may be due to a corrupt jar file in the compiler's classpath.")
       }
@@ -162,22 +169,32 @@ class CrumbProcessor : AbstractProcessor {
     processProducers(roundEnv)
     processConsumers(roundEnv)
 
-    // return true, we're the only ones that care about these annotations.
-    return true
+    return false
   }
 
   private fun processProducers(roundEnv: RoundEnvironment) {
-    val producers = roundEnv.findElementsAnnotatedWith<CrumbProducer>()
-    producers
+    val context = CrumbContext(processingEnv, roundEnv)
+    val producers = producerExtensions.flatMap { it.supportedProducerAnnotations() }
+        .filter { it.getAnnotation(CrumbProducer::class.java) != null }
+        .flatMap { roundEnv.getElementsAnnotatedWith(it) }
         .cast<TypeElement>()
-        .forEach { producer ->
-          val context = CrumbContext(processingEnv, roundEnv)
-          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(producer,
-              CrumbQualifier::class.java)
+        .map {
+          val qualifierAnnotations = it.annotatedAnnotations<CrumbQualifier>()
+          val producerAnnotations = it.annotatedAnnotations<CrumbProducer>()
+          val crumbAnnotations = producerAnnotations + qualifierAnnotations
+          return@map it to crumbAnnotations
+        }
+        .distinctBy { it.first } // Cover for types with multiple producer annotations
+        .filter { (type, annotations) ->
+          producerExtensions.any {
+            it.isProducerApplicable(context, type, annotations)
+          }
+        }
+
+    producers
+        .forEach { (producer, crumbAnnotations) ->
           val applicableExtensions = producerExtensions
-              .filter {
-                it.isProducerApplicable(context, producer, qualifierAnnotations)
-              }
+              .filter { it.isProducerApplicable(context, producer, crumbAnnotations) }
 
           if (applicableExtensions.isEmpty()) {
             error(producer, """
@@ -190,7 +207,7 @@ class CrumbProcessor : AbstractProcessor {
 
           val globalExtras = mutableMapOf<ExtensionKey, ProducerMetadata>()
           applicableExtensions.forEach { extension ->
-            val extras = extension.produce(context, producer, qualifierAnnotations)
+            val extras = extension.produce(context, producer, crumbAnnotations)
             globalExtras[extension.key()] = extras
           }
           val adapterName = producer.classNameOf()
@@ -206,7 +223,23 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   private fun processConsumers(roundEnv: RoundEnvironment) {
-    val consumers = roundEnv.findElementsAnnotatedWith<CrumbConsumer>()
+    val context = CrumbContext(processingEnv, roundEnv)
+    val consumers = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
+        .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
+        .flatMap { roundEnv.getElementsAnnotatedWith(it) }
+        .cast<TypeElement>()
+        .map {
+          val qualifierAnnotations = it.annotatedAnnotations<CrumbQualifier>()
+          val consumerAnnotations = it.annotatedAnnotations<CrumbConsumer>()
+          val crumbAnnotations = consumerAnnotations + qualifierAnnotations
+          return@map it to crumbAnnotations
+        }
+        .distinctBy { it.first } // Cover for types with multiple consumer annotations
+        .filter { (type, annotations) ->
+          consumerExtensions.any {
+            it.isConsumerApplicable(context, type, annotations)
+          }
+        }
     if (consumers.isEmpty()) {
       return
     }
@@ -217,7 +250,7 @@ class CrumbProcessor : AbstractProcessor {
         processingEnv)
 
     if (producerMetadataBlobs.isEmpty()) {
-      message(WARNING, consumers.iterator().next(),
+      message(WARNING, consumers.map { it.first }.iterator().next(),
           "No @CrumbProducer metadata found on the classpath.")
       return
     }
@@ -230,22 +263,15 @@ class CrumbProcessor : AbstractProcessor {
         .mapValues { it.value.toSet() }
 
     // Iterate through the consumers to generate their implementations.
-    consumers.cast<TypeElement>()
-        .forEach { consumer ->
-          val context = CrumbContext(processingEnv, roundEnv)
-          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(consumer,
-              CrumbQualifier::class.java)
+    consumers
+        .forEach { (consumer, crumbAnnotations) ->
           consumerExtensions.forEach { extension ->
-            if (extension.isConsumerApplicable(context, consumer, qualifierAnnotations)) {
+            if (extension.isConsumerApplicable(context, consumer, crumbAnnotations)) {
               val metadata = metadataByExtension[extension.key()].orEmpty()
-              extension.consume(context, consumer, qualifierAnnotations, metadata)
+              extension.consume(context, consumer, crumbAnnotations, metadata)
             }
           }
         }
-  }
-
-  private fun error(message: String, vararg args: Any) {
-    error(null, message, *args)
   }
 
   private fun error(element: Element?, message: String, vararg args: Any) {
@@ -314,10 +340,6 @@ internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
     }
   }
 }
-
-/** Return a list of elements annotated with [T]. */
-internal inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element> = getElementsAnnotatedWith(
-    T::class.java)
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 internal inline fun <T> Iterable<*>.cast() = map { it as T }

@@ -18,11 +18,11 @@ package com.uber.crumb.sample.experimentsenumscompiler.annotations;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
-import com.uber.crumb.annotations.CrumbQualifier;
+import com.uber.crumb.annotations.CrumbProducer;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-@CrumbQualifier
+@CrumbProducer
 @Retention(CLASS)
 @Target(TYPE)
 public @interface Experiments {}
