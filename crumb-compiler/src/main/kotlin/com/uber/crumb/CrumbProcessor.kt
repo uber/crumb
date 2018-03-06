@@ -16,7 +16,6 @@
 
 package com.uber.crumb
 
-import com.google.auto.common.AnnotationMirrors
 import com.google.auto.service.AutoService
 import com.google.common.annotations.VisibleForTesting
 import com.squareup.moshi.JsonAdapter
@@ -186,10 +185,8 @@ class CrumbProcessor : AbstractProcessor {
         .cast<TypeElement>()
         .forEach { producer ->
           val context = CrumbContext(processingEnv, roundEnv)
-          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(producer,
-              CrumbQualifier::class.java)
-          val producerAnnotations = AnnotationMirrors.getAnnotatedAnnotations(producer,
-              CrumbProducer::class.java)
+          val qualifierAnnotations = producer.annotatedAnnotations<CrumbQualifier>()
+          val producerAnnotations = producer.annotatedAnnotations<CrumbProducer>()
           val crumbAnnotations = producerAnnotations + qualifierAnnotations
           val applicableExtensions = producerExtensions
               .filter { it.isProducerApplicable(context, producer, crumbAnnotations) }
@@ -253,10 +250,8 @@ class CrumbProcessor : AbstractProcessor {
     consumers.cast<TypeElement>()
         .forEach { consumer ->
           val context = CrumbContext(processingEnv, roundEnv)
-          val qualifierAnnotations = AnnotationMirrors.getAnnotatedAnnotations(consumer,
-              CrumbQualifier::class.java)
-          val consumerAnnotations = AnnotationMirrors.getAnnotatedAnnotations(consumer,
-              CrumbConsumer::class.java)
+          val qualifierAnnotations = consumer.annotatedAnnotations<CrumbQualifier>()
+          val consumerAnnotations = consumer.annotatedAnnotations<CrumbConsumer>()
           val crumbAnnotations = consumerAnnotations + qualifierAnnotations
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, crumbAnnotations)) {
