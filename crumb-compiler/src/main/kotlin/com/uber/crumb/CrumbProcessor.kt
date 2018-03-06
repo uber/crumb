@@ -174,12 +174,9 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   private fun processProducers(roundEnv: RoundEnvironment) {
-    val crumbProducers = roundEnv.findElementsAnnotatedWith<CrumbProducer>()
-    val crumbProducerAnnotatedProducers =
-        producerExtensions.flatMap { it.supportedProducerAnnotations() }
-            .filter { it.getAnnotation(CrumbProducer::class.java) != null }
-            .flatMap { roundEnv.getElementsAnnotatedWith(it) }
-    val producers = crumbProducers + crumbProducerAnnotatedProducers
+    val producers = producerExtensions.flatMap { it.supportedProducerAnnotations() }
+        .filter { it.getAnnotation(CrumbProducer::class.java) != null }
+        .flatMap { roundEnv.getElementsAnnotatedWith(it) }
 
     producers
         .cast<TypeElement>()
@@ -218,12 +215,9 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   private fun processConsumers(roundEnv: RoundEnvironment) {
-    val crumbConsumers = roundEnv.findElementsAnnotatedWith<CrumbConsumer>()
-    val crumbConsumerAnnotatedConsumers =
-        consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
-            .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
-            .flatMap { roundEnv.getElementsAnnotatedWith(it) }
-    val consumers = crumbConsumers + crumbConsumerAnnotatedConsumers
+    val consumers = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
+        .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
+        .flatMap { roundEnv.getElementsAnnotatedWith(it) }
     if (consumers.isEmpty()) {
       return
     }
