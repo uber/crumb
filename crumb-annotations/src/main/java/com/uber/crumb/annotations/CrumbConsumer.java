@@ -15,13 +15,13 @@
  */
 package com.uber.crumb.annotations;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.CLASS;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Annotation to indicate that a given class should consumer crumb metadata from the classpath
@@ -29,5 +29,5 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Target({TYPE, ANNOTATION_TYPE})
-@Retention(CLASS)
+@Retention(RUNTIME)
 public @interface CrumbConsumer {}

@@ -15,12 +15,12 @@
  */
 package com.uber.crumb.annotations;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.RetentionPolicy.CLASS;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * This annotation can be used on custom other annotations to indicate that they are relevant for
@@ -28,5 +28,5 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Target(ANNOTATION_TYPE)
-@Retention(CLASS)
+@Retention(RUNTIME)
 public @interface CrumbQualifier {}
