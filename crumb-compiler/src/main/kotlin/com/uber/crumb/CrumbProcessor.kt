@@ -274,10 +274,6 @@ class CrumbProcessor : AbstractProcessor {
         }
   }
 
-  private fun error(message: String, vararg args: Any) {
-    error(null, message, *args)
-  }
-
   private fun error(element: Element?, message: String, vararg args: Any) {
     message(ERROR, element, message, *args)
   }
@@ -344,10 +340,6 @@ internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
     }
   }
 }
-
-/** Return a list of elements annotated with [T]. */
-internal inline fun <reified T : Annotation> RoundEnvironment.findElementsAnnotatedWith(): Set<Element> = getElementsAnnotatedWith(
-    T::class.java)
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 internal inline fun <T> Iterable<*>.cast() = map { it as T }
