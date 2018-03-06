@@ -44,6 +44,7 @@ import javax.lang.model.element.ElementKind.ENUM
 import javax.lang.model.element.ElementKind.ENUM_CONSTANT
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic.Kind.ERROR
+import kotlin.reflect.KClass
 
 /**
  * A simple crumb producer/consumer that reads "experiment enums" from libraries and writes a
@@ -62,20 +63,21 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
   override fun isConsumerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return isExperimentsAnnotationPresent(annotations)
+    return isAnnotationPresent(annotations, ExperimentsCollector::class)
   }
 
   override fun isProducerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
-    return isExperimentsAnnotationPresent(annotations)
+    return isAnnotationPresent(annotations, Experiments::class)
   }
 
-  private fun isExperimentsAnnotationPresent(annotations: Collection<AnnotationMirror>): Boolean {
+  private fun isAnnotationPresent(annotations: Collection<AnnotationMirror>, clazz: KClass<out Annotation>): Boolean {
+    val fqcn = clazz.java.canonicalName
     return annotations
         .asSequence()
         .map { asType(it.annotationType.asElement()) }
-        .any { it.qualifiedName.toString() in EXPERIMENT_ANNOTATIONS }
+        .any { it.qualifiedName.toString() == fqcn }
   }
 
   override fun consume(context: CrumbContext,
