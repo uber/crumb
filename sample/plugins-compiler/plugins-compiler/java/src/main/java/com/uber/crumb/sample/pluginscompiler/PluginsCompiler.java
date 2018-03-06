@@ -15,6 +15,13 @@
  */
 package com.uber.crumb.sample.pluginscompiler;
 
+import static com.google.auto.common.MoreElements.isAnnotationPresent;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
+import static javax.lang.model.element.Modifier.ABSTRACT;
+import static javax.lang.model.element.Modifier.FINAL;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
+
 import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
@@ -46,13 +53,6 @@ import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
-
-import static com.google.auto.common.MoreElements.isAnnotationPresent;
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static javax.lang.model.element.Modifier.ABSTRACT;
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
 
 /**
  * A simple crumb producer/consumer that reads plugin implementations from libraries and writes a
