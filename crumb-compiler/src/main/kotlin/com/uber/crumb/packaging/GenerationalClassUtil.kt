@@ -40,9 +40,9 @@ import javax.tools.StandardLocation
  * A utility class that helps adding build specific objects to the jar file
  * and their extraction later on.
  *
- * Adapted from the DataBinding lib: https://android.googlesource.com/platform/frameworks/data-binding/+/master
+ * Adapted from the DataBinding lib: [https://android.googlesource.com/platform/frameworks/data-binding/+/master]
  */
-object GenerationalClassUtil {
+internal object GenerationalClassUtil {
 
   private const val CRUMB_PREFIX = "META-INF/com.uber.crumb/"
 
