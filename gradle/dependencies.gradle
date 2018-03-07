@@ -62,7 +62,7 @@ ext.deps = [
         appCompat: 'com.android.support:appcompat-v7:27.0.2',
         errorProneAnnotations: "com.google.errorprone:error_prone_annotations:${versions.errorProne}",
         javapoet: "com.squareup:javapoet:1.10.0",
-        jsr305: 'com.google.code.findbugs:jsr305:3.0.2',
+        javaxExtras: 'com.uber.javaxextras:javax-extras:0.1.0',
         kotlinMetadata: 'me.eugeniomarletti:kotlin-metadata:1.2.1',
         kotlinpoet: 'com.squareup:kotlinpoet:0.6.0',
         gson: "com.google.code.gson:gson:2.8.1",
