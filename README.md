@@ -75,43 +75,41 @@ are called into when a type is trying to consume metadata to from the classpath.
 
 ## Example
 
-Say you document experiments in an app using enums, and want to collect all these from various 
-libraries at the app level to surface in an experimentation configuration.
+Say you have some plugin interface `Feature`, and you want to automatically gather and instantiate
+implementations of this interface in a top-level app from downstream dependencies. Basically like a
+[`ServiceLoader`](https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html), but at 
+compile-time and with annotations.
 
-You could manually keep track of all these experiments, but that'd be pretty annoying. Instead,
+You could manually keep track of all these implementations, but that'd be pretty annoying. Instead,
 let's automate this with Crumb.
 
-A given experiment enum looks like this in our library:
+A given feature implementation looks like this in our library:
 
 ```java
-public enum LibraryAExperiments {
-  FOO,
-  BAR,
-  BAZ
+public class LibraryPluginImpl implements Feature {
+  // Implemented stuff!
 }
 ```
 
 We could write a Crumb extension that reads this and writes its location to the classpath. Let's
-define an `@Experiments` annotation to mark this.
+define an `@Plugin` annotation to mark this.
 
 ```java
 @CrumbProducer
-public @interface Experiments {}
+public @interface Plugin {}
 ```
 
-We annotate it with `@CrumbProducer` so that the `CrumbProcessor` knows that this `@Experiments` 
-annotation is used to produce metadata. Now we can apply this annotation to our enum:
+We annotate it with `@CrumbProducer` so that the `CrumbProcessor` knows that this `@Plugin` 
+annotation is used to produce metadata. Now we can apply this annotation to our class:
 
 ```java
-@Experiments
-public enum LibraryAExperiments {
-  FOO,
-  BAR,
-  BAZ
+@Plugin
+public class LibraryPluginImpl implements Feature {
+  // Implemented stuff!
 }
 ```
 
-`@Experiments` is a custom annotation that our extension looks for in its `isProducerApplicable` 
+`@Plugin` is a custom annotation that our extension looks for in its `isProducerApplicable` 
 check. You can define any custom annotation you want. Extensions also have direct access to the 
 `TypeElement`, so you can really use any signaling of your choice.
 
@@ -120,18 +118,18 @@ in our extension?
 
 ```java
 @AutoService(ProducerExtension.class)
-public class ExperimentsCompiler implements ProducerExtension {
+public class PluginsCompiler implements ProducerExtension {
   
   @Override
   public String key() {
-    return "ExperimentsCompiler";
+    return "PluginsCompiler";
   }
   
   @Override
   public boolean isProducerApplicable(CrumbContext context,
       TypeElement type,
       Collection<AnnotationMirror> annotations) {
-    // Check for the @Experiments annotation here
+    // Check for the @Plugin annotation here
   }
   
   @Override
@@ -149,40 +147,44 @@ And that's it! Crumb will take the returned metadata and make it available to an
 also declared the key returned by `key()`. 
   * `context` is a holder class with access to the current `ProcessingEnvironment` and 
   `RoundEnvironment`
-  * `type` is the `@CrumbProducer`-annotated type (`LibraryAExperiments`)
+  * `type` is the `@CrumbProducer`-annotated type (`LibraryPluginImpl`)
   * `annotations` are the `@CrumbQualifier`-annotated annotations found on that `type`. For 
-  convenience, we're going to assume that all of these holders have a static `experiments()` method.
+  convenience, we're going to assume that all of these holders have a static `plugins()` method.
 
-What about the consumer side? We can make one top-level `ExperimentsHolder` class that just delegates to
-discovered downstream experiments. We can generate this code directly with JavaPoet, so we'll make the
+What about the consumer side? We can make one top-level `PluginManager` class that just delegates to
+discovered downstream features. We can generate this code directly with JavaPoet, so we'll make the
 holder class abstract, then generate the implementation as a subclass.
 Our desired API looks like this:
 
 ```java
-public abstract class ExperimentsHolder {
+public abstract class PluginManager {
 
-  public static Map<Class, List<String>> experiments() {
-    return Experiments_ExperimentsHolder.EXPERIMENTS;
+  public static Set<Feature> plugins() {
+    return Plugins_PluginManager.PLUGINS;
   }
 
 }
 ```
 
-Let's wire Crumb here. The symmetric counterpart to `@CrumbProducer` is `@CrumbConsumer`. We can make a similar annotation here for consuming:
+Let's wire Crumb here. The symmetric counterpart to `@CrumbProducer` is `@CrumbConsumer`. We can 
+make a similar annotation here for consuming:
 
 ```java
 @CrumbConsumer
-public @interface ExperimentsCollector {}
+public @interface PluginPoint {
+  /* The target plugin interface. */
+  Class<?> value();
+}
 ```
 
 Then add this annotation to our holder:
 
 ```java
-@ExperimentsCollector
-public abstract class ExperimentsHolder {
+@PluginPoint(Feature.class)
+public abstract class PluginManager {
 
-  public static Map<Class, List<String>> experiments() {
-    return Experiments_ExperimentsHolder.EXPERIMENTS;
+  public static Set<Feature> plugins() {
+    return Plugins_PluginManager.PLUGINS;
   }
 
 }
@@ -192,18 +194,18 @@ This is all the information we need for our extension!
 
 ```java
 @AutoService(ConsumerExtension.class)
-public class ExperimentsCompiler implements ConsumerExtension {
+public class PluginsCompiler implements ConsumerExtension {
   
   @Override
   public String key() {
-    return "ExperimentsCompiler";
+    return "PluginsCompiler";
   }
   
   @Override
   public boolean isConsumerApplicable(CrumbContext context,
       TypeElement type,
       Collection<AnnotationMirror> annotations) {
-    // Check for the ExperimentsCollector annotation here
+    // Check for the PluginPoint annotation here
   }
   
   @Override
@@ -213,20 +215,26 @@ public class ExperimentsCompiler implements ConsumerExtension {
       Set<Map<String, String>> metadata) {
     // Each map is an instance of the Map we returned in the producer above
     
-    // Map of enum TypeElement to its members
-    Map<TypeElement, Set<String>> experimentClasses = metadata.stream()
-            .map(data -> data.get(METADATA_KEY))
-            .map(enumClass -> context.getProcessingEnv()
-                .getElementUtils()
-                .getTypeElement(enumClass))
-            .collect(toMap(typeElement -> typeElement,
-                typeElement -> typeElement.getEnclosedElements()
-                    .stream()
-                    .filter(e -> e.getKind() == ElementKind.ENUM_CONSTANT)
-                    .map(Object::toString)
-                    .collect(toSet())));
+    PluginPoint targetPlugin = type.getAnnotation(PluginPoint.class).value(); // Not how it actually works, but here for readability
     
-    // Now that we have each enum class and their members, use 'em!
+    // List of plugin TypeElements
+    ImmutableSet<TypeElement> pluginClasses =
+        metadata
+            .stream()
+            // Pull our metadata out by the key used to put it in
+            .map(data -> data.get(METADATA_KEY))
+            // Resolve the plugin implementation class
+            .map(pluginClass ->
+                context.getProcessingEnv().getElementUtils().getTypeElement(pluginClass))
+            // Filter out anything that doesn't implement the targetPlugin interface
+            .filter(pluginType ->
+                context
+                    .getProcessingEnv()
+                    .getTypeUtils()
+                    .isAssignable(pluginType.asType(), targetPlugin))
+            .collect(toImmutableSet());
+    
+    // Now that we have each plugin class, use 'em!
   }
 }
 ```
@@ -235,27 +243,30 @@ This closes the loop from our producers to the consumer. Ultimately, we could le
 generate a backing implementation that looks like this:
 
 ```java
-public final class Experiments_ExperimentsHolder extends ExperimentsHolder {
-  public static final Map<Class, List<String>> EXPERIMENTS = new LinkedHashMap<>();
+public final class Plugins_PluginManager extends PluginManager {
+  public static final Set<Feature> PLUGINS = new LinkedHashSet<>();
 
   static {
-    EXPERIMENTS.put(LibraryExperiments.class, Arrays.asList("FOO", "BAR", "BAZ"));
+    PLUGINS.add(new LibraryPluginImpl());
   }
 }
 ```
 
-Note that both extension examples are called `ExperimentsCompiler`. Each interface is fully 
+Note that both extension examples are called `PluginsCompiler`. Each interface is fully 
 interoperable with the other, so you could make one extension that implements both interfaces for 
 code sharing.
 
 ```java
 @AutoService({ProducerExtension.class, ConsumerExtension.class})
-public class ExperimentsCompiler implements ProducerExtension, ConsumerExtension {
+public class PluginsCompiler implements ProducerExtension, ConsumerExtension {
   // ...
 }
 ```
 
-You can find a fleshed out version of this example under the `:sample` directory.
+You can find a fleshed out version of this example under the `:sample:plugins-compiler` directory.
+
+There's also an example `experiments-compiler` demonstrating how to trace enum-denoted experiments
+names to consumers.
 
 ### Packaging
 
