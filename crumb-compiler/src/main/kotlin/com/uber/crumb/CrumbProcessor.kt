@@ -217,7 +217,7 @@ class CrumbProcessor : AbstractProcessor {
           val json = crumbAdapter.toJson(crumbModel)
           GenerationalClassUtil.writeIntermediateFile(processingEnv,
               packageName,
-              adapterName + GenerationalClassUtil.ExtensionFilter.CRUMB.extension,
+              adapterName + GenerationalClassUtil.CRUMB_EXTENSION,
               json)
         }
   }
@@ -245,9 +245,7 @@ class CrumbProcessor : AbstractProcessor {
     }
 
     // Load the producerMetadata from the classpath
-    val producerMetadataBlobs = GenerationalClassUtil.loadObjects<String>(
-        GenerationalClassUtil.ExtensionFilter.CRUMB,
-        processingEnv)
+    val producerMetadataBlobs = GenerationalClassUtil.loadObjects<String>(processingEnv)
 
     if (producerMetadataBlobs.isEmpty()) {
       message(WARNING, consumers.map { it.first }.iterator().next(),

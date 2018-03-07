@@ -44,9 +44,10 @@ import javax.tools.StandardLocation
  */
 internal object GenerationalClassUtil {
 
+  const val CRUMB_EXTENSION = "-crumbinfo.bin"
   private const val CRUMB_PREFIX = "META-INF/com.uber.crumb/"
 
-  fun <T : Serializable> loadObjects(filter: ExtensionFilter, env: ProcessingEnvironment): Set<T> {
+  fun <T : Serializable> loadObjects(env: ProcessingEnvironment): Set<T> {
     val fileManager = (env as JavacProcessingEnvironment).context.get(JavaFileManager::class.java)
     val classLoader = fileManager.getClassLoader(StandardLocation.CLASS_PATH)
     Preconditions.checkArgument(classLoader is URLClassLoader,
@@ -68,10 +69,10 @@ internal object GenerationalClassUtil {
         }
         if (file.isDirectory) {
           // probably exported classes dir.
-          loadFromDirectory(file, filter, objects)
+          loadFromDirectory(file, objects)
         } else {
           // assume it is a zip file
-          loadFomZipFile(file, filter, objects)
+          loadFomZipFile(file, objects)
         }
       } catch (e: IOException) {
         CrumbLog.d("cannot open zip file from %s", url)
@@ -84,10 +85,9 @@ internal object GenerationalClassUtil {
     return objects
   }
 
-  private fun <T : Serializable> loadFromDirectory(directory: File, filter: ExtensionFilter,
-      objects: MutableSet<T>) {
+  private fun <T : Serializable> loadFromDirectory(directory: File, objects: MutableSet<T>) {
     directory.walkTopDown()
-        .filter { filter.accept(it.name) }
+        .filter { it.name.endsWith(CRUMB_EXTENSION) }
         .forEach { file ->
           try {
             Okio.buffer(Okio.source(file)).inputStream().use {
@@ -109,12 +109,11 @@ internal object GenerationalClassUtil {
   }
 
   @Throws(IOException::class)
-  private fun <T : Serializable> loadFomZipFile(file: File, filter: ExtensionFilter,
-      objects: MutableSet<T>) {
+  private fun <T : Serializable> loadFomZipFile(file: File, objects: MutableSet<T>) {
     val zipFile = ZipFile(file)
     zipFile.entries()
         .asSequence()
-        .filter { filter.accept(it.name) }
+        .filter { it.name.endsWith(CRUMB_EXTENSION) }
         .forEach { entry ->
           try {
             zipFile.getInputStream(entry).use {
@@ -159,14 +158,6 @@ internal object GenerationalClassUtil {
       }
     } catch (e: IOException) {
       CrumbLog.e(e, "Could not write to intermediate file: %s", fileName)
-    }
-  }
-
-  enum class ExtensionFilter constructor(val extension: String) {
-    CRUMB("-crumbinfo.bin");
-
-    fun accept(entryName: String): Boolean {
-      return entryName.endsWith(extension)
     }
   }
 }
