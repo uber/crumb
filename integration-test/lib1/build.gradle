@@ -29,7 +29,7 @@ dependencies {
   annotationProcessor deps.apt.autoValueMoshi
   annotationProcessor project(":crumb-compiler")
   annotationProcessor project(":integration-test:compiler")
-  compileOnly deps.misc.jsr305
+  compileOnly deps.misc.javaxExtras
 
   api deps.apt.autoValueAnnotations
   api deps.misc.gson
