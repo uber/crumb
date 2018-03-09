@@ -73,10 +73,12 @@ are called into when a type is trying to consume metadata to from the classpath.
   classpath returned for this extension's declared `key()`. The `type` and `annotations` parameters 
   are the same as from `isConsumerApplicable()`.
 
-## Example
+## Example 1
+#### Plugin Loader
 
-Say you have some plugin interface `Feature`, and you want to automatically gather and instantiate
-implementations of this interface in a top-level app from downstream dependencies. Basically like a
+To demonstrate the functionality of Crumb, a real-world example must be used, a hypothetical plugin 
+system to automatically gather and instantiate implementations of the `Feature` interface from 
+downstream dependencies. Conceptually this is similar to a 
 [`ServiceLoader`](https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html), but at 
 compile-time and with annotations.
 
