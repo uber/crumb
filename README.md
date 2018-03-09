@@ -179,7 +179,7 @@ public @interface PluginPoint {
 }
 ```
 
-Then add this annotation to our holder:
+Then add this annotation to the holder:
 
 ```java
 @PluginPoint(Feature.class)
@@ -192,7 +192,7 @@ public abstract class PluginManager {
 }
 ```
 
-This is all the information we need for our extension!
+This is all the information we need for the extension!
 
 ```java
 @AutoService(ConsumerExtension.class)
