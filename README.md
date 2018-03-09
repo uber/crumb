@@ -151,7 +151,7 @@ also declared the key returned by `key()`.
   `RoundEnvironment`
   * `type` is the `@CrumbProducer`-annotated type (`LibraryPluginImpl`)
   * `annotations` are the `@CrumbQualifier`-annotated annotations found on that `type`. For 
-  convenience, we're going to assume that all of these holders have a static `plugins()` method.
+  simplicity, all holders are required to have a static `plugins()` method.
 
 What about the consumer side? We can make one top-level `PluginManager` class that just delegates to
 discovered downstream features. We can generate this code directly with JavaPoet, so we'll make the
