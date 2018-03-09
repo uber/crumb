@@ -265,7 +265,8 @@ public class PluginsCompiler implements ProducerExtension, ConsumerExtension {
 }
 ```
 
-You can find a fleshed out version of this example under the `:sample:plugins-compiler` directory.
+You can find the complete implemented version of this example under the `:sample:plugins-compiler` 
+directory.
 
 There's also an example `experiments-compiler` demonstrating how to trace enum-denoted experiments
 names to consumers.
