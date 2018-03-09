@@ -82,8 +82,8 @@ downstream dependencies. Conceptually this is similar to a
 [`ServiceLoader`](https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html), but at 
 compile-time and with annotations.
 
-You could manually keep track of all these implementations, but that'd be pretty annoying. Instead,
-let's automate this with Crumb.
+To prevent a traditional approach of manually loading the implementations, Crumb allows us to 
+automatically discover and utilize the Feature classes amongst the dependencies.
 
 A given feature implementation looks like this in our library:
 
