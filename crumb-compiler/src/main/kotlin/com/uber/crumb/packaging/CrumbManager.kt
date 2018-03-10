@@ -40,18 +40,21 @@ import javax.tools.StandardLocation
  * A utility class that helps adding build specific objects to the jar file
  * and their extraction later on.
  *
- * Adapted from the DataBinding lib: [https://android.googlesource.com/platform/frameworks/data-binding/+/master]
+ * Adapted from the [Android DataBinding library](https://android.googlesource.com/platform/frameworks/data-binding/+/master).
  */
-internal object GenerationalClassUtil {
+class CrumbManager(private val env: ProcessingEnvironment,
+    private val crumbLog: CrumbLog) {
 
-  const val CRUMB_EXTENSION = "-crumbinfo.bin"
-  private const val CRUMB_PREFIX = "META-INF/com.uber.crumb/"
+  companion object {
+    private const val CRUMB_PREFIX = "META-INF/com.uber.crumb/"
+  }
 
-  fun <T : Serializable> loadObjects(env: ProcessingEnvironment): Set<T> {
+  @Throws(IOException::class)
+  fun <T : Serializable> load(extension: String): Set<T> {
     val fileManager = (env as JavacProcessingEnvironment).context.get(JavaFileManager::class.java)
     val classLoader = fileManager.getClassLoader(StandardLocation.CLASS_PATH)
     Preconditions.checkArgument(classLoader is URLClassLoader,
-        "Class loader must be an" + "instance of URLClassLoader. %s", classLoader)
+        "Classloader must be an instance of URLClassLoader. %s", classLoader)
 
     val urlClassLoader = classLoader as URLClassLoader
     val objects = mutableSetOf<T>()
@@ -60,75 +63,76 @@ internal object GenerationalClassUtil {
         ?.map { URL("file:$it") }
         ?: emptyList()
     for (url in (urlClassLoader.urLs + extraLocations)) {
-      CrumbLog.d("checking url %s for intermediate data", url)
+      crumbLog.d("Checking url %s for crumb data", url)
       try {
         val file = File(url.toURI())
         if (!file.exists()) {
-          CrumbLog.d("cannot load file for %s", url)
+          crumbLog.d("Cannot load file for %s", url)
           continue
         }
         if (file.isDirectory) {
           // probably exported classes dir.
-          loadFromDirectory(file, objects)
+          loadFromDirectory(extension, file, objects)
         } else {
           // assume it is a zip file
-          loadFomZipFile(file, objects)
+          loadFomZipFile(extension, file, objects)
         }
       } catch (e: IOException) {
-        CrumbLog.d("cannot open zip file from %s", url)
+        crumbLog.d("Cannot open zip file from %s", url)
       } catch (e: URISyntaxException) {
-        CrumbLog.d("cannot open zip file from %s", url)
+        crumbLog.d("Cannot open zip file from %s", url)
       }
-
     }
-
     return objects
   }
 
-  private fun <T : Serializable> loadFromDirectory(directory: File, objects: MutableSet<T>) {
-    directory.walkTopDown()
-        .filter { it.name.endsWith(CRUMB_EXTENSION) }
+  @Throws(IOException::class)
+  private fun <T : Serializable> loadFromDirectory(extension: String, from: File,
+      into: MutableSet<T>) {
+    from.walkTopDown()
+        .filter { it.name.endsWith(extension) }
         .forEach { file ->
           try {
             Okio.buffer(Okio.source(file)).inputStream().use {
               try {
                 val item = fromInputStream(it)
                 item?.let {
-                  objects += (item as T)
-                  CrumbLog.d("loaded item %s from file", item)
+                  into += (item as T)
+                  crumbLog.d("Loaded item %s from file", item)
                 }
               } catch (e: IOException) {
-                CrumbLog.e(e, "Could not merge in intermediates from %s", file.absolutePath)
+                crumbLog.e(e, "Could not merge in crumbs from %s", file.absolutePath)
               }
             }
           } catch (e: ClassNotFoundException) {
-            CrumbLog.e(e, "Could not read intermediate file. %s",
+            crumbLog.e(e, "Could not read crumb file. %s",
                 file.absolutePath)
           }
         }
   }
 
   @Throws(IOException::class)
-  private fun <T : Serializable> loadFomZipFile(file: File, objects: MutableSet<T>) {
-    val zipFile = ZipFile(file)
+  private fun <T : Serializable> loadFomZipFile(extension: String, from: File,
+      into: MutableSet<T>) {
+    val zipFile = ZipFile(from)
     zipFile.entries()
         .asSequence()
-        .filter { it.name.endsWith(CRUMB_EXTENSION) }
+        .filter { it.name.endsWith(extension) }
         .forEach { entry ->
           try {
             zipFile.getInputStream(entry).use {
               try {
                 val item = fromInputStream(it)
-                CrumbLog.d("loaded item $item from zip file")
+                crumbLog.d("loaded item $item from zip file")
                 item?.let {
-                  objects += (item as T)
+                  into += (item as T)
                 }
               } catch (e: IOException) {
-                CrumbLog.e(e, "Could not merge in intermediate file from %s", file.absolutePath)
+                crumbLog.e(e, "Could not merge in crumb file from %s", from.absolutePath)
               }
             }
           } catch (e: ClassNotFoundException) {
-            CrumbLog.e(e, "Could not read intermediate file. %s", file.absolutePath)
+            crumbLog.e(e, "Could not read crumb file. %s", from.absolutePath)
           }
         }
   }
@@ -138,26 +142,25 @@ internal object GenerationalClassUtil {
     ObjectInputStream(inputStream).use { return it.readObject() as Serializable }
   }
 
-  fun writeIntermediateFile(
-      processingEnv: ProcessingEnvironment,
+  @Throws(IOException::class)
+  fun store(
       packageName: String,
       fileName: String,
       objectToWrite: Serializable) {
     try {
-      val intermediate = processingEnv.filer.createResource(
+      env.filer.createResource(
           StandardLocation.CLASS_OUTPUT,
           "",
           "$CRUMB_PREFIX$packageName/$fileName")
           .openOutputStream()
-
-      intermediate.use { ios ->
-        ObjectOutputStream(ios).use { oos ->
-          oos.writeObject(objectToWrite)
-          CrumbLog.d("wrote intermediate file %s %s", packageName, fileName)
-        }
-      }
+          .use { ios ->
+            ObjectOutputStream(ios).use { oos ->
+              oos.writeObject(objectToWrite)
+              crumbLog.d("Wrote crumb file %s %s", packageName, fileName)
+            }
+          }
     } catch (e: IOException) {
-      CrumbLog.e(e, "Could not write to intermediate file: %s", fileName)
+      crumbLog.e(e, "Could not write to crumb file: %s", fileName)
     }
   }
 }
