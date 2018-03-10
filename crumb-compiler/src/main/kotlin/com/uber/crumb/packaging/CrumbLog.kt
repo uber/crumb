@@ -16,100 +16,111 @@
 
 package com.uber.crumb.packaging
 
+import com.uber.crumb.packaging.CrumbLog.Client
+import com.uber.crumb.packaging.CrumbLog.Client.DefaultClient
 import java.io.PrintWriter
 import java.io.StringWriter
-
+import javax.annotation.processing.Messager
 import javax.lang.model.element.Element
 import javax.tools.Diagnostic.Kind
 
 /**
- * Tiny logger implementation for debugging, borrowed from databinding.
+ * Tiny logger implementation for debugging [CrumbManager], adapted from the
+ * [Android DataBinding library](https://android.googlesource.com/platform/frameworks/data-binding/+/master).
+ *
+ * @param prefix The prefix to use in logs from this logger.
+ * @param debugEnabled Whether debug logs are enabled. Default is false.
+ * @param client Optional custom [Client] for handling logs. Default is [DefaultClient], which just prints to stdout and stderr.
  */
-internal object CrumbLog {
+class CrumbLog(private val prefix: String,
+    private val debugEnabled: Boolean = false,
+    private val client: Client = DefaultClient) {
 
-  var isDebugEnabled = false
-  private val SYSTEM_CLIENT: Client = object : Client {
-    override fun printMessage(kind: Kind, message: String, element: Element?) {
-      if (kind == Kind.ERROR) {
-        System.err.println(message)
-      } else {
-        println(message)
-      }
-    }
-  }
-
-  private var sClient = SYSTEM_CLIENT
-
-  fun setClient(systemClient: Client) {
-    sClient = systemClient
-  }
-
-  fun setDebugLog(enabled: Boolean) {
-    isDebugEnabled = enabled
-  }
-
-  fun d(msg: String, vararg args: Any) {
-    if (isDebugEnabled) {
+  internal fun d(msg: String, vararg args: Any) {
+    if (debugEnabled) {
       printMessage(null, Kind.NOTE, String.format(msg, *args))
     }
   }
 
-  fun d(element: Element, msg: String, vararg args: Any) {
-    if (isDebugEnabled) {
+  internal fun d(element: Element, msg: String, vararg args: Any) {
+    if (debugEnabled) {
       printMessage(element, Kind.NOTE, String.format(msg, *args))
     }
   }
 
-  fun d(t: Throwable, msg: String, vararg args: Any) {
-    if (isDebugEnabled) {
+  internal fun d(t: Throwable, msg: String, vararg args: Any) {
+    if (debugEnabled) {
       printMessage(null, Kind.NOTE,
           String.format(msg, *args) + " " + getStackTrace(t))
     }
   }
 
-  fun w(msg: String, vararg args: Any) {
+  internal fun w(msg: String, vararg args: Any) {
     printMessage(null, Kind.WARNING, String.format(msg, *args))
   }
 
-  fun w(element: Element, msg: String, vararg args: Any) {
+  internal fun w(element: Element, msg: String, vararg args: Any) {
     printMessage(element, Kind.WARNING, String.format(msg, *args))
   }
 
-  fun w(t: Throwable, msg: String, vararg args: Any) {
+  internal fun w(t: Throwable, msg: String, vararg args: Any) {
     printMessage(null, Kind.WARNING,
         String.format(msg, *args) + " " + getStackTrace(t))
   }
 
-  fun e(msg: String, vararg args: Any) {
+  internal fun e(msg: String, vararg args: Any) {
     val fullMsg = String.format(msg, *args)
     printMessage(null, Kind.ERROR, fullMsg)
   }
 
-  fun e(element: Element, msg: String, vararg args: Any) {
+  internal fun e(element: Element, msg: String, vararg args: Any) {
     val fullMsg = String.format(msg, *args)
     printMessage(element, Kind.ERROR, fullMsg)
   }
 
-  fun e(t: Throwable, msg: String, vararg args: Any) {
+  internal fun e(t: Throwable, msg: String, vararg args: Any) {
     val fullMsg = String.format(msg, *args)
     printMessage(null, Kind.ERROR,
         fullMsg + " " + getStackTrace(t))
   }
 
   private fun printMessage(element: Element?, kind: Kind, message: String) {
-    sClient.printMessage(kind, message, element)
+    client.printMessage(kind, prefix, message, element)
     if (kind == Kind.ERROR) {
-      throw RuntimeException("failure, see logs for details.\n" + message)
+      throw RuntimeException("Crumb failure, see logs for details.\n$message")
     }
   }
 
   private fun getStackTrace(t: Throwable): String {
-    val sw = StringWriter()
-    PrintWriter(sw).use { pw -> t.printStackTrace(pw) }
-    return sw.toString()
+    return StringWriter()
+        .apply { PrintWriter(this).use(t::printStackTrace) }
+        .toString()
   }
 
   interface Client {
-    fun printMessage(kind: Kind, message: String, element: Element?)
+    fun printMessage(kind: Kind, prefix: String, message: String, element: Element?)
+
+    /**
+     * Custom [Client] that just writes to a [Messager].
+     */
+    class MessagerClient(private val messager: Messager) : Client {
+      override fun printMessage(kind: Kind, prefix: String, message: String, element: Element?) {
+        messager.printMessage(kind, "CrumbLog: $prefix: $message", element)
+      }
+    }
+
+    /**
+     * Default [Client] that just writes to stdout and stderr.
+     */
+    object DefaultClient : Client {
+      override fun printMessage(kind: Kind, prefix: String, message: String, element: Element?) {
+        val adjustedMessage = "CrumbLog: $prefix: $message"
+        if (kind == Kind.ERROR) {
+          System.err.println(adjustedMessage)
+        } else {
+          println(adjustedMessage)
+        }
+      }
+    }
   }
 }
