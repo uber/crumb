@@ -36,8 +36,8 @@ import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.packaging.CrumbLog
-import com.uber.crumb.packaging.CrumbLog.Client
-import com.uber.crumb.packaging.GenerationalClassUtil
+import com.uber.crumb.packaging.CrumbLog.Client.MessagerClient
+import com.uber.crumb.packaging.CrumbManager
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
@@ -51,10 +51,8 @@ import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 import javax.tools.Diagnostic
-import javax.tools.Diagnostic.Kind
 import javax.tools.Diagnostic.Kind.ERROR
 import javax.tools.Diagnostic.Kind.WARNING
-import kotlin.properties.Delegates
 
 internal typealias MoshiTypes = com.squareup.moshi.Types
 
@@ -66,6 +64,9 @@ internal typealias MoshiTypes = com.squareup.moshi.Types
 class CrumbProcessor : AbstractProcessor {
 
   companion object {
+
+    const val CRUMB_EXTENSION = "-crumbinfo.bin"
+
     /**
      * Option to disable verbose logging
      */
@@ -90,11 +91,15 @@ class CrumbProcessor : AbstractProcessor {
   private var loaderForExtensions: ClassLoader? = null
   private lateinit var typeUtils: Types
   private lateinit var elementUtils: Elements
+  private lateinit var crumbLog: CrumbLog
+  private lateinit var crumbManager: CrumbManager
 
   private lateinit var supportedTypes: Set<String>
 
+  @Suppress("unused")
   constructor() : this(CrumbProcessor::class.java.classLoader)
 
+  @Suppress("unused")
   @VisibleForTesting
   internal constructor(loaderForExtensions: ClassLoader) : super() {
     this.producerExtensions = setOf()
@@ -122,14 +127,12 @@ class CrumbProcessor : AbstractProcessor {
     super.init(processingEnv)
     typeUtils = processingEnv.typeUtils
     elementUtils = processingEnv.elementUtils
-    if (processingEnv.options[OPTION_VERBOSE]?.toBoolean() == true) {
-      CrumbLog.setDebugLog(true)
-      CrumbLog.setClient(object : Client {
-        override fun printMessage(kind: Kind, message: String, element: Element?) {
-          processingEnv.messager.printMessage(kind, message, element)
-        }
-      })
+    crumbLog = if (processingEnv.options[OPTION_VERBOSE]?.toBoolean() == true) {
+      CrumbLog("CrumbProcessor", true, MessagerClient(processingEnv.messager))
+    } else {
+      CrumbLog("CrumbProcessor")
     }
+    crumbManager = CrumbManager(processingEnv, crumbLog)
     try {
       // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
       // to discover any exceptions.
@@ -215,9 +218,8 @@ class CrumbProcessor : AbstractProcessor {
           // Write metadata to resources for consumers to pick up
           val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras)
           val json = crumbAdapter.toJson(crumbModel)
-          GenerationalClassUtil.writeIntermediateFile(processingEnv,
-              packageName,
-              adapterName + GenerationalClassUtil.CRUMB_EXTENSION,
+          crumbManager.store(packageName,
+              adapterName + CRUMB_EXTENSION,
               json)
         }
   }
@@ -245,7 +247,7 @@ class CrumbProcessor : AbstractProcessor {
     }
 
     // Load the producerMetadata from the classpath
-    val producerMetadataBlobs = GenerationalClassUtil.loadObjects<String>(processingEnv)
+    val producerMetadataBlobs = crumbManager.load<String>(CRUMB_EXTENSION)
 
     if (producerMetadataBlobs.isEmpty()) {
       message(WARNING, consumers.map { it.first }.iterator().next(),
@@ -290,6 +292,7 @@ class CrumbProcessor : AbstractProcessor {
   }
 }
 
+// TODO(zsweers) Switch to MoshiSerializable when public
 internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
 
   companion object {
@@ -298,7 +301,7 @@ internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
 
     val FACTORY = Factory { type, _, moshi ->
       when (type) {
-        CrumbModel::class.java -> CrumbAdapter(moshi)
+        CrumbModel::class.java -> CrumbAdapter(moshi).failOnUnknown()
         else -> null
       }
     }
@@ -313,8 +316,8 @@ internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
               String::class.java)))
 
   override fun fromJson(reader: JsonReader): CrumbModel {
-    var name by Delegates.notNull<ExtensionKey>()
-    var extras by Delegates.notNull<Map<ExtensionKey, ConsumerMetadata>>()
+    lateinit var name: ExtensionKey
+    lateinit var extras: Map<ExtensionKey, ConsumerMetadata>
     reader.beginObject()
     while (reader.hasNext()) {
       when (reader.selectName(OPTIONS)) {
