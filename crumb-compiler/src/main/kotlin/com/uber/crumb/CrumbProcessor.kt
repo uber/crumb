@@ -22,7 +22,6 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import com.uber.crumb.CrumbProcessor.Companion.OPTION_EXTRA_LOCATIONS
 import com.uber.crumb.CrumbProcessor.Companion.OPTION_VERBOSE
 import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.CrumbConsumer
@@ -35,9 +34,10 @@ import com.uber.crumb.compiler.api.CrumbExtension
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
-import com.uber.crumb.packaging.CrumbLog
-import com.uber.crumb.packaging.CrumbLog.Client.MessagerClient
-import com.uber.crumb.packaging.CrumbManager
+import com.uber.crumb.core.CrumbLog
+import com.uber.crumb.core.CrumbLog.Client.MessagerClient
+import com.uber.crumb.core.CrumbManager
+import com.uber.crumb.core.CrumbManager.Companion.OPTION_EXTRA_LOCATIONS
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
@@ -71,11 +71,6 @@ class CrumbProcessor : AbstractProcessor {
      * Option to disable verbose logging
      */
     const val OPTION_VERBOSE = "crumb.options.verbose"
-
-    /**
-     * A colon-delimited list of extra locations to search in consumption.
-     */
-    const val OPTION_EXTRA_LOCATIONS = "crumb.options.extraLocations"
   }
 
   private val crumbAdapter = Moshi.Builder()

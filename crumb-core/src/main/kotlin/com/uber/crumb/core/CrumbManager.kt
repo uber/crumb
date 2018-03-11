@@ -16,12 +16,9 @@
 
 @file:Suppress("UNCHECKED_CAST")
 
-package com.uber.crumb.packaging
+package com.uber.crumb.core
 
-import com.google.common.base.Preconditions
 import com.sun.tools.javac.processing.JavacProcessingEnvironment
-import com.uber.crumb.CrumbProcessor.Companion.OPTION_EXTRA_LOCATIONS
-import okio.Okio
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -46,6 +43,10 @@ class CrumbManager(private val env: ProcessingEnvironment,
     private val crumbLog: CrumbLog) {
 
   companion object {
+    /**
+     * A colon-delimited list of extra locations to search in consumption.
+     */
+    const val OPTION_EXTRA_LOCATIONS = "crumb.options.extraLocations"
     private const val CRUMB_PREFIX = "META-INF/com.uber.crumb/"
   }
 
@@ -53,8 +54,9 @@ class CrumbManager(private val env: ProcessingEnvironment,
   fun <T : Serializable> load(extension: String): Set<T> {
     val fileManager = (env as JavacProcessingEnvironment).context.get(JavaFileManager::class.java)
     val classLoader = fileManager.getClassLoader(StandardLocation.CLASS_PATH)
-    Preconditions.checkArgument(classLoader is URLClassLoader,
-        "Classloader must be an instance of URLClassLoader. %s", classLoader)
+    check(classLoader is URLClassLoader) {
+      "Classloader must be an instance of URLClassLoader. $classLoader"
+    }
 
     val urlClassLoader = classLoader as URLClassLoader
     val objects = mutableSetOf<T>()
@@ -93,7 +95,7 @@ class CrumbManager(private val env: ProcessingEnvironment,
         .filter { it.name.endsWith(extension) }
         .forEach { file ->
           try {
-            Okio.buffer(Okio.source(file)).inputStream().use {
+            file.inputStream().use {
               try {
                 val item = fromInputStream(it)
                 item?.let {
@@ -112,7 +114,8 @@ class CrumbManager(private val env: ProcessingEnvironment,
   }
 
   @Throws(IOException::class)
-  private fun <T : Serializable> loadFomZipFile(extension: String, from: File,
+  private fun <T : Serializable> loadFomZipFile(extension: String,
+      from: File,
       into: MutableSet<T>) {
     val zipFile = ZipFile(from)
     zipFile.entries()

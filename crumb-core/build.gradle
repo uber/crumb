@@ -14,11 +14,8 @@
 * limitations under the License.
 */
 
-import org.gradle.internal.jvm.Jvm
-
 plugins {
   id 'org.jetbrains.kotlin.jvm'
-  id 'org.jetbrains.kotlin.kapt'
   id 'org.jetbrains.dokka'
 }
 
@@ -30,19 +27,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 dependencies {
-  kapt deps.apt.autoService
-
-  compile deps.apt.autoService
-  compile deps.apt.autoCommon
-  compile deps.misc.guava
-  compile deps.misc.javapoet
-  compile deps.misc.moshi
   compile deps.kotlin.stdLibJre8
-  compile project(":crumb-core")
-  compile project(":crumb-annotations")
-  compile project(':crumb-compiler-api')
-
-  compileOnly files(Jvm.current().getToolsJar())
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

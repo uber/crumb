@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.uber.crumb.packaging
+package com.uber.crumb.core
 
-import com.uber.crumb.packaging.CrumbLog.Client
-import com.uber.crumb.packaging.CrumbLog.Client.DefaultClient
+import com.uber.crumb.core.CrumbLog.Client
+import com.uber.crumb.core.CrumbLog.Client.DefaultClient
 import java.io.PrintWriter
 import java.io.StringWriter
 import javax.annotation.processing.Messager
