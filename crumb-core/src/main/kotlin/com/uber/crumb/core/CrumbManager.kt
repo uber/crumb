@@ -65,7 +65,7 @@ class CrumbManager(private val env: ProcessingEnvironment,
         ?.map { URL("file:$it") }
         ?: emptyList()
     for (url in (urlClassLoader.urLs + extraLocations)) {
-      crumbLog.d("Checking url %s for crumb data", url)
+      crumbLog.d("Checking url %s for Crumb data", url)
       try {
         val file = File(url.toURI())
         if (!file.exists()) {
@@ -107,7 +107,7 @@ class CrumbManager(private val env: ProcessingEnvironment,
               }
             }
           } catch (e: ClassNotFoundException) {
-            crumbLog.e(e, "Could not read crumb file. %s",
+            crumbLog.e(e, "Could not read Crumb file. %s",
                 file.absolutePath)
           }
         }
@@ -131,11 +131,11 @@ class CrumbManager(private val env: ProcessingEnvironment,
                   into += (item as T)
                 }
               } catch (e: IOException) {
-                crumbLog.e(e, "Could not merge in crumb file from %s", from.absolutePath)
+                crumbLog.e(e, "Could not merge in Crumb file from %s", from.absolutePath)
               }
             }
           } catch (e: ClassNotFoundException) {
-            crumbLog.e(e, "Could not read crumb file. %s", from.absolutePath)
+            crumbLog.e(e, "Could not read Crumb file. %s", from.absolutePath)
           }
         }
   }
@@ -159,11 +159,11 @@ class CrumbManager(private val env: ProcessingEnvironment,
           .use { ios ->
             ObjectOutputStream(ios).use { oos ->
               oos.writeObject(objectToWrite)
-              crumbLog.d("Wrote crumb file %s %s", packageName, fileName)
+              crumbLog.d("Wrote Crumb file %s %s", packageName, fileName)
             }
           }
     } catch (e: IOException) {
-      crumbLog.e(e, "Could not write to crumb file: %s", fileName)
+      crumbLog.e(e, "Could not write to Crumb file: %s", fileName)
     }
   }
 }
