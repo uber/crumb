@@ -59,9 +59,10 @@ pluginManagement {
 }
 
 rootProject.name = 'crumb-root'
+include ':crumb-annotations'
 include ':crumb-compiler'
 include ':crumb-compiler-api'
-include ':crumb-annotations'
+include ':crumb-core'
 include ':integration-test:compiler'
 include ':integration-test:annotations'
 include ':integration-test:integration'
