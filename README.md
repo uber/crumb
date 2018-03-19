@@ -1,11 +1,11 @@
 Crumb
 =====
 
-Most of the time, code's interaction with its external dependencies is limited to public APIs 
-defined in them, but sometimes it's convenient to be able to sprinkle in metadata or bread**crumb**s 
-in the source dependency that can be read by consumers.
+Code's interaction with its external dependencies is usually limited to manual interaction with 
+their public APIs, but sometimes it's convenient to be able to sprinkle in metadata or 
+bread**crumb**s in the source dependency that can be read by consumers.
 
-Crumb is a annotation processor that exposes a simple and flexible API to breadcrumb that 
+Crumb is an annotation processor that exposes a simple and flexible API to breadcrumb that 
 information across compilation boundaries. The API is a consumer/producer system where extensions
 can opt in to consuming or producing metadata. Crumb will manage this metadata for them 
 (serializing, storing, retrieving, orchestrating the data to appropriate consumers, etc), and 
@@ -13,7 +13,7 @@ extensions can focus on doing whatever it is they need to do!
 
 ## API
 
-#### Annotations
+### Annotations
 
 There are four annotations in the `:annotations` artifact:
 
@@ -30,7 +30,7 @@ annotated with the custom annotation are relevant for Crumb and used by extensio
 available to the Crumb processor and any of its extensions (since processors have to declare which
 annotations they support).
 
-#### Extensions API
+### Extensions API
 
 There are two extension interfaces that follow a Producer/Consumer symmetry. The API (and compiler
 implementation) is in Kotlin, but seamlessly interoperable with Java. The API is SPI-based, so implementations can be wired up with something like [AutoService][autoservice].
@@ -73,8 +73,7 @@ are called into when a type is trying to consume metadata to from the classpath.
   classpath returned for this extension's declared `key()`. The `type` and `annotations` parameters 
   are the same as from `isConsumerApplicable()`.
 
-## Example 1
-#### Plugin Loader
+## Example: Plugin Loader
 
 To demonstrate the functionality of Crumb, a real-world example must be used, a hypothetical plugin 
 system to automatically gather and instantiate implementations of the `Feature` interface from 
@@ -82,10 +81,12 @@ downstream dependencies. Conceptually this is similar to a
 [`ServiceLoader`](https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html), but at 
 compile-time and with annotations.
 
-To prevent a traditional approach of manually loading the implementations, Crumb allows us to 
-automatically discover and utilize the Feature classes amongst the dependencies.
+To prevent a traditional approach of manually loading the implementations, Crumb makes it possible to 
+automatically discover and utilize the `Feature` classes on the classpath.
 
-A given feature implementation looks like this in our library:
+#### Producing metadata
+
+A given `Feature` implementation looks like this in a library:
 
 ```java
 public class LibraryPluginImpl implements Feature {
@@ -93,16 +94,19 @@ public class LibraryPluginImpl implements Feature {
 }
 ```
 
-We could write a Crumb extension that reads this and writes its location to the classpath. Let's
-define an `@Plugin` annotation to mark this.
+This is a start, but this also needs to be registered somehow to a plugin manager upstream. A Crumb
+extension can convey this information to consumers of the library by writing its
+location to Crumb and retrieving it on the other side. For this example, a custom `@Plugin` 
+annotation is used to mark these feature implementations.
 
 ```java
 @CrumbProducer
 public @interface Plugin {}
 ```
 
-We annotate it with `@CrumbProducer` so that the `CrumbProcessor` knows that this `@Plugin` 
-annotation is used to produce metadata. Now we can apply this annotation to our class:
+Note that it's annotated with `@CrumbProducer` so that the `CrumbProcessor` knows that this 
+`@Plugin` annotation is used to produce metadata. Now this annotation can be applied to the 
+implementation class:
 
 ```java
 @Plugin
@@ -111,12 +115,12 @@ public class LibraryPluginImpl implements Feature {
 }
 ```
 
-`@Plugin` is a custom annotation that our extension looks for in its `isProducerApplicable` 
-check. You can define any custom annotation you want. Extensions also have direct access to the 
+`@Plugin` is a custom annotation that the extension looks for in its `isProducerApplicable` 
+check. You can define any custom annotation. Extensions also have direct access to the 
 `TypeElement`, so you can really use any signaling of your choice.
 
-So now we've indicated on the type that we want information extracted and stored. How does this look
-in our extension?
+Now that the implementation is denoted via the `@Plugin` annotation, the next step is implementing 
+the `ProducerExtension` for this:
 
 ```java
 @AutoService(ProducerExtension.class)
@@ -145,7 +149,7 @@ public class PluginsCompiler implements ProducerExtension {
 }
 ```
 
-And that's it! Crumb will take the returned metadata and make it available to any extension that 
+That's it! Crumb will take the returned metadata and make it available to any extension that 
 also declared the key returned by `key()`. 
   * `context` is a holder class with access to the current `ProcessingEnvironment` and 
   `RoundEnvironment`
@@ -153,10 +157,14 @@ also declared the key returned by `key()`.
   * `annotations` are the `@CrumbQualifier`-annotated annotations found on that `type`. For 
   simplicity, all holders are required to have a static `plugins()` method.
 
-What about the consumer side? We can make one top-level `PluginManager` class that just delegates to
-discovered downstream features. We can generate this code directly with JavaPoet, so we'll make the
-holder class abstract, then generate the implementation as a subclass.
-Our desired API looks like this:
+#### Consuming metadata
+
+For the consumer side, our example will have a top-level `PluginManager` class that just delegates to
+discovered downstream features. With a `ConsumerExtension`, downstream services can be consumed
+and codegen'd directly with JavaPoet. For simplicity, this manager will follow an auto-value style 
+pattern of having an abstract class with the generated implementation as a subclass.
+
+The desired API looks like this:
 
 ```java
 public abstract class PluginManager {
@@ -168,8 +176,9 @@ public abstract class PluginManager {
 }
 ```
 
-Let's wire Crumb here. The symmetric counterpart to `@CrumbProducer` is `@CrumbConsumer`. We can 
-make a similar annotation here for consuming:
+Crumb can be wired in here. The symmetric counterpart to `@CrumbProducer` is `@CrumbConsumer`, so 
+this example uses a similar `@PluginPoint` annotation here for consuming. This time it's annotated
+with `@CrumbConsumer` to indicate that it's for consumption.
 
 ```java
 @CrumbConsumer
@@ -179,7 +188,8 @@ public @interface PluginPoint {
 }
 ```
 
-Then add this annotation to the holder:
+This is then added to the manager class, specifying the `Feature` class as its target interface so
+that it only registers implementations of that interface.
 
 ```java
 @PluginPoint(Feature.class)
@@ -192,7 +202,8 @@ public abstract class PluginManager {
 }
 ```
 
-This is all the information we need for the extension!
+This is all the information needed for the `ConsumerExtension`. Implementation of it looks like 
+this:
 
 ```java
 @AutoService(ConsumerExtension.class)
@@ -236,13 +247,14 @@ public class PluginsCompiler implements ConsumerExtension {
                     .isAssignable(pluginType.asType(), targetPlugin))
             .collect(toImmutableSet());
     
-    // Now that we have each plugin class, use 'em!
+    // pluginClasses contains a set of all downstream plugin type implementations. This 
   }
 }
 ```
 
-This closes the loop from our producers to the consumer. Ultimately, we could leverage `JavaPoet` to 
-generate a backing implementation that looks like this:
+This closes the loop from the producers to the consumer. `pluginClasses` contains a set of all 
+downstream plugin type implementations and could leverage `JavaPoet` to generate a backing 
+implementation that looks like this:
 
 ```java
 public final class Plugins_PluginManager extends PluginManager {
@@ -255,7 +267,7 @@ public final class Plugins_PluginManager extends PluginManager {
 ```
 
 Note that both extension examples are called `PluginsCompiler`. Each interface is fully 
-interoperable with the other, so you could make one extension that implements both interfaces for 
+interoperable with the other, so it's possible to make one extension that implements both interfaces for 
 code sharing.
 
 ```java
@@ -265,13 +277,13 @@ public class PluginsCompiler implements ProducerExtension, ConsumerExtension {
 }
 ```
 
-You can find the complete implemented version of this example under the `:sample:plugins-compiler` 
+The complete implemented version of this example can be found under the `:sample:plugins-compiler` 
 directory.
 
 There's also an example `experiments-compiler` demonstrating how to trace enum-denoted experiments
 names to consumers.
 
-### Packaging
+## Packaging
 
 If compiling into an Android app, you probably want to exclude the crumbs from the APK. You can do
 so via the `packagingOptions` closure:
@@ -282,7 +294,7 @@ packagingOptions {
 }
 ```
 
-### Download
+## Download
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.uber.crumb/crumb-compiler.svg)](https://mvnrepository.com/artifact/com.uber.crumb/crumb-compiler)
 ```gradle
