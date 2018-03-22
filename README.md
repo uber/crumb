@@ -94,7 +94,7 @@ public class EnglishTranslations implements Translations {
 }
 ```
 
-This is a start, but this also needs to be registered somehow to a plugin manager upstream. A Crumb
+The plugin implementation then needs to be registered into the plugin manager upstream. A Crumb
 extension can convey this information to consumers of the library by writing its
 location to Crumb and retrieving it on the other side. For this example, a custom `@Plugin` 
 annotation is used to mark these translations implementations.
