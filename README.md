@@ -285,8 +285,8 @@ names to consumers.
 
 ## Packaging
 
-If compiling into an Android app, you probably want to exclude the crumbs from the APK. You can do
-so via the `packagingOptions` closure:
+To exclude crumbs from being compiled into an Android application APK, add the following exclusion 
+via the `packagingOptions` closure:
 
 ```gradle
 packagingOptions {
