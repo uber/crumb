@@ -155,7 +155,7 @@ also declared the key returned by `key()`.
   `RoundEnvironment`
   * `type` is the `@CrumbProducer`-annotated type (`EnglishTranslations`)
   * `annotations` are the `@CrumbQualifier`-annotated annotations found on that `type`. For 
-  simplicity, all holders are required to have a static `plugins()` method.
+  simplicity, all holders are required to have a static `obtain()` method.
 
 #### Consuming metadata
 
@@ -169,7 +169,7 @@ The desired API looks like this:
 ```java
 public abstract class TranslationsPluginManager {
 
-  public static Set<Translations> plugins() {
+  public static Set<Translations> obtain() {
     return Plugins_TranslationsPluginManager.PLUGINS;
   }
 
@@ -195,7 +195,7 @@ that it only registers implementations of that interface.
 @PluginPoint(Translations.class)
 public abstract class TranslationsPluginManager {
 
-  public static Set<Translations> plugins() {
+  public static Set<Translations> obtain() {
     return Plugins_TranslationsPluginManager.PLUGINS;
   }
 
