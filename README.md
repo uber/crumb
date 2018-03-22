@@ -76,20 +76,20 @@ are called into when a type is trying to consume metadata to from the classpath.
 ## Example: Plugin Loader
 
 To demonstrate the functionality of Crumb, a real-world example must be used, a hypothetical plugin 
-system to automatically gather and instantiate implementations of the `Feature` interface from 
+system to automatically gather and instantiate implementations of the `Translations` interface from 
 downstream dependencies. Conceptually this is similar to a 
 [`ServiceLoader`](https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html), but at 
 compile-time and with annotations.
 
 To prevent a traditional approach of manually loading the implementations, Crumb makes it possible to 
-automatically discover and utilize the `Feature` classes on the classpath.
+automatically discover and utilize the `Translations` classes on the classpath.
 
 #### Producing metadata
 
-A given `Feature` implementation looks like this in a library:
+A given `Translations` implementation looks like this in a library:
 
 ```java
-public class LibraryPluginImpl implements Feature {
+public class EnglishTranslations implements Translations {
   // Implemented stuff!
 }
 ```
@@ -97,7 +97,7 @@ public class LibraryPluginImpl implements Feature {
 This is a start, but this also needs to be registered somehow to a plugin manager upstream. A Crumb
 extension can convey this information to consumers of the library by writing its
 location to Crumb and retrieving it on the other side. For this example, a custom `@Plugin` 
-annotation is used to mark these feature implementations.
+annotation is used to mark these translations implementations.
 
 ```java
 @CrumbProducer
@@ -110,7 +110,7 @@ implementation class:
 
 ```java
 @Plugin
-public class LibraryPluginImpl implements Feature {
+public class EnglishTranslations implements Translations {
   // Implemented stuff!
 }
 ```
@@ -153,24 +153,24 @@ That's it! Crumb will take the returned metadata and make it available to any ex
 also declared the key returned by `key()`. 
   * `context` is a holder class with access to the current `ProcessingEnvironment` and 
   `RoundEnvironment`
-  * `type` is the `@CrumbProducer`-annotated type (`LibraryPluginImpl`)
+  * `type` is the `@CrumbProducer`-annotated type (`EnglishTranslations`)
   * `annotations` are the `@CrumbQualifier`-annotated annotations found on that `type`. For 
   simplicity, all holders are required to have a static `plugins()` method.
 
 #### Consuming metadata
 
-For the consumer side, our example will have a top-level `PluginManager` class that just delegates to
-discovered downstream features. With a `ConsumerExtension`, downstream services can be consumed
+For the consumer side, our example will have a top-level `TranslationsPluginManager` class that just delegates to
+discovered downstream translations. With a `ConsumerExtension`, downstream services can be consumed
 and codegen'd directly with JavaPoet. For simplicity, this manager will follow an auto-value style 
 pattern of having an abstract class with the generated implementation as a subclass.
 
 The desired API looks like this:
 
 ```java
-public abstract class PluginManager {
+public abstract class TranslationsPluginManager {
 
-  public static Set<Feature> plugins() {
-    return Plugins_PluginManager.PLUGINS;
+  public static Set<Translations> plugins() {
+    return Plugins_TranslationsPluginManager.PLUGINS;
   }
 
 }
@@ -188,15 +188,15 @@ public @interface PluginPoint {
 }
 ```
 
-This is then added to the manager class, specifying the `Feature` class as its target interface so
+This is then added to the manager class, specifying the `Translations` class as its target interface so
 that it only registers implementations of that interface.
 
 ```java
-@PluginPoint(Feature.class)
-public abstract class PluginManager {
+@PluginPoint(Translations.class)
+public abstract class TranslationsPluginManager {
 
-  public static Set<Feature> plugins() {
-    return Plugins_PluginManager.PLUGINS;
+  public static Set<Translations> plugins() {
+    return Plugins_TranslationsPluginManager.PLUGINS;
   }
 
 }
@@ -257,11 +257,11 @@ downstream plugin type implementations and could leverage `JavaPoet` to generate
 implementation that looks like this:
 
 ```java
-public final class Plugins_PluginManager extends PluginManager {
-  public static final Set<Feature> PLUGINS = new LinkedHashSet<>();
+public final class Plugins_TranslationsPluginManager extends TranslationsPluginManager {
+  public static final Set<Translations> PLUGINS = new LinkedHashSet<>();
 
   static {
-    PLUGINS.add(new LibraryPluginImpl());
+    PLUGINS.add(new EnglishTranslations());
   }
 }
 ```
