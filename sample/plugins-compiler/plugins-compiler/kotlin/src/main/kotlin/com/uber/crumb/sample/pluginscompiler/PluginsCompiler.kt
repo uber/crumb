@@ -141,7 +141,7 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     val initializerValues = pluginClasses
         .map { it.asClassName() }
         .toTypedArray()
-    val pluginsFunction = FunSpec.builder("plugins")
+    val pluginsFunction = FunSpec.builder("obtain")
         .receiver(type.asClassName())
         .returns(ParameterizedTypeName.get(Set::class.asClassName(),
             targetPlugin.asTypeName()))

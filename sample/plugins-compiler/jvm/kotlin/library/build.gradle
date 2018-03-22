@@ -33,5 +33,5 @@ dependencies {
   compile deps.kotlin.stdLib
   compile project(":crumb-annotations")
   compile project(":sample:plugins-compiler:plugins-compiler:annotations")
-  compile project(":sample:plugins-compiler:feature-api")
+  compile project(":sample:plugins-compiler:translations-api")
 }

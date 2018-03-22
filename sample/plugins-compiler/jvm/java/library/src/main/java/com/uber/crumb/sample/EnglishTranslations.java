@@ -18,15 +18,10 @@ package com.uber.crumb.sample;
 import com.uber.crumb.sample.pluginscompiler.annotations.Plugin;
 
 @Plugin
-public class LibraryPluginImpl implements Feature {
+public class EnglishTranslations implements Translations {
 
   @Override
-  public void doFoo() {
-    System.out.println("FizzBuzz");
-  }
-
-  @Override
-  public String calculateBar() {
-    return "Baz";
+  public String translationForKey(String key) {
+    return "foo";
   }
 }
