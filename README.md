@@ -149,7 +149,7 @@ public class PluginsCompiler implements ProducerExtension {
 }
 ```
 
-That's it! Crumb will take the returned metadata and make it available to any extension that 
+Crumb will take the returned metadata and make it available to any extension that 
 also declared the key returned by `key()`. 
   * `context` is a holder class with access to the current `ProcessingEnvironment` and 
   `RoundEnvironment`
