@@ -117,7 +117,7 @@ public class EnglishTranslations implements Translations {
 
 `@Plugin` is a custom annotation that the extension looks for in its `isProducerApplicable` 
 check. Any custom annotation could be used. Extensions also have direct access to the 
-`TypeElement`, so you can really use any signaling of your choice.
+`TypeElement`, so other signaling choices would work as well.
 
 Now that the implementation is denoted via the `@Plugin` annotation, the next step is implementing 
 the `ProducerExtension` for this:
