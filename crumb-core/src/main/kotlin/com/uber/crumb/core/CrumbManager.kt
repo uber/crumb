@@ -19,6 +19,7 @@
 package com.uber.crumb.core
 
 import com.sun.tools.javac.processing.JavacProcessingEnvironment
+import com.uber.crumb.core.CrumbManager.Companion.OPTION_EXTRA_LOCATIONS
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -34,8 +35,11 @@ import javax.tools.JavaFileManager
 import javax.tools.StandardLocation
 
 /**
- * A utility class that helps adding build specific objects to the jar file
- * and their extraction later on.
+ * A utility class that helps adding build specific objects to the jar file and their extraction later on. This
+ * specifically works by reading/writing metadata in the Crumb `META-INF` location of jars from the classpath.
+ *
+ * Optionally, a colon-delimited list of extra locations to search for in loading can be specified via specifying the
+ * [OPTION_EXTRA_LOCATIONS] option in the given [env].
  *
  * Adapted from the [Android DataBinding library](https://android.googlesource.com/platform/frameworks/data-binding/+/master).
  */
@@ -44,14 +48,21 @@ class CrumbManager(private val env: ProcessingEnvironment,
 
   companion object {
     /**
-     * A colon-delimited list of extra locations to search in consumption.
+     * A colon-delimited list of extra locations to search in loading.
      */
     const val OPTION_EXTRA_LOCATIONS = "crumb.options.extraLocations"
     private const val CRUMB_PREFIX = "META-INF/com.uber.crumb/"
   }
 
+  /**
+   * This loads a given [Set]<[T]> from the Crumb `META-INF` store that matches the given [nameFilter].
+   *
+   * @param nameFilter a name filter to match on. Conventionally, one could use a "known" file extension used for file
+   *                   names in [store].
+   * @return the loaded [Set]<[T]>, or an empty set if none were found.
+   */
   @Throws(IOException::class)
-  fun <T : Serializable> load(extension: String): Set<T> {
+  fun <T : Serializable> load(nameFilter: (String) -> Boolean): Set<T> {
     val fileManager = (env as JavacProcessingEnvironment).context.get(JavaFileManager::class.java)
     val classLoader = fileManager.getClassLoader(StandardLocation.CLASS_PATH)
     check(classLoader is URLClassLoader) {
@@ -74,10 +85,10 @@ class CrumbManager(private val env: ProcessingEnvironment,
         }
         if (file.isDirectory) {
           // probably exported classes dir.
-          loadFromDirectory(extension, file, objects)
+          loadFromDirectory(nameFilter, file, objects)
         } else {
           // assume it is a zip file
-          loadFomZipFile(extension, file, objects)
+          loadFomZipFile(nameFilter, file, objects)
         }
       } catch (e: IOException) {
         crumbLog.d("Cannot open zip file from %s", url)
@@ -89,10 +100,11 @@ class CrumbManager(private val env: ProcessingEnvironment,
   }
 
   @Throws(IOException::class)
-  private fun <T : Serializable> loadFromDirectory(extension: String, from: File,
+  private fun <T : Serializable> loadFromDirectory(nameFilter: (String) -> Boolean,
+      from: File,
       into: MutableSet<T>) {
     from.walkTopDown()
-        .filter { it.name.endsWith(extension) }
+        .filter { nameFilter(it.name) }
         .forEach { file ->
           try {
             file.inputStream().use {
@@ -114,13 +126,13 @@ class CrumbManager(private val env: ProcessingEnvironment,
   }
 
   @Throws(IOException::class)
-  private fun <T : Serializable> loadFomZipFile(extension: String,
+  private fun <T : Serializable> loadFomZipFile(nameFilter: (String) -> Boolean,
       from: File,
       into: MutableSet<T>) {
     val zipFile = ZipFile(from)
     zipFile.entries()
         .asSequence()
-        .filter { it.name.endsWith(extension) }
+        .filter { nameFilter(it.name) }
         .forEach { entry ->
           try {
             zipFile.getInputStream(entry).use {
@@ -145,6 +157,13 @@ class CrumbManager(private val env: ProcessingEnvironment,
     ObjectInputStream(inputStream).use { return it.readObject() as Serializable }
   }
 
+  /**
+   * This writes a given [Serializable] [objectToWrite] to the Crumb `META-INF` store.
+   *
+   * @param packageName the package name to use for the file in writing.
+   * @param fileName the file name to use in writing.
+   * @param objectToWrite the [Serializable] object to write.
+   */
   @Throws(IOException::class)
   fun store(
       packageName: String,
