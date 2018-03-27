@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.crumb.sample
+package com.uber.crumb.sample;
 
-import com.uber.crumb.sample.pluginscompiler.annotations.PluginPoint
+import com.uber.crumb.sample.pluginscompiler.annotations.PluginPoint;
+import java.util.Set;
 
-@PluginPoint(Feature::class)
-object PluginManager
+@PluginPoint(Translations.class)
+public abstract class TranslationsPluginManager {
+
+  public static Set<Translations> obtain() {
+    return Plugins_TranslationsPluginManager.PLUGINS;
+  }
+}

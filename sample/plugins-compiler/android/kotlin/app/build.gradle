@@ -47,5 +47,5 @@ dependencies {
   compile project(":crumb-annotations")
   compile project(":sample:plugins-compiler:android:kotlin:library")
   compile deps.misc.appCompat
-  compile project(":sample:plugins-compiler:feature-api")
+  compile project(":sample:plugins-compiler:translations-api")
 }

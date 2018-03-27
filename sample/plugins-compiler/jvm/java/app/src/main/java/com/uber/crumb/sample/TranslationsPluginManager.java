@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.crumb.sample
+package com.uber.crumb.sample;
 
-import com.uber.crumb.sample.pluginscompiler.annotations.Plugin
+import com.uber.crumb.sample.pluginscompiler.annotations.PluginPoint;
+import java.util.Set;
 
-@Plugin
-class LibraryPluginImpl : Feature {
+@PluginPoint(Translations.class)
+public abstract class TranslationsPluginManager {
 
-  override fun doFoo() {
-    println("FizzBuzz")
-  }
-
-  override fun calculateBar(): String {
-    return "Baz"
+  public static Set<Translations> obtain() {
+    return Plugins_TranslationsPluginManager.PLUGINS;
   }
 }

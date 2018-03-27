@@ -28,5 +28,5 @@ dependencies {
   annotationProcessor project(":sample:plugins-compiler:plugins-compiler:java")
   api project(":crumb-annotations")
   api project(":sample:plugins-compiler:plugins-compiler:annotations")
-  api project(":sample:plugins-compiler:feature-api")
+  api project(":sample:plugins-compiler:translations-api")
 }

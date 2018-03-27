@@ -86,7 +86,7 @@ if (System.getenv("ANDROID_HOME") != null) {
 }
 
 // Plugins Compiler
-include ':sample:plugins-compiler:feature-api'
+include ':sample:plugins-compiler:translations-api'
 include ':sample:plugins-compiler:plugins-compiler:annotations'
 include ':sample:plugins-compiler:plugins-compiler:java'
 include ':sample:plugins-compiler:plugins-compiler:kotlin'

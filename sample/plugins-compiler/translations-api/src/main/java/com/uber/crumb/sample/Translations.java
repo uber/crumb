@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.crumb.sample
+package com.uber.crumb.sample;
 
-import com.uber.crumb.sample.pluginscompiler.annotations.PluginPoint
-
-@PluginPoint(Feature::class)
-object PluginManager
+/** An example "Translations" plugin interface that implementers could implement. */
+public interface Translations {
+  String translationForKey(String key);
+}
