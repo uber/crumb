@@ -71,6 +71,8 @@ class CrumbProcessor : AbstractProcessor {
      * Option to disable verbose logging
      */
     const val OPTION_VERBOSE = "crumb.options.verbose"
+
+    private val CRUMB_EXTENSION_FINDER = { name: String -> name.endsWith(CRUMB_EXTENSION) }
   }
 
   private val crumbAdapter = Moshi.Builder()
@@ -242,7 +244,7 @@ class CrumbProcessor : AbstractProcessor {
     }
 
     // Load the producerMetadata from the classpath
-    val producerMetadataBlobs = crumbManager.load<String>(CRUMB_EXTENSION)
+    val producerMetadataBlobs = crumbManager.load<String>(CRUMB_EXTENSION_FINDER)
 
     if (producerMetadataBlobs.isEmpty()) {
       message(WARNING, consumers.map { it.first }.iterator().next(),
