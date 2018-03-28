@@ -105,7 +105,7 @@ class CrumbLog(private val prefix: String,
   /**
    * The basic interface of a logging client that logs from [CrumbLog] are routed through.
    *
-   * There are two batteries-included clients that can be used out of the box:
+   * There are two clients that can be used out of the box:
    *   * [MessagerClient] - a client implementation that routes through a given [Messager].
    *   * [DefaultClient] - a client implementation that just writes to stdout/stderr.
    */
