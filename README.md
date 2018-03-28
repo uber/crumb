@@ -287,7 +287,7 @@ names to consumers.
 
 Crumb's core functionality can be leveraged independently from the `compiler` artifact via the 
 `crumb-core` artifact. This can be useful for integration within existing tooling, and contains
-a `CrumbManager` and `CrumbLog` API. The `crumb-compiler` artifact is essentially just a frontend
+a `CrumbManager` and `CrumbLog` API. The `crumb-compiler` artifact is an advanced frontend
 over this utility.
 
 `CrumbManager` has a simple `load` and `store` API, and `CrumbLog` is a logging mechanism to help
