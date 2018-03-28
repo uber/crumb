@@ -18,6 +18,7 @@ package com.uber.crumb.core
 
 import com.uber.crumb.core.CrumbLog.Client
 import com.uber.crumb.core.CrumbLog.Client.DefaultClient
+import com.uber.crumb.core.CrumbLog.Client.MessagerClient
 import java.io.PrintWriter
 import java.io.StringWriter
 import javax.annotation.processing.Messager
@@ -28,9 +29,13 @@ import javax.tools.Diagnostic.Kind
  * Tiny logger implementation for debugging [CrumbManager], adapted from the
  * [Android DataBinding library](https://android.googlesource.com/platform/frameworks/data-binding/+/master).
  *
+ * Note that this is *just* for logging of Crumb internals, and not intended for general use. Thus, all the
+ * actual logging functions are `internal` visibility only.
+ *
  * @param prefix The prefix to use in logs from this logger.
  * @param debugEnabled Whether debug logs are enabled. Default is false.
- * @param client Optional custom [Client] for handling logs. Default is [DefaultClient], which just prints to stdout and stderr.
+ * @param client Optional custom [Client] for handling logs. Default is [DefaultClient], which just prints to stdout
+ *               and stderr.
  */
 class CrumbLog(private val prefix: String,
     private val debugEnabled: Boolean = false,
@@ -97,7 +102,23 @@ class CrumbLog(private val prefix: String,
         .toString()
   }
 
+  /**
+   * The basic interface of a logging client that logs from [CrumbLog] are routed through.
+   *
+   * There are two clients that can be used out of the box:
+   *   * [MessagerClient] - a client implementation that routes through a given [Messager].
+   *   * [DefaultClient] - a client implementation that just writes to stdout/stderr.
+   */
   interface Client {
+
+    /**
+     * The main entry point for a Crumb log.
+     *
+     * @param kind the [Kind] of message.
+     * @param prefix the prefix of the message. Can also be thought of as a tag.
+     * @param message the message itself.
+     * @param element optionally the source [Element] this message is in regards to.
+     */
     fun printMessage(kind: Kind, prefix: String, message: String, element: Element?)
 
     /**

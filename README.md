@@ -283,6 +283,16 @@ directory.
 There's also an example `experiments-compiler` demonstrating how to trace enum-denoted experiments
 names to consumers.
 
+## CrumbManager
+
+Crumb's core functionality can be leveraged independently from the `compiler` artifact via the 
+`crumb-core` artifact. This can be useful for integration within existing tooling, and contains
+a `CrumbManager` and `CrumbLog` API. The `crumb-compiler` artifact is an advanced frontend
+over this utility.
+
+`CrumbManager` has a simple `load` and `store` API, and `CrumbLog` is a logging mechanism to help
+with debugging issues.
+
 ## Packaging
 
 To exclude crumbs from being compiled into an Android application APK, add the following exclusion 
@@ -299,6 +309,7 @@ packagingOptions {
 [![Maven Central](https://img.shields.io/maven-central/v/com.uber.crumb/crumb-compiler.svg)](https://mvnrepository.com/artifact/com.uber.crumb/crumb-compiler)
 ```gradle
 compile 'com.uber.crumb:crumb-annotations:x.y.z'
+compile 'com.uber.crumb:crumb-core:x.y.z'
 compile 'com.uber.crumb:crumb-compiler:x.y.z'
 compile 'com.uber.crumb:crumb-compiler-api:x.y.z'
 ```
