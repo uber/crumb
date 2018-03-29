@@ -50,7 +50,7 @@ subprojects {
     //      licenseHeaderFile rootProject.file('spotless/copyright.kt')
     //    }
     java {
-      target "**/*.java"
+      target "**/src/main/**/com/uber/*.java"
       googleJavaFormat(deps.versions.gjf)
       licenseHeaderFile rootProject.file('spotless/copyright.java')
       removeUnusedImports()
