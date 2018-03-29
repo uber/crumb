@@ -29,8 +29,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 dependencies {
   kapt deps.apt.autoService
+  compileOnly deps.apt.autoService
 
-  compile deps.apt.autoService
   compile deps.kotlin.stdLibJre8
   compile project(":crumb-annotations")
 }
