@@ -32,6 +32,9 @@ android {
     sourceCompatibility JavaVersion.VERSION_1_7
     targetCompatibility JavaVersion.VERSION_1_7
   }
+  lintOptions {
+    disable 'MissingApplicationIcon'
+  }
 }
 
 repositories {
@@ -41,7 +44,8 @@ repositories {
 dependencies {
   annotationProcessor project(":crumb-compiler")
   annotationProcessor project(":sample:experiments-compiler:experiment-enums-compiler:java")
-  compile project(":crumb-annotations")
-  compile project(":sample:experiments-compiler:android:java:library")
-  compile deps.misc.appCompat
+  implementation project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
+  implementation project(":crumb-annotations")
+  implementation project(":sample:experiments-compiler:android:java:library")
+  implementation deps.misc.appCompat
 }

@@ -36,7 +36,7 @@ android {
 dependencies {
   annotationProcessor project(":crumb-compiler")
   annotationProcessor project(":sample:plugins-compiler:plugins-compiler:java")
-  compile project(":crumb-annotations")
-  compile project(":sample:plugins-compiler:plugins-compiler:annotations")
-  compile project(":sample:plugins-compiler:translations-api")
+  implementation project(":crumb-annotations")
+  implementation project(":sample:plugins-compiler:plugins-compiler:annotations")
+  implementation project(":sample:plugins-compiler:translations-api")
 }

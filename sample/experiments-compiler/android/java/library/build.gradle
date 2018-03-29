@@ -36,6 +36,6 @@ android {
 dependencies {
   annotationProcessor project(":crumb-compiler")
   annotationProcessor project(":sample:experiments-compiler:experiment-enums-compiler:java")
-  compile project(":crumb-annotations")
-  compile project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
+  implementation project(":crumb-annotations")
+  implementation project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }
