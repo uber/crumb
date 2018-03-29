@@ -15,6 +15,7 @@
  */
 
 def versions = [
+    autoValue: '1.6',
     errorProne: '2.2.0',
     dokka: '0.9.16',
     errorPronePlugin: '0.0.13',
@@ -30,8 +31,8 @@ ext.deps = [
     apt: [
         autoCommon: "com.google.auto:auto-common:0.10",
         autoService: "com.google.auto.service:auto-service:1.0-rc4",
-        autoValue: "com.google.auto.value:auto-value:1.5.3",
-        autoValueAnnotations: "com.jakewharton.auto.value:auto-value-annotations:1.5",
+        autoValue: "com.google.auto.value:auto-value:${versions.autoValue}",
+        autoValueAnnotations: "com.google.auto.value:auto-value-annotations:${versions.autoValue}",
         autoValueGson: "com.ryanharter.auto.value:auto-value-gson:0.6.0",
         autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.4",
     ],

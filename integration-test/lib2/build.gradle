@@ -25,13 +25,14 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
   annotationProcessor deps.apt.autoValue
+  annotationProcessor deps.apt.autoValueAnnotations
   annotationProcessor deps.apt.autoValueGson
   annotationProcessor deps.apt.autoValueMoshi
   annotationProcessor project(":crumb-compiler")
   annotationProcessor project(":integration-test:compiler")
   compileOnly deps.misc.javaxExtras
+  compileOnly deps.apt.autoValueAnnotations
 
-  api deps.apt.autoValueAnnotations
   api deps.misc.gson
   api deps.misc.moshi
 
