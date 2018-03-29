@@ -97,6 +97,6 @@ include ':sample:plugins-compiler:jvm:kotlin:library'
 if (System.getenv("ANDROID_HOME") != null) {
   include ':sample:plugins-compiler:android:java:app'
   include ':sample:plugins-compiler:android:java:library'
-  include ':sample:plugins-compiler:android:kotlin:app'
+//  include ':sample:plugins-compiler:android:kotlin:app'
   include ':sample:plugins-compiler:android:kotlin:library'
 }
