@@ -11,6 +11,18 @@ can opt in to consuming or producing metadata. Crumb will manage this metadata f
 (serializing, storing, retrieving, orchestrating the data to appropriate consumers, etc), and 
 extensions can focus on doing whatever it is they need to do!
 
+## Download
+
+[![Maven Central](https://img.shields.io/maven-central/v/com.uber.crumb/crumb-compiler.svg)](https://mvnrepository.com/artifact/com.uber.crumb/crumb-compiler)
+```gradle
+compile 'com.uber.crumb:crumb-annotations:x.y.z'
+compile 'com.uber.crumb:crumb-core:x.y.z'
+compile 'com.uber.crumb:crumb-compiler:x.y.z'
+compile 'com.uber.crumb:crumb-compiler-api:x.y.z'
+```
+
+Snapshots of the development version are available in [Sonatype's snapshots repository][snapshots].
+
 ## API
 
 ### Annotations
@@ -72,6 +84,27 @@ are called into when a type is trying to consume metadata to from the classpath.
   Kotlin to `ConsumerMetadata`). This is a set of all `ProducerMetadata` maps discovered on the 
   classpath returned for this extension's declared `key()`. The `type` and `annotations` parameters 
   are the same as from `isConsumerApplicable()`.
+
+## CrumbManager
+
+Crumb's core functionality can be leveraged independently from the `compiler` artifact via the 
+`crumb-core` artifact. This can be useful for integration within existing tooling, and contains
+a `CrumbManager` and `CrumbLog` API. The `crumb-compiler` artifact is an advanced frontend
+over this utility.
+
+`CrumbManager` has a simple `load` and `store` API, and `CrumbLog` is a logging mechanism to help
+with debugging issues.
+
+## Packaging
+
+To exclude crumbs from being compiled into an Android application APK, add the following exclusion 
+via the `packagingOptions` closure:
+
+```gradle
+packagingOptions {
+  exclude "META-INF/com.uber.crumb/**"
+}
+```
 
 ## Example: Plugin Loader
 
@@ -282,39 +315,6 @@ directory.
 
 There's also an example `experiments-compiler` demonstrating how to trace enum-denoted experiments
 names to consumers.
-
-## CrumbManager
-
-Crumb's core functionality can be leveraged independently from the `compiler` artifact via the 
-`crumb-core` artifact. This can be useful for integration within existing tooling, and contains
-a `CrumbManager` and `CrumbLog` API. The `crumb-compiler` artifact is an advanced frontend
-over this utility.
-
-`CrumbManager` has a simple `load` and `store` API, and `CrumbLog` is a logging mechanism to help
-with debugging issues.
-
-## Packaging
-
-To exclude crumbs from being compiled into an Android application APK, add the following exclusion 
-via the `packagingOptions` closure:
-
-```gradle
-packagingOptions {
-  exclude "META-INF/com.uber.crumb/**"
-}
-```
-
-## Download
-
-[![Maven Central](https://img.shields.io/maven-central/v/com.uber.crumb/crumb-compiler.svg)](https://mvnrepository.com/artifact/com.uber.crumb/crumb-compiler)
-```gradle
-compile 'com.uber.crumb:crumb-annotations:x.y.z'
-compile 'com.uber.crumb:crumb-core:x.y.z'
-compile 'com.uber.crumb:crumb-compiler:x.y.z'
-compile 'com.uber.crumb:crumb-compiler-api:x.y.z'
-```
-
-Snapshots of the development version are available in [Sonatype's snapshots repository][snapshots].
 
 License
 -------
