@@ -316,6 +316,8 @@ directory.
 There's also an example `experiments-compiler` demonstrating how to trace enum-denoted experiments
 names to consumers.
 
+![pluginsamplediagram](https://user-images.githubusercontent.com/1361086/38119512-2100da1a-3377-11e8-8cad-35e3938d17ec.png)
+
 License
 -------
 
