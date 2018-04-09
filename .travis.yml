@@ -1,0 +1,43 @@
+language: android
+
+android:
+  components:
+    - tools
+    - platform-tools
+
+jdk:
+  - oraclejdk8
+
+before_install:
+  # Install SDK license so Android Gradle plugin can install deps.
+  - mkdir "$ANDROID_HOME/licenses" || true
+  - echo "$LICENSES_HASH" > "$ANDROID_HOME/licenses/android-sdk-license"
+  - echo "$LICENSES_HASH_TWO" >> "$ANDROID_HOME/licenses/android-sdk-license"
+  # Install the rest of tools (e.g., avdmanager)
+  - sdkmanager tools
+
+install: ./gradlew build --stacktrace
+
+script:
+  - ./gradlew check --stacktrace
+
+after_success:
+  - .buildscript/deploy_snapshot.sh
+
+env:
+  global:
+    - secure: "YYmMGtjPSO4TA86gflKpW12iCeZVZQCpPAYuCbWS7oc1khip5CKQM4mLtJyX8af9F5//LStJ0OrGLOtjsVgAYjPR9HOA3JukRJ8Q3B3qaZAYby7kdvMh7nniwB9On2kVHQ7LM0e2CZXqDSfq7V1cIM51i46QeCoN8JmH9E0DQyf8e2XQkSzIT4JJo0KNhD+niaK0DQwzLY+GxJcbMtTiiEXR2ZxT5XC5b3//GKUfryBI41CTTIx83XQvnA1IdNX33cLlZy7djbXz52nlRclDlpzp3znpTK41fEpnB8UnfpMiHZZNFOUhxGu94KVu+1H75xLyTQMC2L2dy5nzEoCVBcLeuVwZRLcK/nlU3ShUVJ+7UDFyrfr/NcLlUCJS4CS0honIuFSnWl9wM+5W0lRMaQubj5wFmK3RqCXpua84CWtLgBsu0i43Yr8wAlQ2ogF/21u1daOD2lQacCsW5Zb0sfp0CRSYqsvD/2Y/EtJdlf5XAr+c6BVCFvWJP0CUumr7mgk6kLMQmvbklAH5vAO1r3fGcwGAZLE8geezNybDWn45oJFGJSX2zeyk3Z4FBbnYeyBw/O/tyGOwk+9MSuhMpDfm32K0nn6Gug0ba1sFf5zEUihXBLaYsnuOzOJX7j41BTPeutnvAhq1+yMT90jR0AwKWdRIyLWM0Au+UxDVGnI="
+    - secure: "hYGBAmZslMofKj6RLNzxc07q2ipDg7M6DUgmVXAK4lh0vnBJepN2iV0E2iBLSguQ/ZvN0bP8DZcLSQ7ZOxhtfZCUegPs85Y39XidZM9s5kEfvHbCKGOZsfQFfwFkS2G/CWwyZuJEYt9bz0KBkQazw9FRd6r3LoAxJpT1ZfxuY5eXkC4SWeA/w9p373UD2a+HjqNPGU40eGz+ee3FzNOCEtxL2FiROelKjiauOe2+kEWqzYtQfPoQY5EK4y7sZ4v4/KL9w1i7lVwV05u1Ua9MywxcMwqNSZar2UNRvXRw81dyTzNuOeVzGPEgsy0qS69wyuVXNK8nVvdWz6jPRBDpMDSshmgyotNHg9RfSt/jZHba1WWn7Ue6qMmNatTLd7JwGFTrjL3jSEv4roipE0+C4KSk3xlBp80DSVphYmDLzYKkZZqwAYRGFsQZnIcRCTPgsgTrAnNyHqTt2CYEGCF1iQVnFrZuRzUMGw4Ye6F4WHKDToh3DJuCxz1q/DNYHfRah395dlm1e0gHKHqxi7nYA80yw0MtOIsq+iBepp5Yb0sgsJPIA3rd6m6Qdya740FwpVSl+Wl1wCY1NlKxjhT7WObU9FgSOxKybd55fMEcEKvAc7xuS7kjXh13CK5V3+d3O0itR54XM+w/+0zV3G48VSKBFEU65f928swbwuUnPEc="
+
+branches:
+  except:
+    - gh-pages
+
+notifications:
+  email: false
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.gradle
