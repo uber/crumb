@@ -1,15 +1,24 @@
 Crumb
 =====
 
-Code's interaction with its external dependencies is usually limited to manual interaction with 
-their public APIs, but sometimes it's convenient to be able to sprinkle in metadata or 
-bread**crumb**s in the source dependency that can be read by consumers.
+Crumb is an annotation processor that exposes a simple and flexible API to breadcrumb  
+metadata across compilation boundaries. Working with dependencies manually is usually fine, but there's often 
+cases where developers will want to automatically gather and act on information from those dependencies (code 
+generation, gathering metrics, etc). Tools like `ServiceLoader` can solve some cases like this, but lack flexibility and
+can be slow at runtime.
 
-Crumb is an annotation processor that exposes a simple and flexible API to breadcrumb that 
-information across compilation boundaries. The API is a consumer/producer system where extensions
-can opt in to consuming or producing metadata. Crumb will manage this metadata for them 
-(serializing, storing, retrieving, orchestrating the data to appropriate consumers, etc), and 
-extensions can focus on doing whatever it is they need to do!
+This is where Crumb comes in. Crumb's API is an annotation-based, consumer/producer system where extensions
+can opt in to consuming or producing metadata. Extensions run at compile-time to produce or consume this 
+metadata, while Crumb's processor manages this metadata for them (serializing, storing, retrieving, orchestrating the 
+data to appropriate consumers, etc). This allows developers to propagate arbitrary data across compilation boundaries.
+
+Some example usages:
+  * Implementing compile-time `ServiceLoader`-style automatic discovery of downstream implementations of an interface
+  * Automatically gathering adapters for model serialization (such as `TypeAdapter`s for json serialization with Gson)
+  * Automatic registration or reporting of experiments in feature libraries
+  * Automatic registration of buildable components in a DI system, such as Dagger modules
+  
+More in-depth examples can be found at the bottom of this README.
 
 ## Download
 
@@ -27,7 +36,7 @@ Snapshots of the development version are available in [Sonatype's snapshots repo
 
 ### Annotations
 
-There are four annotations in the `:annotations` artifact:
+There are four annotations in the `crumb-annotations` artifact:
 
 `@CrumbProducer` - This annotation can be used on custom annotations to signal to the 
 processor that elements annotated with the custom annotation are used to produce metadata.
@@ -45,7 +54,8 @@ annotations they support).
 ### Extensions API
 
 There are two extension interfaces that follow a Producer/Consumer symmetry. The API (and compiler
-implementation) is in Kotlin, but seamlessly interoperable with Java. The API is SPI-based, so implementations can be wired up with something like [AutoService][autoservice].
+implementation) is in Kotlin, but seamlessly interoperable with Java. The API is SPI-based, so implementations can be 
+wired up with something like [AutoService][autoservice].
 
 Both interfaces extend from a `CrumbExtension` base interface, that just has a method `key()`. This
 method has a default implementation in Kotlin that just returns the fully qualified class name of 
