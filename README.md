@@ -116,6 +116,13 @@ packagingOptions {
 }
 ```
 
+## Kotlin Issues
+
+There are two issues we've encountered when using this in Kotlin projects
+
+1. [Resources in project dependencies are not available in consuming projects](https://youtrack.jetbrains.com/issue/KT-23724)
+2. [Metadata annotations have no element values in local annotation processors](https://youtrack.jetbrains.com/issue/KT-23725)
+
 ## Example: Plugin Loader
 
 To demonstrate the functionality of Crumb, a real-world example must be used, a hypothetical plugin 
