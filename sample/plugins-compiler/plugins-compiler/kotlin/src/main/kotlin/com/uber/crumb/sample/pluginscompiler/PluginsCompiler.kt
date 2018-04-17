@@ -90,11 +90,21 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
     val kmetadata = type.kotlinMetadata
 
+    if (kmetadata == null) {
+      context.processingEnv
+          .messager
+          .printMessage(ERROR,
+              "@${PluginPoint::class.java.simpleName} unreadable on $type. Please ensure the standard library is a " +
+                  "dependency of this project.",
+              type)
+      return
+    }
+
     if (kmetadata !is KotlinClassMetadata) {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${PluginPoint::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
+              "@${PluginPoint::class.java.simpleName} can't be applied to $type: must be a class.",
               type)
       return
     }
