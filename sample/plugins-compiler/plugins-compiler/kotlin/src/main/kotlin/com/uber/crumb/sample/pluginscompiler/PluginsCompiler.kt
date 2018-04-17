@@ -90,11 +90,12 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
     val kmetadata = type.kotlinMetadata
 
-    if (kmetadata == null) {
+    if (kmetadata == null
+        && type.annotationMirrors.any { it.annotationType.asElement().simpleName.toString() == "Metadata" }) {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${PluginPoint::class.java.simpleName} unreadable on $type. Please ensure the standard library is a " +
+              "Metadata annotation was unreadable on $type. Please ensure the kotlin standard library is a " +
                   "dependency of this project.",
               type)
       return
