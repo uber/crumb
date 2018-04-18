@@ -16,6 +16,7 @@
 
 package com.uber.crumb.sample.pluginscompiler
 
+import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreElements.isAnnotationPresent
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec
@@ -93,7 +94,7 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
     if (kmetadata == null
         && type.annotationMirrors.any {
-          (it.annotationType.asElement() as TypeElement).qualifiedName.toString() == METADATA_FQCN
+          MoreElements.asType(it.annotationType.asElement()).qualifiedName.toString() == METADATA_FQCN
         }) {
       context.processingEnv
           .messager
