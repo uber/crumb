@@ -59,6 +59,7 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
   companion object {
     private const val METADATA_KEY: ExtensionKey = "PluginsCompiler"
+    private const val METADATA_FQCN = "kotlin.Metadata"
   }
 
   override fun isConsumerApplicable(context: CrumbContext,
@@ -91,7 +92,9 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     val kmetadata = type.kotlinMetadata
 
     if (kmetadata == null
-        && type.annotationMirrors.any { it.annotationType.asElement().simpleName.toString() == "Metadata" }) {
+        && type.annotationMirrors.any {
+          (it.annotationType.asElement() as TypeElement).qualifiedName.toString() == METADATA_FQCN
+        }) {
       context.processingEnv
           .messager
           .printMessage(ERROR,
