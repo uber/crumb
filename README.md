@@ -116,6 +116,14 @@ packagingOptions {
 }
 ```
 
+## Kotlin Issues
+
+There is one issue we've encountered when using this in plain Kotlin Gradle projects:
+
+[Resources in project dependencies are not available in consuming projects](https://youtrack.jetbrains.com/issue/KT-23724)
+
+Note that this is only when consuming data in a plain Kotlin project. Android projects work fine.
+
 ## Example: Plugin Loader
 
 To demonstrate the functionality of Crumb, a real-world example must be used, a hypothetical plugin 
