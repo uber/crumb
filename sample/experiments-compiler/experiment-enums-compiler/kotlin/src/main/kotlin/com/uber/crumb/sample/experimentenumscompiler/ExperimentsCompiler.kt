@@ -18,9 +18,11 @@ package com.uber.crumb.sample.experimentenumscompiler
 
 import com.google.auto.common.MoreElements.isAnnotationPresent
 import com.google.auto.service.AutoService
+import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import com.uber.crumb.compiler.api.ConsumerMetadata
@@ -43,6 +45,7 @@ import javax.lang.model.element.ElementKind.CLASS
 import javax.lang.model.element.ElementKind.ENUM
 import javax.lang.model.element.ElementKind.ENUM_CONSTANT
 import javax.lang.model.element.TypeElement
+import javax.tools.Diagnostic
 import javax.tools.Diagnostic.Kind.ERROR
 
 /**
@@ -123,18 +126,20 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
         }
 
     val initializerCode = experimentClasses
-        .map { "%T::class.java to listOf(${it.value.joinToString(", ") { "\"%S\"" }})" }
-        .joinToString(", ")
+        .map { "%T::class.java to listOf(${it.value.joinToString(", ") { "%S" }})" }
+        .joinToString()
     val initializerValues = experimentClasses
-        .keys
-        .map { it.asClassName() }
+        .flatMap { listOf(it.key.asClassName(), *it.value.toTypedArray()) }
+        .toTypedArray()
     val mapFunction = FunSpec.builder("experiments")
         .receiver(type.asClassName())
         .returns(ParameterizedTypeName.get(Map::class.asClassName(),
-            Class::class.asTypeName(),
+            ParameterizedTypeName.get(Class::class.asClassName(),
+                WildcardTypeName.subtypeOf(
+                    ParameterizedTypeName.get(Enum::class.asClassName(), WildcardTypeName.subtypeOf(ANY)))),
             ParameterizedTypeName.get(List::class.asClassName(),
                 String::class.asTypeName())))
-        .addStatement("return mapOf($initializerCode)", initializerValues)
+        .addStatement("return mapOf($initializerCode)", *initializerValues)
         .build()
 
     // Generate the file

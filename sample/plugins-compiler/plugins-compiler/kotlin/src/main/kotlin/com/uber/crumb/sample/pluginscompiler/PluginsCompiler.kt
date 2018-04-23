@@ -16,6 +16,7 @@
 
 package com.uber.crumb.sample.pluginscompiler
 
+import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreElements.isAnnotationPresent
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec
@@ -59,6 +60,7 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
   companion object {
     private const val METADATA_KEY: ExtensionKey = "PluginsCompiler"
+    private const val METADATA_FQCN = "kotlin.Metadata"
   }
 
   override fun isConsumerApplicable(context: CrumbContext,
@@ -90,11 +92,24 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
     val kmetadata = type.kotlinMetadata
 
+    if (kmetadata == null
+        && type.annotationMirrors.any {
+          MoreElements.asType(it.annotationType.asElement()).qualifiedName.toString() == METADATA_FQCN
+        }) {
+      context.processingEnv
+          .messager
+          .printMessage(ERROR,
+              "Metadata annotation was unreadable on $type. Please ensure the kotlin standard library is a " +
+                  "dependency of this project.",
+              type)
+      return
+    }
+
     if (kmetadata !is KotlinClassMetadata) {
       context.processingEnv
           .messager
           .printMessage(ERROR,
-              "@${PluginPoint::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
+              "@${PluginPoint::class.java.simpleName} can't be applied to $type: must be a class.",
               type)
       return
     }

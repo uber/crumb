@@ -32,4 +32,5 @@ dependencies {
   kapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
   compile project(":crumb-annotations")
   compile project(":sample:experiments-compiler:jvm:kotlin:library")
+  compile deps.kotlin.stdLib
 }
