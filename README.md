@@ -126,10 +126,10 @@ Note that this is only when consuming data in a plain Kotlin project. Android pr
 
 ## Example: Plugin Loader
 
-To demonstrate the functionality of Crumb, a real-world example must be used, a hypothetical plugin 
-system to automatically gather and instantiate implementations of the `Translations` interface from 
-downstream dependencies. Conceptually this is similar to a 
-[`ServiceLoader`](https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html), but at 
+To demonstrate the functionality of Crumb we will have a hypothetical plugin
+system that automatically gathers and instantiates implementations of the `Translations` interface from
+downstream dependencies. Conceptually this is similar to a
+[`ServiceLoader`](https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html), but at
 compile-time and with annotations.
 
 To prevent a traditional approach of manually loading the implementations, Crumb makes it possible to 
