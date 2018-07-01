@@ -1,0 +1,24 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CrumbProducerExtension.produce - crumb-compiler-api</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">crumb-compiler-api</a>&nbsp;/&nbsp;<a href="../index.html">com.uber.crumb.compiler.api</a>&nbsp;/&nbsp;<a href="index.html">CrumbProducerExtension</a>&nbsp;/&nbsp;<a href="./produce.html">produce</a><br/>
+<br/>
+<h1>produce</h1>
+<a name="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">produce</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/context">context</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-context/index.html"><span class="identifier">CrumbContext</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/type">type</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/TypeElement.html"><span class="identifier">TypeElement</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/annotations">annotations</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/AnnotationMirror.html"><span class="identifier">AnnotationMirror</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-producer-metadata.html"><span class="identifier">ProducerMetadata</span></a></code>
+<p>Invoked to request this extension's <a href="../-producer-metadata.html">ProducerMetadata</a>.</p>
+<h3>Parameters</h3>
+<p><a name="context"></a>
+<code>context</code> - the <a href="../-crumb-context/index.html">CrumbContext</a>.</p>
+<p><a name="type"></a>
+<code>type</code> - the type this is producing from.</p>
+<p><a name="annotations"></a>
+<code>annotations</code> - collected <a href="#">CrumbQualifier</a>-annotated annotations on <a href="produce.html#com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/type">type</a>.</p>
+<p><strong>Return</strong><br/>
+the aggregated <a href="../-producer-metadata.html">ProducerMetadata</a>.</p>
+</BODY>
+</HTML>

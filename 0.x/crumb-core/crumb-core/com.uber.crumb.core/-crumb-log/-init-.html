@@ -1,0 +1,26 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CrumbLog.<init> - crumb-core</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">crumb-core</a>&nbsp;/&nbsp;<a href="../index.html">com.uber.crumb.core</a>&nbsp;/&nbsp;<a href="index.html">CrumbLog</a>&nbsp;/&nbsp;<a href="./-init-.html">&lt;init&gt;</a><br/>
+<br/>
+<h1>&lt;init&gt;</h1>
+<a name="com.uber.crumb.core.CrumbLog$&lt;init&gt;(kotlin.String, kotlin.Boolean, com.uber.crumb.core.CrumbLog.Client)"></a>
+<code><span class="identifier">CrumbLog</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbLog$<init>(kotlin.String, kotlin.Boolean, com.uber.crumb.core.CrumbLog.Client)/prefix">prefix</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbLog$<init>(kotlin.String, kotlin.Boolean, com.uber.crumb.core.CrumbLog.Client)/debugEnabled">debugEnabled</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;false<span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbLog$<init>(kotlin.String, kotlin.Boolean, com.uber.crumb.core.CrumbLog.Client)/client">client</span><span class="symbol">:</span>&nbsp;<a href="-client/index.html"><span class="identifier">Client</span></a>&nbsp;<span class="symbol">=</span>&nbsp;DefaultClient<span class="symbol">)</span></code>
+<p>Tiny logger implementation for debugging <a href="../-crumb-manager/index.html">CrumbManager</a>, adapted from the
+<a href="https://android.googlesource.com/platform/frameworks/data-binding/+/master">Android DataBinding library</a>.</p>
+<p>Note that this is <em>just</em> for logging of Crumb internals, and not intended for general use. Thus, all the
+actual logging functions are <code>internal</code> visibility only.</p>
+<h3>Parameters</h3>
+<p><a name="prefix"></a>
+<code>prefix</code> - The prefix to use in logs from this logger.</p>
+<p><a name="debugEnabled"></a>
+<code>debugEnabled</code> - Whether debug logs are enabled. Default is false.</p>
+<p><a name="client"></a>
+<code>client</code> - Optional custom <a href="-client/index.html">Client</a> for handling logs. Default is <a href="-client/-default-client/index.html">DefaultClient</a>, which just prints to stdout
+    and stderr.</p>
+</BODY>
+</HTML>

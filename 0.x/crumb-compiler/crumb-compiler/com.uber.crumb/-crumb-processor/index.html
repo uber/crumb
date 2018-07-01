@@ -1,0 +1,81 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CrumbProcessor - crumb-compiler</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">crumb-compiler</a>&nbsp;/&nbsp;<a href="../index.html">com.uber.crumb</a>&nbsp;/&nbsp;<a href="./index.html">CrumbProcessor</a><br/>
+<br/>
+<h1>CrumbProcessor</h1>
+<code><span class="identifier">@AutoService</span><span class="symbol">(</span>[Processor]<span class="symbol">)</span> <span class="identifier">@SupportedOptions</span><span class="symbol">(</span>["crumb.options.verbose", "crumb.options.extraLocations"]<span class="symbol">)</span> <span class="keyword">class </span><span class="identifier">CrumbProcessor</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/AbstractProcessor.html"><span class="identifier">AbstractProcessor</span></a></code>
+<p>Processes all <a href="#">CrumbConsumer</a> and <a href="#">CrumbProducer</a> annotated types.</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">CrumbProcessor</span><span class="symbol">(</span><span class="symbol">)</span></code><br/>
+<code><span class="identifier">CrumbProcessor</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.CrumbProcessor$<init>(kotlin.collections.Iterable((com.uber.crumb.compiler.api.CrumbExtension)))/extensions">extensions</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-iterable/index.html"><span class="identifier">Iterable</span></a><span class="symbol">&lt;</span><span class="identifier">CrumbExtension</span><span class="symbol">&gt;</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="get-supported-annotation-types.html">getSupportedAnnotationTypes</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">getSupportedAnnotationTypes</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="get-supported-source-version.html">getSupportedSourceVersion</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">getSupportedSourceVersion</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/SourceVersion.html"><span class="identifier">SourceVersion</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="init.html">init</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">init</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.CrumbProcessor$init(javax.annotation.processing.ProcessingEnvironment)/processingEnv">processingEnv</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/ProcessingEnvironment.html"><span class="identifier">ProcessingEnvironment</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="process.html">process</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">process</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.CrumbProcessor$process(kotlin.collections.Set((javax.lang.model.element.TypeElement)), javax.annotation.processing.RoundEnvironment)/annotations">annotations</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/TypeElement.html"><span class="identifier">TypeElement</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.CrumbProcessor$process(kotlin.collections.Set((javax.lang.model.element.TypeElement)), javax.annotation.processing.RoundEnvironment)/roundEnv">roundEnv</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/RoundEnvironment.html"><span class="identifier">RoundEnvironment</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-c-r-u-m-b_-e-x-t-e-n-s-i-o-n.html">CRUMB_EXTENSION</a></p>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">CRUMB_EXTENSION</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="-o-p-t-i-o-n_-v-e-r-b-o-s-e.html">OPTION_VERBOSE</a></p>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">OPTION_VERBOSE</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code>
+<p>Option to disable verbose logging</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

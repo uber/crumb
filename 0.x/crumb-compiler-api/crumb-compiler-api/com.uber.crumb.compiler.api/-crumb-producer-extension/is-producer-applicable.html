@@ -1,0 +1,25 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CrumbProducerExtension.isProducerApplicable - crumb-compiler-api</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">crumb-compiler-api</a>&nbsp;/&nbsp;<a href="../index.html">com.uber.crumb.compiler.api</a>&nbsp;/&nbsp;<a href="index.html">CrumbProducerExtension</a>&nbsp;/&nbsp;<a href="./is-producer-applicable.html">isProducerApplicable</a><br/>
+<br/>
+<h1>isProducerApplicable</h1>
+<a name="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">isProducerApplicable</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/context">context</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-context/index.html"><span class="identifier">CrumbContext</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/type">type</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/TypeElement.html"><span class="identifier">TypeElement</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/annotations">annotations</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/AnnotationMirror.html"><span class="identifier">AnnotationMirror</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<p>Determines whether or not a given type is applicable to this extension.</p>
+<p><em>Note:</em> If you need anything from the processingEnv for later, it is recommended to save it here.</p>
+<h3>Parameters</h3>
+<p><a name="context"></a>
+<code>context</code> - the <a href="../-crumb-context/index.html">CrumbContext</a>.</p>
+<p><a name="type"></a>
+<code>type</code> - the type to check.</p>
+<p><a name="annotations"></a>
+<code>annotations</code> - collected <a href="#">CrumbQualifier</a>-annotated annotations on <a href="is-producer-applicable.html#com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/type">type</a>.</p>
+<p><strong>Return</strong><br/>
+true if the type is applicable.</p>
+</BODY>
+</HTML>
