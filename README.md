@@ -105,6 +105,8 @@ over this utility.
 `CrumbManager` has a simple `load` and `store` API, and `CrumbLog` is a logging mechanism to help
 with debugging issues.
 
+Full docs can be found here: https://uber.github.io/crumb/0.x/
+
 ## Packaging
 
 To exclude crumbs from being compiled into an Android application APK, add the following exclusion
