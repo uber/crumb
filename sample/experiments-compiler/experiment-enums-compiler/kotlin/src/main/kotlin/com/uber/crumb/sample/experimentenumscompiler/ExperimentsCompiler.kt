@@ -37,7 +37,7 @@ import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
 import me.eugeniomarletti.kotlin.metadata.classKind
 import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
 import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
-import org.jetbrains.kotlin.serialization.ProtoBuf.Class.Kind
+import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
 import java.io.File
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
@@ -102,7 +102,7 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     val (nameResolver, classProto) = classData
 
     // Must be an abstract class because we're generating the backing implementation.
-    if (classProto.classKind != Kind.OBJECT) {
+    if (classProto.classKind != ProtoBuf.Class.Kind.OBJECT) {
       context.processingEnv
           .messager
           .printMessage(ERROR,
