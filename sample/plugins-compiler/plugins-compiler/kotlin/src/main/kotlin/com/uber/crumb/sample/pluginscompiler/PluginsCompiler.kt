@@ -36,7 +36,7 @@ import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
 import me.eugeniomarletti.kotlin.metadata.classKind
 import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
 import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
-import org.jetbrains.kotlin.serialization.ProtoBuf.Class.Kind
+import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
 import java.io.File
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.ElementKind
@@ -118,7 +118,7 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     val (nameResolver, classProto) = classData
 
     // Must be an object class.
-    if (classProto.classKind != Kind.OBJECT) {
+    if (classProto.classKind != ProtoBuf.Class.Kind.OBJECT) {
       context.processingEnv
           .messager
           .printMessage(ERROR,

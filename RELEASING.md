@@ -14,4 +14,4 @@ Releasing
      `release`.
  10. After release propagates (wait ~1 hour), update Javadocs via [Osstrich](https://github.com/square/osstrich)
      - Make sure you have push access
-     - `./.buildscript/update_docs.sh`
+     - `./gradlew publishDocs`
