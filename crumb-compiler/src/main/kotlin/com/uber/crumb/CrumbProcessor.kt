@@ -131,24 +131,16 @@ class CrumbProcessor : AbstractProcessor {
     }
     crumbManager = CrumbManager(processingEnv, crumbLog)
     try {
-      // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
-      // to discover any exceptions.
-      producerExtensions = ServiceLoader.load(CrumbProducerExtension::class.java,
-          loaderForExtensions)
-          .iterator().asSequence().toSet()
-      consumerExtensions = ServiceLoader.load(CrumbConsumerExtension::class.java,
-          loaderForExtensions)
-          .iterator().asSequence().toSet()
-      val producerAnnotatedAnnotations = producerExtensions.flatMap { it.supportedProducerAnnotations() }
-          .filter { it.getAnnotation(CrumbProducer::class.java) != null }
-      val consumerAnnotatedAnnotations = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
-          .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
-      val baseCrumbAnnotations = listOf(CrumbConsumer::class, CrumbProducer::class,
-          CrumbConsumable::class)
-          .map { it.java }
-      supportedTypes = (baseCrumbAnnotations + producerAnnotatedAnnotations + consumerAnnotatedAnnotations)
-          .map { it.name }
-          .toSet()
+      if (loaderForExtensions != null) {
+        // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
+        // to discover any exceptions.
+        producerExtensions = ServiceLoader.load(CrumbProducerExtension::class.java,
+            loaderForExtensions)
+            .iterator().asSequence().toSet()
+        consumerExtensions = ServiceLoader.load(CrumbConsumerExtension::class.java,
+            loaderForExtensions)
+            .iterator().asSequence().toSet()
+      }
     } catch (t: Throwable) {
       val warning = StringBuilder()
       warning.append(
@@ -162,7 +154,16 @@ class CrumbProcessor : AbstractProcessor {
       producerExtensions = setOf()
       consumerExtensions = setOf()
     }
-
+    val producerAnnotatedAnnotations = producerExtensions.flatMap { it.supportedProducerAnnotations() }
+        .filter { it.getAnnotation(CrumbProducer::class.java) != null }
+    val consumerAnnotatedAnnotations = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
+        .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
+    val baseCrumbAnnotations = listOf(CrumbConsumer::class, CrumbProducer::class,
+        CrumbConsumable::class)
+        .map { it.java }
+    supportedTypes = (baseCrumbAnnotations + producerAnnotatedAnnotations + consumerAnnotatedAnnotations)
+        .map { it.name }
+        .toSet()
   }
 
   override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean {
