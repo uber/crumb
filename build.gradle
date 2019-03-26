@@ -61,11 +61,6 @@ subprojects {
   }
 }
 
-task wrapper(type: Wrapper) {
-  gradleVersion = '4.8.1'
-  distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
-
 apply from: 'gradle/dependencies.gradle'
 apply from: 'gradle/checkstyle.gradle'
 apply from: 'gradle/publish-docs.gradle'
