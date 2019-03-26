@@ -70,14 +70,14 @@ ext.deps = [
         javaxExtras: 'com.uber.javaxextras:javax-extras:0.1.0',
         kotlinMetadata: 'me.eugeniomarletti.kotlin.metadata:kotlin-metadata:1.4.0',
         kotlinpoet: 'com.squareup:kotlinpoet:0.7.0',
-        gson: "com.google.code.gson:gson:2.8.1",
-        guava: "com.google.guava:guava:23.6-jre",
-        moshi: "com.squareup.moshi:moshi:1.6.0",
+        gson: "com.google.code.gson:gson:2.8.5",
+        guava: "com.google.guava:guava:27.1-jre",
+        moshi: "com.squareup.moshi:moshi:1.8.0",
     ],
 
     rx: [
-        android: 'io.reactivex.rxjava2:rxandroid:2.0.1',
-        java: 'io.reactivex.rxjava2:rxjava:2.1.0'
+        android: 'io.reactivex.rxjava2:rxandroid:2.1.1',
+        java: 'io.reactivex.rxjava2:rxjava:2.2.7'
     ],
 
     test: [
