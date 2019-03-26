@@ -30,7 +30,7 @@ dependencies {
   implementation deps.apt.autoCommon
   implementation deps.misc.guava
   implementation deps.misc.javapoet
-  implementation deps.kotlin.stdLibJre8
+  implementation deps.kotlin.stdLibJdk8
   implementation project(":crumb-compiler-api")
   api project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }

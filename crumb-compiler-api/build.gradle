@@ -31,7 +31,7 @@ dependencies {
   kapt deps.apt.autoService
   compileOnly deps.apt.autoServiceAnnotations
 
-  compile deps.kotlin.stdLibJre8
+  compile deps.kotlin.stdLibJdk8
   compile project(":crumb-annotations")
 }
 

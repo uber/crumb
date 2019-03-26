@@ -35,6 +35,7 @@ dependencies {
 
   api deps.misc.gson
   api deps.misc.moshi
+  implementation deps.apt.autoValueGsonRuntime
 
   api project(":crumb-annotations")
   api project(":integration-test:annotations")

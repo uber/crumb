@@ -34,7 +34,7 @@ dependencies {
   compile deps.misc.guava
   compile deps.misc.kotlinMetadata
   compile deps.misc.kotlinpoet
-  compile deps.kotlin.stdLibJre8
+  compile deps.kotlin.stdLibJdk8
   compile project(":crumb-compiler")
   compile project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }

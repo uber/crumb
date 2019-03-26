@@ -35,7 +35,7 @@ dependencies {
 
   compile deps.apt.autoCommon
   compile deps.misc.moshi
-  compile deps.kotlin.stdLibJre8
+  compile deps.kotlin.stdLibJdk8
   compile project(":crumb-core")
   compile project(":crumb-annotations")
   compile project(':crumb-compiler-api')

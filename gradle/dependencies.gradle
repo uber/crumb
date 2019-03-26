@@ -17,6 +17,7 @@
 def versions = [
     autoService: '1.0-rc5',
     autoValue: '1.6',
+    autoValueGson: '1.0.0',
     errorProne: '2.2.0',
     dokka: '0.9.17',
     errorPronePlugin: '0.0.13',
@@ -35,7 +36,8 @@ ext.deps = [
         autoService: "com.google.auto.service:auto-service:${versions.autoService}",
         autoValue: "com.google.auto.value:auto-value:${versions.autoValue}",
         autoValueAnnotations: "com.google.auto.value:auto-value-annotations:${versions.autoValue}",
-        autoValueGson: "com.ryanharter.auto.value:auto-value-gson:0.6.0",
+        autoValueGson: "com.ryanharter.auto.value:auto-value-gson:${versions.autoValueGson}",
+        autoValueGsonRuntime: "com.ryanharter.auto.value:auto-value-gson-runtime:${versions.autoValueGson}",
         autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.4",
     ],
 
@@ -57,8 +59,8 @@ ext.deps = [
 
     kotlin: [
         stdLib: "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}",
-        stdLibJre7: "org.jetbrains.kotlin:kotlin-stdlib-jre7:${versions.kotlin}",
-        stdLibJre8: "org.jetbrains.kotlin:kotlin-stdlib-jre8:${versions.kotlin}",
+        stdLibJdk7: "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${versions.kotlin}",
+        stdLibJdk8: "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
     ],
 
     misc: [
