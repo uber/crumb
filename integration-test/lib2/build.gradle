@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import net.ltgt.gradle.errorprone.CheckSeverity
 
 plugins {
   id 'java-library'
@@ -48,5 +49,9 @@ dependencies {
 }
 
 tasks.withType(JavaCompile).configureEach {
-  options.errorprone.disableWarningsInGeneratedCode = true
+  options.errorprone {
+    disableWarningsInGeneratedCode = true
+    // Temporary until https://github.com/rharter/auto-value-moshi/issues/128
+    check("CheckReturnValue", CheckSeverity.WARN)
+  }
 }
