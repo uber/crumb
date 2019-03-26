@@ -19,7 +19,7 @@ def versions = [
     autoValue: '1.6',
     autoValueGson: '1.0.0',
     errorProne: '2.2.0',
-    dokka: '0.9.17',
+    dokka: '0.9.18',
     errorPronePlugin: '0.0.13',
     gjf: '1.5',
     kotlin: '1.3.21',
