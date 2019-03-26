@@ -21,7 +21,8 @@ import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.STAR
 import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
@@ -133,11 +134,11 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
         .toTypedArray()
     val mapFunction = FunSpec.builder("experiments")
         .receiver(type.asClassName())
-        .returns(ParameterizedTypeName.get(Map::class.asClassName(),
-            ParameterizedTypeName.get(Class::class.asClassName(),
-                WildcardTypeName.subtypeOf(
-                    ParameterizedTypeName.get(Enum::class.asClassName(), WildcardTypeName.subtypeOf(ANY)))),
-            ParameterizedTypeName.get(List::class.asClassName(),
+        .returns(Map::class.asClassName().parameterizedBy(
+            Class::class.asClassName().parameterizedBy(
+                WildcardTypeName.producerOf(
+                    Enum::class.asClassName().parameterizedBy(STAR))),
+            List::class.asClassName().parameterizedBy(
                 String::class.asTypeName())))
         .addStatement("return mapOf($initializerCode)", *initializerValues)
         .build()

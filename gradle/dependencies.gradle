@@ -69,7 +69,7 @@ ext.deps = [
         javapoet: "com.squareup:javapoet:1.10.0",
         javaxExtras: 'com.uber.javaxextras:javax-extras:0.1.0',
         kotlinMetadata: 'me.eugeniomarletti.kotlin.metadata:kotlin-metadata:1.4.0',
-        kotlinpoet: 'com.squareup:kotlinpoet:0.7.0',
+        kotlinpoet: 'com.squareup:kotlinpoet:1.1.0',
         gson: "com.google.code.gson:gson:2.8.5",
         guava: "com.google.guava:guava:27.1-jre",
         moshi: "com.squareup.moshi:moshi:1.8.0",
