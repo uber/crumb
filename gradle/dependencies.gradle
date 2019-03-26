@@ -79,6 +79,6 @@ ext.deps = [
     test: [
         compileTesting: 'com.google.testing.compile:compile-testing:0.15',
         junit: 'junit:junit:4.12',
-        truth: 'com.google.truth:truth:0.41'
+        truth: 'com.google.truth:truth:0.43'
     ]
 ]
