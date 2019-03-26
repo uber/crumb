@@ -22,8 +22,8 @@ def versions = [
     errorPronePlugin: '0.0.13',
     gjf: '1.5',
     kotlin: '1.3.21',
-    ktlint: '0.15.0',
-    spotless: '3.9.0'
+    ktlint: '0.31.0',
+    spotless: '3.20.0'
 ]
 
 ext.deps = [
