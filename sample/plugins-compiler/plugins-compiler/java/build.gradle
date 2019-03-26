@@ -26,7 +26,7 @@ dependencies {
   annotationProcessor deps.apt.autoService
   compileOnly deps.misc.javaxExtras
 
-  implementation deps.apt.autoService
+  implementation deps.apt.autoServiceAnnotations
   implementation deps.apt.autoCommon
   implementation deps.misc.guava
   implementation deps.misc.javapoet
