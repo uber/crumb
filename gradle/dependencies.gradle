@@ -16,7 +16,7 @@
 
 def versions = [
     autoService: '1.0-rc5',
-    autoValue: '1.6',
+    autoValue: '1.6.3',
     autoValueGson: '1.0.0',
     errorProne: '2.3.3',
     dokka: '0.9.18',
