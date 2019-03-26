@@ -41,4 +41,12 @@ dependencies {
   api project(":integration-test:annotations")
 
   testCompile deps.test.truth
+
+  errorprone "com.google.errorprone:error_prone_core:${deps.versions.errorProne}"
+  //noinspection GradleDynamicVersion
+  errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.errorprone.disableWarningsInGeneratedCode = true
 }

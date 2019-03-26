@@ -43,7 +43,7 @@ pluginManagement {
           useVersion(deps.versions.errorPronePlugin)
           break
         case 'net.ltgt.apt-idea':
-          useVersion("0.15")
+          useVersion("0.21")
           break
         case 'com.diffplug.gradle.spotless':
           useVersion(deps.versions.spotless)
