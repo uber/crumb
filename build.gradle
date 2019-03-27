@@ -33,6 +33,17 @@ allprojects {
 }
 
 subprojects {
+  afterEvaluate {
+    if (project.getPlugins().hasPlugin('com.android.application') ||
+        project.getPlugins().hasPlugin('com.android.library')) {
+
+      android.lintOptions {
+        // The lint task fails on travis CI's machines, but isn't necessary for these samples either
+        tasks.lint.enabled = false
+      }
+    }
+  }
+
   apply from: rootProject.file('gradle/dependencies.gradle')
   apply plugin: 'com.diffplug.gradle.spotless'
   spotless {
