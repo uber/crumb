@@ -29,7 +29,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 dependencies {
-  compile deps.kotlin.stdLibJre8
+  compile deps.kotlin.stdLibJdk8
   compileOnly files(Jvm.current().getToolsJar())
 }
 

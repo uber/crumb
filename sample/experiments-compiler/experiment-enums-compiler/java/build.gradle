@@ -26,11 +26,19 @@ dependencies {
   annotationProcessor deps.apt.autoService
   compileOnly deps.misc.javaxExtras
 
-  implementation deps.apt.autoService
+  implementation deps.apt.autoServiceAnnotations
   implementation deps.apt.autoCommon
   implementation deps.misc.guava
   implementation deps.misc.javapoet
-  implementation deps.kotlin.stdLibJre8
+  implementation deps.kotlin.stdLibJdk8
   implementation project(":crumb-compiler-api")
   api project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
+
+  errorprone "com.google.errorprone:error_prone_core:${deps.versions.errorProne}"
+  //noinspection GradleDynamicVersion
+  errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.errorprone.disableWarningsInGeneratedCode = true
 }

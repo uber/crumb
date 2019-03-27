@@ -32,13 +32,13 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
   kapt deps.apt.autoService
 
-  compile deps.apt.autoService
+  compile deps.apt.autoServiceAnnotations
   compile deps.apt.autoCommon
   compile deps.misc.guava
   compile deps.misc.javapoet
   compile deps.misc.gson
   compile deps.misc.moshi
-  compile deps.kotlin.stdLibJre8
+  compile deps.kotlin.stdLibJdk8
   compile project(":crumb-compiler-api")
   compile project(":integration-test:annotations")
 

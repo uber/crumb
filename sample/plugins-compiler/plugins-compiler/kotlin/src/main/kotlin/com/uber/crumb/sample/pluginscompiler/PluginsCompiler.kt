@@ -21,7 +21,7 @@ import com.google.auto.common.MoreElements.isAnnotationPresent
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import com.uber.crumb.compiler.api.ConsumerMetadata
@@ -158,7 +158,7 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
         .toTypedArray()
     val pluginsFunction = FunSpec.builder("obtain")
         .receiver(type.asClassName())
-        .returns(ParameterizedTypeName.get(Set::class.asClassName(),
+        .returns(Set::class.asClassName().parameterizedBy(
             targetPlugin.asTypeName()))
         .addStatement(initializerCode, *initializerValues)
         .build()

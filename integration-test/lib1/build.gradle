@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import net.ltgt.gradle.errorprone.CheckSeverity
 
 plugins {
   id 'java-library'
@@ -35,9 +36,22 @@ dependencies {
 
   api deps.misc.gson
   api deps.misc.moshi
+  implementation deps.apt.autoValueGsonRuntime
 
   api project(":crumb-annotations")
   api project(":integration-test:annotations")
 
   testCompile deps.test.truth
+
+  errorprone "com.google.errorprone:error_prone_core:${deps.versions.errorProne}"
+  //noinspection GradleDynamicVersion
+  errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.errorprone {
+    disableWarningsInGeneratedCode = true
+    // Temporary until https://github.com/rharter/auto-value-moshi/issues/128
+    check("CheckReturnValue", CheckSeverity.WARN)
+  }
 }

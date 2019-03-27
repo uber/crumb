@@ -29,4 +29,12 @@ dependencies {
   implementation project(":crumb-annotations")
   implementation project(":sample:plugins-compiler:jvm:java:library")
   implementation project(":sample:plugins-compiler:translations-api")
+
+  errorprone "com.google.errorprone:error_prone_core:${deps.versions.errorProne}"
+  //noinspection GradleDynamicVersion
+  errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.errorprone.disableWarningsInGeneratedCode = true
 }
