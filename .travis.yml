@@ -14,7 +14,7 @@ before_install:
 install: ./gradlew build --stacktrace
 
 script:
-  - ./gradlew check --stacktrace
+  - ./gradlew check -x lint --stacktrace
 
 after_success:
   - .buildscript/deploy_snapshot.sh
