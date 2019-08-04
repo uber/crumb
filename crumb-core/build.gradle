@@ -26,7 +26,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 dependencies {
+  api project(":crumb-annotations")
   compile deps.kotlin.stdLibJdk8
+  implementation deps.misc.javapoet
+  implementation deps.misc.kotlinpoet
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
