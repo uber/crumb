@@ -43,7 +43,7 @@ enum class CrumbOutputLanguage {
     ) {
       val typeSpec = TypeSpec.classBuilder(fileName)
           .addAnnotation(AnnotationSpec.builder(CrumbIndex::class.java)
-              .addMember("value", dataToWrite)
+              .addMember("value", "\$S", dataToWrite)
               .build())
           .addModifiers(FINAL)
           .addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())
@@ -64,7 +64,7 @@ enum class CrumbOutputLanguage {
     ) {
       val typeSpec = com.squareup.kotlinpoet.TypeSpec.objectBuilder(fileName)
           .addAnnotation(com.squareup.kotlinpoet.AnnotationSpec.builder(CrumbIndex::class)
-              .addMember("", dataToWrite)
+              .addMember("%S", dataToWrite)
               .build())
           .addModifiers(KModifier.PRIVATE)
           .build()
