@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import org.gradle.internal.jvm.Jvm
-
 plugins {
   id 'org.jetbrains.kotlin.jvm'
   id 'org.jetbrains.dokka'
@@ -30,7 +27,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 dependencies {
   compile deps.kotlin.stdLibJdk8
-  compileOnly files(Jvm.current().getToolsJar())
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
