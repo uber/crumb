@@ -31,8 +31,8 @@ dependencies {
   kapt deps.apt.autoService
   compileOnly deps.apt.autoServiceAnnotations
 
-  compile deps.kotlin.stdLibJdk8
-  compile project(":crumb-annotations")
+  api deps.kotlin.stdLibJdk8
+  api project(":crumb-annotations")
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

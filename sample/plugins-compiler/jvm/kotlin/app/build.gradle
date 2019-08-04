@@ -30,8 +30,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
   kapt project(":crumb-compiler")
   kapt project(":sample:plugins-compiler:plugins-compiler:kotlin")
-  compile project(":crumb-annotations")
-  compile project(":sample:plugins-compiler:jvm:kotlin:library")
-  compile project(":sample:plugins-compiler:translations-api")
-  compile deps.kotlin.stdLib
+  implementation project(":crumb-annotations")
+  implementation project(":sample:plugins-compiler:jvm:kotlin:library")
+  implementation project(":sample:plugins-compiler:translations-api")
+  implementation deps.kotlin.stdLib
 }

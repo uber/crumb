@@ -30,6 +30,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
   kapt project(":crumb-compiler")
   kapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
-  compile project(":crumb-annotations")
-  compile project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
+  api project(":crumb-annotations")
+  api project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }

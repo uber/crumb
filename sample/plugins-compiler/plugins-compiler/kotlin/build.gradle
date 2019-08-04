@@ -29,12 +29,12 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
   kapt deps.apt.autoService
 
-  compile deps.apt.autoServiceAnnotations
-  compile deps.apt.autoCommon
-  compile deps.misc.guava
-  compile deps.misc.kotlinMetadata
-  compile deps.misc.kotlinpoet
-  compile deps.kotlin.stdLibJdk8
-  compile project(":crumb-compiler")
-  compile project(":sample:plugins-compiler:plugins-compiler:annotations")
+  implementation deps.apt.autoServiceAnnotations
+  implementation deps.apt.autoCommon
+  implementation deps.misc.guava
+  implementation deps.misc.kotlinMetadata
+  implementation deps.misc.kotlinpoet
+  implementation deps.kotlin.stdLibJdk8
+  implementation project(":crumb-compiler")
+  implementation project(":sample:plugins-compiler:plugins-compiler:annotations")
 }

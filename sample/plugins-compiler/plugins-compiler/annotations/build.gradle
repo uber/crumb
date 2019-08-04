@@ -23,7 +23,7 @@ sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
-  compile project(':crumb-annotations')
+  api project(':crumb-annotations')
 
   errorprone "com.google.errorprone:error_prone_core:${deps.versions.errorProne}"
   //noinspection GradleDynamicVersion
