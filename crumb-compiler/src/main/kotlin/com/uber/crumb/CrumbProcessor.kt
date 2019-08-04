@@ -37,7 +37,7 @@ import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.core.CrumbLog
 import com.uber.crumb.core.CrumbLog.Client.MessagerClient
 import com.uber.crumb.core.CrumbManager
-import com.uber.crumb.core.CrumbManager.Companion.OPTION_EXTRA_LOCATIONS
+import com.uber.crumb.core.CrumbOutputLanguage
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
@@ -60,19 +60,19 @@ internal typealias MoshiTypes = com.squareup.moshi.Types
  * Processes all [CrumbConsumer] and [CrumbProducer] annotated types.
  */
 @AutoService(Processor::class)
-@SupportedOptions(OPTION_VERBOSE, OPTION_EXTRA_LOCATIONS)
+@SupportedOptions(OPTION_VERBOSE)
 class CrumbProcessor : AbstractProcessor {
 
   companion object {
 
-    const val CRUMB_EXTENSION = "-crumbinfo.bin"
+    const val CRUMB_INDEX_SUFFIX = "CrumbIndex"
 
     /**
      * Option to disable verbose logging
      */
     const val OPTION_VERBOSE = "crumb.options.verbose"
 
-    private val CRUMB_EXTENSION_FINDER = { name: String -> name.endsWith(CRUMB_EXTENSION) }
+    private const val CRUMB_INDICES_PACKAGE = "com.uber.crumb.indices"
   }
 
   private val crumbAdapter = Moshi.Builder()
@@ -150,7 +150,7 @@ class CrumbProcessor : AbstractProcessor {
       }
       warning.append(" Exception: ")
           .append(t)
-      processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, warning.toString(), null)
+      processingEnv.messager.printMessage(WARNING, warning.toString(), null)
       producerExtensions = setOf()
       consumerExtensions = setOf()
     }
@@ -216,9 +216,10 @@ class CrumbProcessor : AbstractProcessor {
           // Write metadata to resources for consumers to pick up
           val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras)
           val json = crumbAdapter.toJson(crumbModel)
-          crumbManager.store(packageName,
-              adapterName + CRUMB_EXTENSION,
-              json)
+          crumbManager.store(CRUMB_INDICES_PACKAGE,
+              "$adapterName$CRUMB_INDEX_SUFFIX",
+              json,
+              CrumbOutputLanguage.languageForType(producer))
         }
   }
 
@@ -245,7 +246,7 @@ class CrumbProcessor : AbstractProcessor {
     }
 
     // Load the producerMetadata from the classpath
-    val producerMetadataBlobs = crumbManager.load<String>(CRUMB_EXTENSION_FINDER)
+    val producerMetadataBlobs = crumbManager.load(CRUMB_INDICES_PACKAGE)
 
     if (producerMetadataBlobs.isEmpty()) {
       message(WARNING, consumers.map { it.first }.iterator().next(),
