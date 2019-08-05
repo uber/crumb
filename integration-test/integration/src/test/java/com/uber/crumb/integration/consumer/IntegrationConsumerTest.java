@@ -15,9 +15,6 @@
  */
 package com.uber.crumb.integration.consumer;
 
-import static com.google.common.truth.Truth.assertThat;
-import static junit.framework.TestCase.fail;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.moshi.Moshi;
@@ -29,6 +26,9 @@ import com.uber.crumb.integration.lib3.Lib3Enum;
 import com.uber.crumb.integration.lib3.Lib3Model;
 import java.io.IOException;
 import org.junit.Test;
+
+import static com.google.common.truth.Truth.assertThat;
+import static junit.framework.TestCase.fail;
 
 public final class IntegrationConsumerTest {
 
@@ -97,7 +97,7 @@ public final class IntegrationConsumerTest {
         .isInstanceOf(Lib1Model.jsonAdapter(moshi).getClass());
   }
 
-  public static class TestData {
+  public static final class TestData {
 
     public final Lib1Model lib1Model;
     public final Lib1Enum lib1Enum;
