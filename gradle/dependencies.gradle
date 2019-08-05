@@ -38,7 +38,7 @@ ext.deps = [
         autoValueAnnotations: "com.google.auto.value:auto-value-annotations:${versions.autoValue}",
         autoValueGson: "com.ryanharter.auto.value:auto-value-gson:${versions.autoValueGson}",
         autoValueGsonRuntime: "com.ryanharter.auto.value:auto-value-gson-runtime:${versions.autoValueGson}",
-        autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.6",
+        autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.4",
     ],
 
     build: [
