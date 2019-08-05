@@ -21,6 +21,7 @@ package com.uber.crumb.core
 import com.uber.crumb.annotations.internal.CrumbIndex
 import java.io.Serializable
 import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.Element
 import javax.lang.model.element.PackageElement
 
 /**
@@ -71,7 +72,8 @@ class CrumbManager(private val env: ProcessingEnvironment,
       packageName: String,
       fileName: String,
       dataToWrite: String,
-      outputLanguage: CrumbOutputLanguage) {
-    outputLanguage.writeTo(env.filer, packageName, fileName, dataToWrite)
+      outputLanguage: CrumbOutputLanguage,
+      originatingElements: Set<Element> = emptySet()) {
+    outputLanguage.writeTo(env.filer, packageName, fileName, dataToWrite, originatingElements)
   }
 }

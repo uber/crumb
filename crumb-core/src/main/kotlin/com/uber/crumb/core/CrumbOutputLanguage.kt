@@ -24,6 +24,7 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.uber.crumb.annotations.internal.CrumbIndex
 import javax.annotation.processing.Filer
+import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier.FINAL
 import javax.lang.model.element.Modifier.PRIVATE
 import javax.lang.model.element.TypeElement
@@ -31,7 +32,6 @@ import javax.lang.model.element.TypeElement
 /**
  * TODO doc
  * TODO explanatory comments in code
- * TODO originating elements
  */
 enum class CrumbOutputLanguage {
   JAVA {
@@ -39,7 +39,8 @@ enum class CrumbOutputLanguage {
         filer: Filer,
         packageName: String,
         fileName: String,
-        dataToWrite: String
+        dataToWrite: String,
+        originatingElements: Set<Element>
     ) {
       val typeSpec = TypeSpec.classBuilder(fileName)
           .addAnnotation(AnnotationSpec.builder(CrumbIndex::class.java)
@@ -47,6 +48,9 @@ enum class CrumbOutputLanguage {
               .build())
           .addModifiers(FINAL)
           .addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())
+          .apply {
+            originatingElements.forEach { addOriginatingElement(it) }
+          }
           .build()
       JavaFile.builder(packageName, typeSpec)
           .addFileComment("Generated, do not modify!")
@@ -60,13 +64,17 @@ enum class CrumbOutputLanguage {
         filer: Filer,
         packageName: String,
         fileName: String,
-        dataToWrite: String
+        dataToWrite: String,
+        originatingElements: Set<Element>
     ) {
       val typeSpec = com.squareup.kotlinpoet.TypeSpec.objectBuilder(fileName)
           .addAnnotation(com.squareup.kotlinpoet.AnnotationSpec.builder(CrumbIndex::class)
               .addMember("%S", dataToWrite)
               .build())
           .addModifiers(KModifier.PRIVATE)
+          .apply {
+            this.originatingElements += originatingElements
+          }
           .build()
       FileSpec.builder(packageName, fileName)
           .addComment("Generated, do not modify!")
@@ -80,7 +88,8 @@ enum class CrumbOutputLanguage {
   abstract fun writeTo(filer: Filer,
       packageName: String,
       fileName: String,
-      dataToWrite: String
+      dataToWrite: String,
+      originatingElements: Set<Element> = emptySet()
   )
 
   companion object {
