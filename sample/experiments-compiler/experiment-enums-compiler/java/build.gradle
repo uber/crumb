@@ -31,7 +31,7 @@ dependencies {
   implementation deps.misc.guava
   implementation deps.misc.javapoet
   implementation deps.kotlin.stdLibJdk8
-  implementation project(":crumb-compiler-api")
+  implementation project(path: ":crumb-compiler-api", configuration: "default")
   api project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 
   errorprone "com.google.errorprone:error_prone_core:${deps.versions.errorProne}"

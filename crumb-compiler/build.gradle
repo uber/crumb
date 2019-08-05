@@ -30,12 +30,13 @@ dependencies {
   kapt deps.apt.autoService
   compileOnly deps.apt.autoServiceAnnotations
 
+  api deps.misc.moshi
+  api project(":crumb-core")
+  api project(':crumb-compiler-api')
+
   implementation deps.apt.autoCommon
-  implementation deps.misc.moshi
   implementation deps.kotlin.stdLibJdk8
-  implementation project(":crumb-core")
   implementation project(":crumb-annotations")
-  implementation project(':crumb-compiler-api')
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
