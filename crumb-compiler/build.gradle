@@ -31,13 +31,12 @@ dependencies {
   kapt deps.apt.moshiKotlinCodegen
   compileOnly deps.apt.autoServiceAnnotations
 
-  api deps.misc.moshi
-  api project(":crumb-core")
-  api project(':crumb-compiler-api')
-
+  implementation project(":crumb-annotations")
+  implementation project(":crumb-core")
+  implementation project(':crumb-compiler-api')
   implementation deps.apt.autoCommon
   implementation deps.kotlin.stdLibJdk8
-  implementation project(":crumb-annotations")
+  implementation deps.misc.moshi
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
