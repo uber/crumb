@@ -41,4 +41,5 @@ dependencies {
 
   testImplementation project(":crumb-compiler")
   testImplementation deps.test.compileTesting
+  testImplementation files(org.gradle.internal.jvm.Jvm.current().getToolsJar())
 }
