@@ -28,6 +28,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 dependencies {
   kapt deps.apt.autoService
+  kapt deps.apt.moshiKotlinCodegen
   compileOnly deps.apt.autoServiceAnnotations
 
   api deps.misc.moshi

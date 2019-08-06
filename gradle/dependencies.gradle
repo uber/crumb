@@ -24,6 +24,7 @@ def versions = [
     gjf: '1.7',
     kotlin: '1.3.41',
     ktlint: '0.34.2',
+    moshi: '1.8.0',
     spotless: '3.24.0'
 ]
 
@@ -39,6 +40,7 @@ ext.deps = [
         autoValueGson: "com.ryanharter.auto.value:auto-value-gson:${versions.autoValueGson}",
         autoValueGsonRuntime: "com.ryanharter.auto.value:auto-value-gson-runtime:${versions.autoValueGson}",
         autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.7",
+        moshiKotlinCodegen: "com.squareup.moshi:moshi-kotlin-codegen:${versions.moshi}",
     ],
 
     build: [
@@ -72,7 +74,7 @@ ext.deps = [
         kotlinpoet: 'com.squareup:kotlinpoet:1.3.0',
         gson: "com.google.code.gson:gson:2.8.5",
         guava: "com.google.guava:guava:28.0-jre",
-        moshi: "com.squareup.moshi:moshi:1.8.0",
+        moshi: "com.squareup.moshi:moshi:${versions.moshi}",
     ],
 
     rx: [

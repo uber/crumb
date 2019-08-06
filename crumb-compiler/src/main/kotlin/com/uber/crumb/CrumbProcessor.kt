@@ -18,9 +18,7 @@ package com.uber.crumb
 
 import com.google.auto.service.AutoService
 import com.google.common.annotations.VisibleForTesting
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.JsonAdapter.Factory
-import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.uber.crumb.CrumbProcessor.Companion.OPTION_VERBOSE
 import com.uber.crumb.annotations.CrumbConsumable
@@ -76,7 +74,6 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   private val crumbAdapter = Moshi.Builder()
-      .add(CrumbAdapter.FACTORY)
       .build()
       .adapter(CrumbModel::class.java)
 
@@ -294,59 +291,10 @@ class CrumbProcessor : AbstractProcessor {
   }
 }
 
-// TODO(zsweers) Switch to MoshiSerializable when public
-internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
-
-  companion object {
-    private val NAMES = arrayOf("name", "extras")
-    private val OPTIONS = JsonReader.Options.of(*NAMES)
-
-    val FACTORY = Factory { type, _, moshi ->
-      when (type) {
-        CrumbModel::class.java -> CrumbAdapter(moshi).failOnUnknown()
-        else -> null
-      }
-    }
-  }
-
-  private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ConsumerMetadata>>(
-      MoshiTypes.newParameterizedType(
-          Map::class.java,
-          String::class.java,
-          MoshiTypes.newParameterizedType(Map::class.java,
-              String::class.java,
-              String::class.java)))
-
-  override fun fromJson(reader: JsonReader): CrumbModel {
-    lateinit var name: ExtensionKey
-    lateinit var extras: Map<ExtensionKey, ConsumerMetadata>
-    reader.beginObject()
-    while (reader.hasNext()) {
-      when (reader.selectName(OPTIONS)) {
-        0 -> name = reader.nextString()
-        1 -> extras = extrasAdapter.fromJson(reader)!!
-        else -> throw IllegalArgumentException("Unrecognized name: ${reader.nextName()}")
-      }
-    }
-    reader.endObject()
-    return CrumbModel(name, extras)
-  }
-
-  override fun toJson(writer: com.squareup.moshi.JsonWriter, model: CrumbModel?) {
-    model?.run {
-      writer.beginObject()
-          .name("name")
-          .value(name)
-          .name("extras")
-      extrasAdapter.toJson(writer, extras)
-      writer.endObject()
-    }
-  }
-}
-
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 internal inline fun <T> Iterable<*>.cast() = map { it as T }
 
+@JsonClass(generateAdapter = true)
 internal data class CrumbModel(
     val name: String,
     val extras: Map<ExtensionKey, ConsumerMetadata>)
