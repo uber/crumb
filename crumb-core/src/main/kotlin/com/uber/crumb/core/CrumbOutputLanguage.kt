@@ -34,7 +34,6 @@ private typealias KotlinAnnotationSpec = com.squareup.kotlinpoet.AnnotationSpec
 
 /**
  * TODO doc
- * TODO explanatory comments in code
  */
 enum class CrumbOutputLanguage {
   JAVA {
@@ -46,6 +45,7 @@ enum class CrumbOutputLanguage {
         originatingElements: Set<Element>
     ) {
       val typeSpec = TypeSpec.classBuilder(fileName)
+          .addJavadoc(EXPLANATORY_COMMENT)
           .addAnnotation(AnnotationSpec.builder(CrumbIndex::class.java)
               .addMember("value", "\$S", dataToWrite)
               .build())
@@ -71,6 +71,7 @@ enum class CrumbOutputLanguage {
         originatingElements: Set<Element>
     ) {
       val typeSpec = KotlinTypeSpec.objectBuilder(fileName)
+          .addKdoc(EXPLANATORY_COMMENT)
           .addAnnotation(KotlinAnnotationSpec.builder(CrumbIndex::class)
               .addMember("%S", dataToWrite)
               .build())
@@ -96,6 +97,7 @@ enum class CrumbOutputLanguage {
   )
 
   companion object {
+    private const val EXPLANATORY_COMMENT = "This type + annotation exists for sharing information to the Crumb annotation processor and should not be considered public API."
     private const val GENERATED_COMMENT = "Generated, do not modify!"
     private const val INDENT = "  "
     fun languageForType(element: TypeElement): CrumbOutputLanguage {
