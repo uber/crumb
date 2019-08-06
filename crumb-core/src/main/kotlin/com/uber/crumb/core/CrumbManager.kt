@@ -13,36 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:Suppress("UNCHECKED_CAST")
-
 package com.uber.crumb.core
 
 import com.uber.crumb.annotations.internal.CrumbIndex
-import java.io.Serializable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.PackageElement
 
 /**
- * // TODO new docs
- * A utility class that helps adding build specific objects to the jar file and their extraction later on. This
- * specifically works by reading/writing metadata in the Crumb `META-INF` location of jars from the classpath.
+ * A utility class that helps with generating types to hold [CrumbIndexes][CrumbIndex] of metadata and reading them
+ * later.
  *
- * Optionally, a colon-delimited list of extra locations to search for in loading can be specified via specifying the
- * [OPTION_EXTRA_LOCATIONS] option in the given [env].
- *
- * Adapted from the [Android DataBinding library](https://android.googlesource.com/platform/frameworks/data-binding/+/master).
+ * @property env A given [ProcessingEnvironment] instance.
+ * @property crumbLog A [CrumbLog] instance for logging information.
  */
 class CrumbManager(private val env: ProcessingEnvironment,
     private val crumbLog: CrumbLog) {
 
   /**
-   * This loads a given [Set]<[T]> from the Crumb `META-INF` store that matches the given [nameFilter].
+   * This loads a given [Set]<String> from the available [CrumbIndex] instances in the given [packageName].
    *
-   * @param nameFilter a name filter to match on. Conventionally, one could use a "known" file extension used for file
-   *                   names in [store].
-   * @return the loaded [Set]<[T]>, or an empty set if none were found.
+   * @param packageName The target package to load types containing [CrumbIndex] annotations from.
+   * @return the loaded [Set]<String>, or an empty set if none were found.
    */
   fun load(packageName: String): Set<String> {
     // If this package is null, it means there are no classes with this package name. One way this
@@ -62,11 +54,15 @@ class CrumbManager(private val env: ProcessingEnvironment,
   }
 
   /**
-   * This writes a given [String] [dataToWrite] to the Crumb `META-INF` store.
+   * This writes a given [String] [dataToWrite] to a [CrumbIndex] type in the given [packageName].
    *
-   * @param packageName the package name to use for the file in writing.
-   * @param fileName the file name to use in writing.
-   * @param dataToWrite the [Serializable] object to write.
+   * @param packageName The package name to use for the file in writing. Note that this should be the package that all
+   *                    metadata index-holder types are written to, and not necessarily the package name of the source
+   *                    element.
+   * @param fileName The file name to use in writing.
+   * @param dataToWrite The metadata to write to the eventual [CrumbIndex].
+   * @param outputLanguage The target output language.
+   * @param originatingElements Any originating elements for the metadata.
    */
   fun store(
       packageName: String,

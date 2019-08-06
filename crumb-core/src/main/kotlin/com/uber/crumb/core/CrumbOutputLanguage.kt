@@ -33,7 +33,8 @@ private typealias KotlinTypeSpec = com.squareup.kotlinpoet.TypeSpec
 private typealias KotlinAnnotationSpec = com.squareup.kotlinpoet.AnnotationSpec
 
 /**
- * TODO doc
+ * Supported output languages for Crumb metadata. When [writeTo] is called, a simple empty class is generated to hold a
+ * [CrumbIndex] annotation containing all the crumb metadata specified.
  */
 enum class CrumbOutputLanguage {
   JAVA {
@@ -89,6 +90,16 @@ enum class CrumbOutputLanguage {
     }
   };
 
+  /**
+   * Writes crumb metadata for this language.
+   *
+   * @param filer A [Filer] to write with.
+   * @param packageName The package to write to. Note that this should be the package that all metadata index-holder
+   *                    types are written to, and not necessarily the package name of the source element.
+   * @param fileName The file name.
+   * @param dataToWrite The metadata to write to the eventual [CrumbIndex].
+   * @param originatingElements Any originating elements for the metadata.
+   */
   abstract fun writeTo(filer: Filer,
       packageName: String,
       fileName: String,
@@ -100,6 +111,11 @@ enum class CrumbOutputLanguage {
     private const val EXPLANATORY_COMMENT = "This type + annotation exists for sharing information to the Crumb annotation processor and should not be considered public API."
     private const val GENERATED_COMMENT = "Generated, do not modify!"
     private const val INDENT = "  "
+
+    /**
+     * @return the target language that should be used for a given [element]. In principle, this tries to match the
+     * output language to the source language.
+     */
     fun languageForType(element: TypeElement): CrumbOutputLanguage {
       return if (element.getAnnotation(Metadata::class.java) != null) {
         KOTLIN
