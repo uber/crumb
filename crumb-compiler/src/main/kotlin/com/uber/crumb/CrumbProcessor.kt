@@ -292,7 +292,7 @@ class CrumbProcessor : AbstractProcessor {
 }
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-internal inline fun <T> Iterable<*>.cast() = map { it as T }
+private inline fun <T> Iterable<*>.cast() = map { it as T }
 
 @JsonClass(generateAdapter = true)
 internal data class CrumbModel(
