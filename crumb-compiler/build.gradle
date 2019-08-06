@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import org.gradle.internal.jvm.Jvm
-
 plugins {
   id 'org.jetbrains.kotlin.jvm'
   id 'org.jetbrains.kotlin.kapt'
@@ -31,16 +28,16 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 dependencies {
   kapt deps.apt.autoService
+  kapt deps.apt.moshiKotlinCodegen
   compileOnly deps.apt.autoServiceAnnotations
 
-  compile deps.apt.autoCommon
-  compile deps.misc.moshi
-  compile deps.kotlin.stdLibJdk8
-  compile project(":crumb-core")
-  compile project(":crumb-annotations")
-  compile project(':crumb-compiler-api')
+  api deps.misc.moshi
+  api project(":crumb-core")
+  api project(':crumb-compiler-api')
 
-  compileOnly files(Jvm.current().getToolsJar())
+  implementation deps.apt.autoCommon
+  implementation deps.kotlin.stdLibJdk8
+  implementation project(":crumb-annotations")
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

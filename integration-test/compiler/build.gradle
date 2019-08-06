@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import org.gradle.internal.jvm.Jvm
-
 plugins {
   id 'java-library'
   id 'org.jetbrains.kotlin.jvm'
@@ -32,18 +29,17 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
   kapt deps.apt.autoService
 
-  compile deps.apt.autoServiceAnnotations
-  compile deps.apt.autoCommon
-  compile deps.misc.guava
-  compile deps.misc.javapoet
-  compile deps.misc.gson
-  compile deps.misc.moshi
-  compile deps.kotlin.stdLibJdk8
-  compile project(":crumb-compiler-api")
-  compile project(":integration-test:annotations")
+  implementation deps.apt.autoServiceAnnotations
+  implementation deps.apt.autoCommon
+  implementation deps.misc.guava
+  implementation deps.misc.javapoet
+  implementation deps.misc.gson
+  implementation deps.misc.moshi
+  implementation deps.kotlin.stdLibJdk8
+  implementation project(":crumb-compiler-api")
+  implementation project(":integration-test:annotations")
 
-  compileOnly files(Jvm.current().getToolsJar())
-  testCompile project(":crumb-compiler")
-  testCompile deps.test.compileTesting
-  testCompile files(Jvm.current().getToolsJar())
+  testImplementation project(":crumb-compiler")
+  testImplementation deps.test.compileTesting
+  testImplementation files(org.gradle.internal.jvm.Jvm.current().getToolsJar())
 }

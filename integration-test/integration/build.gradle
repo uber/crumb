@@ -34,7 +34,7 @@ dependencies {
   api project(":integration-test:lib3")
   api project(":integration-test:annotations")
 
-  testCompile deps.test.truth
+  testImplementation deps.test.truth
 
   errorprone "com.google.errorprone:error_prone_core:${deps.versions.errorProne}"
   //noinspection GradleDynamicVersion

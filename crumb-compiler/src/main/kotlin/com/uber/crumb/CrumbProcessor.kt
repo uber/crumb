@@ -18,9 +18,7 @@ package com.uber.crumb
 
 import com.google.auto.service.AutoService
 import com.google.common.annotations.VisibleForTesting
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.JsonAdapter.Factory
-import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.uber.crumb.CrumbProcessor.Companion.OPTION_VERBOSE
 import com.uber.crumb.annotations.CrumbConsumable
@@ -37,7 +35,7 @@ import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.core.CrumbLog
 import com.uber.crumb.core.CrumbLog.Client.MessagerClient
 import com.uber.crumb.core.CrumbManager
-import com.uber.crumb.core.CrumbManager.Companion.OPTION_EXTRA_LOCATIONS
+import com.uber.crumb.core.CrumbOutputLanguage
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
@@ -60,23 +58,22 @@ internal typealias MoshiTypes = com.squareup.moshi.Types
  * Processes all [CrumbConsumer] and [CrumbProducer] annotated types.
  */
 @AutoService(Processor::class)
-@SupportedOptions(OPTION_VERBOSE, OPTION_EXTRA_LOCATIONS)
+@SupportedOptions(OPTION_VERBOSE)
 class CrumbProcessor : AbstractProcessor {
 
   companion object {
 
-    const val CRUMB_EXTENSION = "-crumbinfo.bin"
+    const val CRUMB_INDEX_SUFFIX = "CrumbIndex"
 
     /**
      * Option to disable verbose logging
      */
     const val OPTION_VERBOSE = "crumb.options.verbose"
 
-    private val CRUMB_EXTENSION_FINDER = { name: String -> name.endsWith(CRUMB_EXTENSION) }
+    private const val CRUMB_INDICES_PACKAGE = "com.uber.crumb.indices"
   }
 
   private val crumbAdapter = Moshi.Builder()
-      .add(CrumbAdapter.FACTORY)
       .build()
       .adapter(CrumbModel::class.java)
 
@@ -150,7 +147,7 @@ class CrumbProcessor : AbstractProcessor {
       }
       warning.append(" Exception: ")
           .append(t)
-      processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, warning.toString(), null)
+      processingEnv.messager.printMessage(WARNING, warning.toString(), null)
       producerExtensions = setOf()
       consumerExtensions = setOf()
     }
@@ -216,9 +213,13 @@ class CrumbProcessor : AbstractProcessor {
           // Write metadata to resources for consumers to pick up
           val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras)
           val json = crumbAdapter.toJson(crumbModel)
-          crumbManager.store(packageName,
-              adapterName + CRUMB_EXTENSION,
-              json)
+          crumbManager.store(
+              packageName = CRUMB_INDICES_PACKAGE,
+              fileName = "$adapterName$CRUMB_INDEX_SUFFIX",
+              dataToWrite = json,
+              outputLanguage = CrumbOutputLanguage.languageForType(producer),
+              originatingElements = setOf(producer)
+          )
         }
   }
 
@@ -245,7 +246,7 @@ class CrumbProcessor : AbstractProcessor {
     }
 
     // Load the producerMetadata from the classpath
-    val producerMetadataBlobs = crumbManager.load<String>(CRUMB_EXTENSION_FINDER)
+    val producerMetadataBlobs = crumbManager.load(CRUMB_INDICES_PACKAGE)
 
     if (producerMetadataBlobs.isEmpty()) {
       message(WARNING, consumers.map { it.first }.iterator().next(),
@@ -290,59 +291,10 @@ class CrumbProcessor : AbstractProcessor {
   }
 }
 
-// TODO(zsweers) Switch to MoshiSerializable when public
-internal class CrumbAdapter(moshi: Moshi) : JsonAdapter<CrumbModel>() {
-
-  companion object {
-    private val NAMES = arrayOf("name", "extras")
-    private val OPTIONS = JsonReader.Options.of(*NAMES)
-
-    val FACTORY = Factory { type, _, moshi ->
-      when (type) {
-        CrumbModel::class.java -> CrumbAdapter(moshi).failOnUnknown()
-        else -> null
-      }
-    }
-  }
-
-  private val extrasAdapter = moshi.adapter<Map<ExtensionKey, ConsumerMetadata>>(
-      MoshiTypes.newParameterizedType(
-          Map::class.java,
-          String::class.java,
-          MoshiTypes.newParameterizedType(Map::class.java,
-              String::class.java,
-              String::class.java)))
-
-  override fun fromJson(reader: JsonReader): CrumbModel {
-    lateinit var name: ExtensionKey
-    lateinit var extras: Map<ExtensionKey, ConsumerMetadata>
-    reader.beginObject()
-    while (reader.hasNext()) {
-      when (reader.selectName(OPTIONS)) {
-        0 -> name = reader.nextString()
-        1 -> extras = extrasAdapter.fromJson(reader)!!
-        else -> throw IllegalArgumentException("Unrecognized name: ${reader.nextName()}")
-      }
-    }
-    reader.endObject()
-    return CrumbModel(name, extras)
-  }
-
-  override fun toJson(writer: com.squareup.moshi.JsonWriter, model: CrumbModel?) {
-    model?.run {
-      writer.beginObject()
-          .name("name")
-          .value(name)
-          .name("extras")
-      extrasAdapter.toJson(writer, extras)
-      writer.endObject()
-    }
-  }
-}
-
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-internal inline fun <T> Iterable<*>.cast() = map { it as T }
+private inline fun <T> Iterable<*>.cast() = map { it as T }
 
+@JsonClass(generateAdapter = true)
 internal data class CrumbModel(
     val name: String,
     val extras: Map<ExtensionKey, ConsumerMetadata>)

@@ -30,7 +30,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
   kapt project(":crumb-compiler")
   kapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
-  compile project(":crumb-annotations")
-  compile project(":sample:experiments-compiler:jvm:kotlin:library")
-  compile deps.kotlin.stdLib
+  implementation project(":crumb-annotations")
+  implementation project(":sample:experiments-compiler:jvm:kotlin:library")
+  implementation deps.kotlin.stdLib
 }

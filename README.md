@@ -109,22 +109,9 @@ Full docs can be found here: https://uber.github.io/crumb/0.x/
 
 ## Packaging
 
-To exclude crumbs from being compiled into an Android application APK, add the following exclusion
-via the `packagingOptions` closure:
-
-```gradle
-packagingOptions {
-  exclude "META-INF/com.uber.crumb/**"
-}
-```
-
-## Kotlin Issues
-
-There is one issue we've encountered when using this in plain Kotlin Gradle projects:
-
-[Resources in project dependencies are not available in consuming projects](https://youtrack.jetbrains.com/issue/KT-23724)
-
-Note that this is only when consuming data in a plain Kotlin project. Android projects work fine.
+Crumb works via generating synthetic types that hold `@CrumbIndex` annotations that hold information. These
+must be present in consumers compilation classpath to be used, but can be safely stripped (via 
+tools such as R8, Proguard, etc) in production applications as they should appear to be unused.
 
 ## Example: Plugin Loader
 
