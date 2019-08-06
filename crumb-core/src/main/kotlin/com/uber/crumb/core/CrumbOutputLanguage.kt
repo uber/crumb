@@ -29,6 +29,9 @@ import javax.lang.model.element.Modifier.FINAL
 import javax.lang.model.element.Modifier.PRIVATE
 import javax.lang.model.element.TypeElement
 
+private typealias KotlinTypeSpec = com.squareup.kotlinpoet.TypeSpec
+private typealias KotlinAnnotationSpec = com.squareup.kotlinpoet.AnnotationSpec
+
 /**
  * TODO doc
  * TODO explanatory comments in code
@@ -53,8 +56,8 @@ enum class CrumbOutputLanguage {
           }
           .build()
       JavaFile.builder(packageName, typeSpec)
-          .addFileComment("Generated, do not modify!")
-          .indent("  ")
+          .addFileComment(GENERATED_COMMENT)
+          .indent(INDENT)
           .build()
           .writeTo(filer)
     }
@@ -67,8 +70,8 @@ enum class CrumbOutputLanguage {
         dataToWrite: String,
         originatingElements: Set<Element>
     ) {
-      val typeSpec = com.squareup.kotlinpoet.TypeSpec.objectBuilder(fileName)
-          .addAnnotation(com.squareup.kotlinpoet.AnnotationSpec.builder(CrumbIndex::class)
+      val typeSpec = KotlinTypeSpec.objectBuilder(fileName)
+          .addAnnotation(KotlinAnnotationSpec.builder(CrumbIndex::class)
               .addMember("%S", dataToWrite)
               .build())
           .addModifiers(KModifier.PRIVATE)
@@ -77,9 +80,9 @@ enum class CrumbOutputLanguage {
           }
           .build()
       FileSpec.builder(packageName, fileName)
-          .addComment("Generated, do not modify!")
+          .addComment(GENERATED_COMMENT)
           .addType(typeSpec)
-          .indent("  ")
+          .indent(INDENT)
           .build()
           .writeTo(filer)
     }
@@ -93,6 +96,8 @@ enum class CrumbOutputLanguage {
   )
 
   companion object {
+    private const val GENERATED_COMMENT = "Generated, do not modify!"
+    private const val INDENT = "  "
     fun languageForType(element: TypeElement): CrumbOutputLanguage {
       return if (element.getAnnotation(Metadata::class.java) != null) {
         KOTLIN
