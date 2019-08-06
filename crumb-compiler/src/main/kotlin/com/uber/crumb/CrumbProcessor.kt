@@ -52,8 +52,6 @@ import javax.tools.Diagnostic
 import javax.tools.Diagnostic.Kind.ERROR
 import javax.tools.Diagnostic.Kind.WARNING
 
-internal typealias MoshiTypes = com.squareup.moshi.Types
-
 /**
  * Processes all [CrumbConsumer] and [CrumbProducer] annotated types.
  */
