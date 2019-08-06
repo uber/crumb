@@ -4,6 +4,7 @@ dist: trusty
 
 jdk:
   - oraclejdk8
+  - openjdk11
 
 before_install:
   # Install SDK license so Android Gradle plugin can install deps.
