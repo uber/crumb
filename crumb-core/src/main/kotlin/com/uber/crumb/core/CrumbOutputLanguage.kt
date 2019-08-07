@@ -23,6 +23,7 @@ import com.squareup.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.uber.crumb.annotations.internal.CrumbIndex
+import okio.BufferedSource
 import javax.annotation.processing.Filer
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier.FINAL
@@ -42,13 +43,13 @@ enum class CrumbOutputLanguage {
         filer: Filer,
         packageName: String,
         fileName: String,
-        dataToWrite: String,
+        dataToWrite: BufferedSource,
         originatingElements: Set<Element>
     ) {
       val typeSpec = TypeSpec.classBuilder(fileName)
           .addJavadoc(EXPLANATORY_COMMENT)
           .addAnnotation(AnnotationSpec.builder(CrumbIndex::class.java)
-              .addMember("value", "\$S", dataToWrite)
+              .addMember("value", "\$S", dataToWrite.readUtf8())
               .build())
           .addModifiers(FINAL)
           .addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())
@@ -68,13 +69,13 @@ enum class CrumbOutputLanguage {
         filer: Filer,
         packageName: String,
         fileName: String,
-        dataToWrite: String,
+        dataToWrite: BufferedSource,
         originatingElements: Set<Element>
     ) {
       val typeSpec = KotlinTypeSpec.objectBuilder(fileName)
           .addKdoc(EXPLANATORY_COMMENT)
           .addAnnotation(KotlinAnnotationSpec.builder(CrumbIndex::class)
-              .addMember("%S", dataToWrite)
+              .addMember("%S", dataToWrite.readUtf8())
               .build())
           .addModifiers(KModifier.PRIVATE)
           .apply {
@@ -103,7 +104,7 @@ enum class CrumbOutputLanguage {
   abstract fun writeTo(filer: Filer,
       packageName: String,
       fileName: String,
-      dataToWrite: String,
+      dataToWrite: BufferedSource,
       originatingElements: Set<Element> = emptySet()
   )
 

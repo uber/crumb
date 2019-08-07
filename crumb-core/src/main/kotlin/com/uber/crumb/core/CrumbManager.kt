@@ -16,6 +16,9 @@
 package com.uber.crumb.core
 
 import com.uber.crumb.annotations.internal.CrumbIndex
+import okio.Buffer
+import okio.BufferedSource
+import okio.ByteString.Companion.encodeUtf8
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.PackageElement
@@ -36,7 +39,7 @@ class CrumbManager(private val env: ProcessingEnvironment,
    * @param packageName The target package to load types containing [CrumbIndex] annotations from.
    * @return the loaded [Set]<String>, or an empty set if none were found.
    */
-  fun load(packageName: String): Set<String> {
+  fun load(packageName: String): Set<BufferedSource> {
     // If this package is null, it means there are no classes with this package name. One way this
     // could happen is if we process an annotation and reach this point without writing something
     // to the package. We do not error check here because that shouldn't happen with the
@@ -49,7 +52,9 @@ class CrumbManager(private val env: ProcessingEnvironment,
     }
 
     return crumbGenPackage.enclosedElements.mapNotNullTo(mutableSetOf()) { element ->
-      element.getAnnotation(CrumbIndex::class.java)?.value
+      element.getAnnotation(CrumbIndex::class.java)?.run {
+        Buffer().apply { write(value.encodeUtf8()) }
+      }
     }
   }
 
@@ -67,7 +72,7 @@ class CrumbManager(private val env: ProcessingEnvironment,
   fun store(
       packageName: String,
       fileName: String,
-      dataToWrite: String,
+      dataToWrite: BufferedSource,
       outputLanguage: CrumbOutputLanguage,
       originatingElements: Set<Element> = emptySet()) {
     outputLanguage.writeTo(env.filer, packageName, fileName, dataToWrite, originatingElements)
