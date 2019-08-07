@@ -75,7 +75,7 @@ ext.deps = [
         gson: "com.google.code.gson:gson:2.8.5",
         guava: "com.google.guava:guava:28.0-jre",
         moshi: "com.squareup.moshi:moshi:${versions.moshi}",
-        okio: "com.squareup.okio:okio:2.3.0",
+        okio: "com.squareup.okio:okio:2.2.0",
     ],
 
     rx: [
