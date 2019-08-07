@@ -235,7 +235,7 @@ class CrumbProcessor : AbstractProcessor {
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
           // Write metadata to resources for consumers to pick up
-          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras)
+          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras.mapValues { it.value.first })
           val buffer = Buffer().also {
             it.use {
               crumbAdapter.toJson(it, crumbModel)
@@ -246,7 +246,7 @@ class CrumbProcessor : AbstractProcessor {
               fileName = "$adapterName$CRUMB_INDEX_SUFFIX",
               dataToWrite = buffer,
               outputLanguage = CrumbOutputLanguage.languageForType(producer),
-              originatingElements = setOf(producer)
+              originatingElements = setOf(producer) + globalExtras.values.flatMap { it.second }
           )
         }
   }
