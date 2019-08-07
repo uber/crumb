@@ -225,7 +225,8 @@ public final class PluginsCompiler implements CrumbProducerExtension, CrumbConsu
       return new Pair<>(ImmutableMap.of(), ImmutableSet.of());
     }
 
-    return new Pair<>(ImmutableMap.of(METADATA_KEY, type.getQualifiedName().toString()), ImmutableSet.of(type));
+    return new Pair<>(ImmutableMap.of(METADATA_KEY, type.getQualifiedName().toString()),
+        ImmutableSet.of(type));
   }
 
   @Override public IncrementalExtensionType producerIncrementalType(
