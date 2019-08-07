@@ -31,8 +31,8 @@ dependencies {
   kapt deps.apt.moshiKotlinCodegen
   kapt deps.apt.incapProcessor
   compileOnly deps.apt.autoServiceAnnotations
-  compileOnly deps.apt.incap
 
+  api deps.apt.incap
   api deps.misc.moshi
   api project(":crumb-core")
   api project(':crumb-compiler-api')
