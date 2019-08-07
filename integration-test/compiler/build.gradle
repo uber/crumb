@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.gradle.internal.jvm.Jvm
+
 plugins {
   id 'java-library'
   id 'org.jetbrains.kotlin.jvm'
@@ -41,5 +43,8 @@ dependencies {
 
   testImplementation project(":crumb-compiler")
   testImplementation deps.test.compileTesting
-  testImplementation files(org.gradle.internal.jvm.Jvm.current().getToolsJar())
+
+  if (!Jvm.current().javaVersion.isJava9Compatible()) {
+    testImplementation files(Jvm.current().getToolsJar())
+  }
 }
