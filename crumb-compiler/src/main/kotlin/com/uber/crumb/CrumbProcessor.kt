@@ -36,6 +36,7 @@ import com.uber.crumb.core.CrumbLog
 import com.uber.crumb.core.CrumbLog.Client.MessagerClient
 import com.uber.crumb.core.CrumbManager
 import com.uber.crumb.core.CrumbOutputLanguage
+import okio.Buffer
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
@@ -210,11 +211,15 @@ class CrumbProcessor : AbstractProcessor {
           val packageName = producer.packageName()
           // Write metadata to resources for consumers to pick up
           val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras)
-          val json = crumbAdapter.toJson(crumbModel)
+          val buffer = Buffer().also {
+            it.use {
+              crumbAdapter.toJson(it, crumbModel)
+            }
+          }
           crumbManager.store(
               packageName = CRUMB_INDICES_PACKAGE,
               fileName = "$adapterName$CRUMB_INDEX_SUFFIX",
-              dataToWrite = json,
+              dataToWrite = buffer,
               outputLanguage = CrumbOutputLanguage.languageForType(producer),
               originatingElements = setOf(producer)
           )
@@ -252,7 +257,7 @@ class CrumbProcessor : AbstractProcessor {
       return
     }
 
-    val producerMetadata = producerMetadataBlobs.map { crumbAdapter.fromJson(it)!! }
+    val producerMetadata = producerMetadataBlobs.map { it.use { crumbAdapter.fromJson(it)!! } }
     val metadataByExtension = producerMetadata
         .map { it.extras }
         .flatMap { it.entries }
