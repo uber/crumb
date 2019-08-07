@@ -39,14 +39,17 @@ import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.AGGREGATING
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.ISOLATING
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.integration.annotations.MoshiFactory
 import com.uber.crumb.integration.annotations.MoshiFactory.Type.CONSUMER
 import com.uber.crumb.integration.annotations.MoshiFactory.Type.PRODUCER
-import java.lang.Exception
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
@@ -168,6 +171,9 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     }
   }
 
+  override fun producerIncrementalType(
+      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = AGGREGATING
+
   override fun produce(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): ProducerMetadata {
@@ -181,7 +187,7 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
         |CrumbProducer: $type
         |Extension: $this
         """.trimMargin(), type)
-      return emptyMap()
+      return emptyMap<String, String>() to emptySet()
     }
 
     val typeParam = TYPE_SPEC
@@ -286,6 +292,8 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     create.addStatement("return null")
 
+    val originatingElements = setOf(type) + elements
+
     val adapterName = type.classNameOf()
     val packageName = type.packageName()
     val factorySpec = TypeSpec.classBuilder(
@@ -293,11 +301,18 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
         .addModifiers(FINAL)
         .addSuperinterface(TypeName.get(JsonAdapter.Factory::class.java))
         .addMethod(create.build())
+        .apply {
+          originatingElements.forEach { addOriginatingElement(it) }
+        }
         .build()
     JavaFile.builder(packageName, factorySpec).build()
         .writeTo(context.processingEnv.filer)
-    return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap)))
+    return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap))) to elements.toSet()
   }
+
+  /** This is isolating because it only depends on the consumer type instance. */
+  override fun consumerIncrementalType(
+      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
 
   override fun consume(context: CrumbContext,
       type: TypeElement,

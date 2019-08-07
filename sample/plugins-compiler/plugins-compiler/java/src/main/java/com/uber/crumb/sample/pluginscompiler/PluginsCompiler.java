@@ -15,13 +15,6 @@
  */
 package com.uber.crumb.sample.pluginscompiler;
 
-import static com.google.auto.common.MoreElements.isAnnotationPresent;
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static javax.lang.model.element.Modifier.ABSTRACT;
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
-
 import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
@@ -45,7 +38,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -53,6 +48,14 @@ import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
+import kotlin.Pair;
+
+import static com.google.auto.common.MoreElements.isAnnotationPresent;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
+import static javax.lang.model.element.Modifier.ABSTRACT;
+import static javax.lang.model.element.Modifier.FINAL;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
 
 /**
  * A simple crumb producer/consumer that reads plugin implementations from libraries and writes a
@@ -74,6 +77,12 @@ public final class PluginsCompiler implements CrumbProducerExtension, CrumbConsu
   public boolean isProducerApplicable(
       CrumbContext context, TypeElement type, Collection<? extends AnnotationMirror> annotations) {
     return isAnnotationPresent(type, Plugin.class);
+  }
+
+  /** This is isolating because it only depends on the consumer type instance. */
+  @Override public IncrementalExtensionType consumerIncrementalType(
+      ProcessingEnvironment processingEnvironment) {
+    return IncrementalExtensionType.ISOLATING;
   }
 
   @Override
@@ -172,7 +181,7 @@ public final class PluginsCompiler implements CrumbProducerExtension, CrumbConsu
   }
 
   @Override
-  public Map<String, String> produce(
+  public Pair<Map<String, String>, Set<Element>> produce(
       CrumbContext context, TypeElement type, Collection<? extends AnnotationMirror> annotations) {
     // Must be a class
     if (type.getKind() != ElementKind.CLASS) {
@@ -183,7 +192,7 @@ public final class PluginsCompiler implements CrumbProducerExtension, CrumbConsu
               Diagnostic.Kind.ERROR,
               "@" + Plugin.class.getSimpleName() + " is only applicable on classes!",
               type);
-      return ImmutableMap.of();
+      return new Pair<>(ImmutableMap.of(), ImmutableSet.of());
     }
 
     // Must be instantiable (not abstract)
@@ -195,7 +204,7 @@ public final class PluginsCompiler implements CrumbProducerExtension, CrumbConsu
               Diagnostic.Kind.ERROR,
               "@" + Plugin.class.getSimpleName() + " is not applicable on abstract classes!",
               type);
-      return ImmutableMap.of();
+      return new Pair<>(ImmutableMap.of(), ImmutableSet.of());
     }
 
     // If they define a default constructor, it must be public
@@ -213,10 +222,15 @@ public final class PluginsCompiler implements CrumbProducerExtension, CrumbConsu
               Diagnostic.Kind.ERROR,
               "Must have a public default constructor to be usable in plugin points.",
               type);
-      return ImmutableMap.of();
+      return new Pair<>(ImmutableMap.of(), ImmutableSet.of());
     }
 
-    return ImmutableMap.of(METADATA_KEY, type.getQualifiedName().toString());
+    return new Pair<>(ImmutableMap.of(METADATA_KEY, type.getQualifiedName().toString()), ImmutableSet.of(type));
+  }
+
+  @Override public IncrementalExtensionType producerIncrementalType(
+      ProcessingEnvironment processingEnvironment) {
+    return IncrementalExtensionType.AGGREGATING;
   }
 
   @Override

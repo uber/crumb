@@ -15,15 +15,6 @@
  */
 package com.uber.crumb.sample.experimentenumscompiler;
 
-import static com.google.auto.common.MoreElements.isAnnotationPresent;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
-import static javax.lang.model.element.Modifier.ABSTRACT;
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
-
 import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
@@ -48,10 +39,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import kotlin.Pair;
+
+import static com.google.auto.common.MoreElements.isAnnotationPresent;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+import static javax.lang.model.element.Modifier.ABSTRACT;
+import static javax.lang.model.element.Modifier.FINAL;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
 
 /**
  * A simple crumb producer/consumer that reads "experiment enums" from libraries and writes a
@@ -73,6 +76,12 @@ public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbC
   public boolean isProducerApplicable(
       CrumbContext context, TypeElement type, Collection<? extends AnnotationMirror> annotations) {
     return isAnnotationPresent(type, Experiments.class);
+  }
+
+  /** This is isolating because it only depends on the consumer type instance. */
+  @Override public IncrementalExtensionType consumerIncrementalType(
+      ProcessingEnvironment processingEnvironment) {
+    return IncrementalExtensionType.ISOLATING;
   }
 
   @Override
@@ -166,7 +175,7 @@ public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbC
   }
 
   @Override
-  public Map<String, String> produce(
+  public Pair<Map<String, String>, Set<Element>> produce(
       CrumbContext context, TypeElement type, Collection<? extends AnnotationMirror> annotations) {
     if (type.getKind() != ElementKind.ENUM) {
       context
@@ -178,9 +187,14 @@ public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbC
                   + Experiments.class.getSimpleName()
                   + " is only applicable on enums when producing!",
               type);
-      return ImmutableMap.of();
+      return new Pair<>(ImmutableMap.of(), ImmutableSet.of());
     }
-    return ImmutableMap.of(METADATA_KEY, type.getQualifiedName().toString());
+    return new Pair<>(ImmutableMap.of(METADATA_KEY, type.getQualifiedName().toString()), ImmutableSet.of(type));
+  }
+
+  @Override public IncrementalExtensionType producerIncrementalType(
+      ProcessingEnvironment processingEnvironment) {
+    return IncrementalExtensionType.ISOLATING;
   }
 
   @Override
