@@ -18,7 +18,6 @@ package com.uber.crumb.core
 import com.uber.crumb.annotations.internal.CrumbIndex
 import okio.Buffer
 import okio.BufferedSource
-import okio.ByteString.Companion.encodeUtf8
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.PackageElement
@@ -53,7 +52,7 @@ class CrumbManager(private val env: ProcessingEnvironment,
 
     return crumbGenPackage.enclosedElements.mapNotNullTo(mutableSetOf()) { element ->
       element.getAnnotation(CrumbIndex::class.java)?.run {
-        Buffer().apply { write(value.encodeUtf8()) }
+        Buffer().apply { write(value) }
       }
     }
   }
