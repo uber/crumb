@@ -42,8 +42,7 @@ ext.deps = [
         autoValueGsonRuntime: "com.ryanharter.auto.value:auto-value-gson-runtime:${versions.autoValueGson}",
         autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.7",
         incap: "net.ltgt.gradle.incap:incap:${versions.incap}",
-        incapProcessor: "net.ltgt.gradle.incap:incap-processor:${versions.incap}",
-        moshiKotlinCodegen: "com.squareup.moshi:moshi-kotlin-codegen:${versions.moshi}",
+        incapProcessor: "net.ltgt.gradle.incap:incap-processor:${versions.incap}"
     ],
 
     build: [
