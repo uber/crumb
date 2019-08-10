@@ -18,7 +18,6 @@ package com.uber.crumb
 
 import com.google.auto.service.AutoService
 import com.google.common.annotations.VisibleForTesting
-import com.uber.crumb.CrumbProcessor.Companion.OPTION_VERBOSE
 import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.CrumbConsumer
 import com.uber.crumb.annotations.CrumbProducer
@@ -38,10 +37,10 @@ import com.uber.crumb.core.CrumbManager
 import com.uber.crumb.core.CrumbOutputLanguage
 import com.uber.crumb.internal.CrumbModel
 import com.uber.crumb.internal.CrumbModelExtra
-import okio.Buffer
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType.DYNAMIC
+import okio.Buffer
 import okio.GzipSink
 import okio.GzipSource
 import okio.buffer
@@ -234,7 +233,7 @@ class CrumbProcessor : AbstractProcessor {
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
           // Write metadata to resources for consumers to pick up
-          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras.map { (extensionKey, producerMetadata) -> CrumbModelExtra(extensionKey, producerMetadata) })
+          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras.map { (extensionKey, producerMetadata) -> CrumbModelExtra(extensionKey, producerMetadata.first) })
           val buffer = Buffer()
           GzipSink(buffer).buffer().also {
             it.use {

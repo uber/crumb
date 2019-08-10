@@ -43,7 +43,6 @@ wire {
 
 dependencies {
   kapt deps.apt.autoService
-  kapt deps.apt.moshiKotlinCodegen
   kapt deps.apt.incapProcessor
   compileOnly deps.apt.autoServiceAnnotations
 
