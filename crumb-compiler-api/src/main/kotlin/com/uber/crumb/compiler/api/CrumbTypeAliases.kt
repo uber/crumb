@@ -16,6 +16,8 @@
 
 package com.uber.crumb.compiler.api
 
+import javax.lang.model.element.Element
+
 typealias ExtensionKey = String
 typealias ConsumerMetadata = Map<String, String>
-typealias ProducerMetadata = Map<String, String>
+typealias ProducerMetadata = Pair<Map<String, String>, Set<Element>>

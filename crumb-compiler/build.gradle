@@ -29,8 +29,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
   kapt deps.apt.autoService
   kapt deps.apt.moshiKotlinCodegen
+  kapt deps.apt.incapProcessor
   compileOnly deps.apt.autoServiceAnnotations
 
+  api deps.apt.incap
   api deps.misc.moshi
   api project(":crumb-core")
   api project(':crumb-compiler-api')

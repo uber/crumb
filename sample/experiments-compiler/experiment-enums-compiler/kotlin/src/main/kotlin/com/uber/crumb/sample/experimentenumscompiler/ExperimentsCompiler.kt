@@ -18,7 +18,6 @@ package com.uber.crumb.sample.experimentenumscompiler
 
 import com.google.auto.common.MoreElements.isAnnotationPresent
 import com.google.auto.service.AutoService
-import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -29,6 +28,8 @@ import com.squareup.kotlinpoet.asTypeName
 import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.ISOLATING
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
@@ -40,13 +41,13 @@ import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
 import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
 import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
 import java.io.File
+import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind.CLASS
 import javax.lang.model.element.ElementKind.ENUM
 import javax.lang.model.element.ElementKind.ENUM_CONSTANT
 import javax.lang.model.element.TypeElement
-import javax.tools.Diagnostic
 import javax.tools.Diagnostic.Kind.ERROR
 
 /**
@@ -72,6 +73,10 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       annotations: Collection<AnnotationMirror>): Boolean {
     return isAnnotationPresent(type, Experiments::class.java)
   }
+
+  /** This is isolating because it only depends on the consumer type instance.  */
+  override fun consumerIncrementalType(
+      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
 
   override fun consume(context: CrumbContext,
       type: TypeElement,
@@ -152,6 +157,9 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
         .writeTo(generatedDir)
   }
 
+  override fun producerIncrementalType(
+      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
+
   override fun produce(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): ProducerMetadata {
@@ -161,9 +169,9 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
           .printMessage(ERROR,
               "@${Experiments::class.java.simpleName} is only applicable on enums when producing!",
               type)
-      return emptyMap()
+      return emptyMap<String, String>() to emptySet()
     }
-    return mapOf(METADATA_KEY to type.qualifiedName.toString())
+    return mapOf(METADATA_KEY to type.qualifiedName.toString()) to setOf(type)
   }
 
   override fun supportedConsumerAnnotations(): Set<Class<out Annotation>> = setOf(

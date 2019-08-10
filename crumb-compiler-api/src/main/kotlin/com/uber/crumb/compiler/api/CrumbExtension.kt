@@ -30,4 +30,41 @@ interface CrumbExtension {
     return javaClass.name
   }
 
+  /**
+   * Indicates to an annotation processor environment supporting incremental annotation processing
+   * (currently a feature specific to Gradle starting with version 4.8) the incremental type of an
+   * Extension.
+   *
+   * The constants for this enum are ordered by increasing performance (but also constraints).
+   *
+   * @see [Gradle documentation of its incremental annotation processing](https://docs.gradle.org/current/userguide/java_plugin.html.sec:incremental_annotation_processing)
+   */
+  enum class IncrementalExtensionType {
+    /**
+     * The incrementality of this extension is unknown, or it is neither aggregating nor isolating.
+     */
+    UNKNOWN,
+
+    /**
+     * This extension is *aggregating*, meaning that it may generate outputs based on several
+     * annotated input classes and it respects the constraints imposed on aggregating processors.
+     * It is common for Crumb producer extensions to be aggregating and unusual for consumer
+     * extensions to be aggregating.
+     *
+     * @see [Gradle definition of aggregating processors](https://docs.gradle.org/current/userguide/java_plugin.html.aggregating_annotation_processors)
+     */
+    AGGREGATING,
+
+    /**
+     * This extension is *isolating*, meaning roughly that its output depends on the
+     * `@CrumbConsumer`/`@CrumbProducer` class and its dependencies, but not on other `@CrumbConsumer`/`@CrumbProducer`
+     * classes that might be compiled at the same time. The constraints that an isolating extension must
+     * respect are the same as those that Gradle imposes on an isolating annotation processor.
+     * It is unusual for Crumb producer extensions to be isolating and common for consumer
+     * extensions to be isolating.
+     *
+     * @see [Gradle definition of isolating processors](https://docs.gradle.org/current/userguide/java_plugin.html.isolating_annotation_processors)
+     */
+    ISOLATING
+  }
 }

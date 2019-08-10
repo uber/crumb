@@ -18,6 +18,8 @@ package com.uber.crumb.compiler.api
 
 import com.uber.crumb.annotations.CrumbConsumer
 import com.uber.crumb.annotations.CrumbQualifier
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType
+import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.TypeElement
 
@@ -60,4 +62,20 @@ interface CrumbConsumerExtension : CrumbExtension {
       type: TypeElement,
       annotations: Collection<AnnotationMirror>,
       metadata: Set<ConsumerMetadata>)
+
+  /**
+   * Determines the incremental type of this Extension.
+   *
+   * The [ProcessingEnvironment] can be used, among other things, to obtain the processor
+   * options, using [ProcessingEnvironment.getOptions].
+   *
+   * The actual incremental type of the Crumb processor as a whole will be the loosest
+   * incremental types of the Extensions present in the annotation processor path. The default
+   * returned value is [IncrementalExtensionType.UNKNOWN], which will disable incremental
+   * annotation processing entirely.
+   */
+  @JvmDefault
+  fun consumerIncrementalType(processingEnvironment: ProcessingEnvironment): IncrementalExtensionType {
+    return IncrementalExtensionType.UNKNOWN
+  }
 }

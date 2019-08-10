@@ -44,12 +44,15 @@ import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.AGGREGATING
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.ISOLATING
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.integration.annotations.GsonFactory
 import com.uber.crumb.integration.annotations.GsonFactory.Type.CONSUMER
 import com.uber.crumb.integration.annotations.GsonFactory.Type.PRODUCER
-import java.lang.Exception
+import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
@@ -163,6 +166,9 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
     return false
   }
 
+  override fun producerIncrementalType(
+      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = AGGREGATING
+
   /**
    * Creates a crumb implementation method for the gson support. In this case, it builds the create() method of
    * [TypeAdapterFactory].
@@ -182,7 +188,7 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
         |CrumbProducer: $type
         |Extension: $this
         """.trimMargin(), type)
-      return emptyMap()
+      return emptyMap<String, String>() to emptySet()
     }
 
     val gson = ParameterSpec.builder(Gson::class.java, "gson").build()
@@ -233,13 +239,14 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
                 elementType, gson, params[1], typeParam)
           }
         }
-        modelsMap.put(fqcn,
-            GsonSupportMeta(typeAdapterName, argCount))
+        modelsMap[fqcn] = GsonSupportMeta(typeAdapterName, argCount)
       }
     }
     create.nextControlFlow("else")
     create.addStatement("return null")
     create.endControlFlow()
+
+    val originatingElements = setOf(type) + elements
 
     val adapterName = type.classNameOf()
     val packageName = type.packageName()
@@ -248,11 +255,19 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
         .addModifiers(FINAL)
         .addSuperinterface(TypeName.get(TypeAdapterFactory::class.java))
         .addMethod(create.build())
+        .apply {
+          originatingElements.forEach { addOriginatingElement(it) }
+        }
         .build()
-    JavaFile.builder(packageName, factorySpec).build()
+    JavaFile.builder(packageName, factorySpec)
+        .build()
         .writeTo(context.processingEnv.filer)
-    return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap)))
+    return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap))) to elements.toSet()
   }
+
+  /** This is isolating because it only depends on the consumer type instance. */
+  override fun consumerIncrementalType(
+      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
 
   /**
    * Creates a cortex implementation method for the gson support. In this case, it builds the create() method of
@@ -405,6 +420,7 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
         .addModifiers(FINAL)
         .addSuperinterface(TypeName.get(TypeAdapterFactory::class.java))
         .addMethods(methods)
+        .addOriginatingElement(type)
         .build()
     JavaFile.builder(packageName, factorySpec).build()
         .writeTo(context.processingEnv.filer)

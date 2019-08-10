@@ -27,6 +27,9 @@ import com.squareup.kotlinpoet.asTypeName
 import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.AGGREGATING
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.ISOLATING
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
@@ -38,8 +41,8 @@ import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
 import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
 import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
 import java.io.File
+import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
-import javax.lang.model.element.ElementKind
 import javax.lang.model.element.ElementKind.CLASS
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.Modifier.ABSTRACT
@@ -47,7 +50,6 @@ import javax.lang.model.element.TypeElement
 import javax.lang.model.type.MirroredTypesException
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
-import javax.tools.Diagnostic
 import javax.tools.Diagnostic.Kind.ERROR
 
 /**
@@ -74,6 +76,10 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       annotations: Collection<AnnotationMirror>): Boolean {
     return isAnnotationPresent(type, Plugin::class.java)
   }
+
+  /** This is isolating because it only depends on the consumer type instance.  */
+  override fun consumerIncrementalType(
+      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
 
   override fun consume(context: CrumbContext,
       type: TypeElement,
@@ -176,15 +182,15 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): ProducerMetadata {
     // Must be a class
-    if (type.kind != ElementKind.CLASS) {
+    if (type.kind != CLASS) {
       context
           .processingEnv
           .messager
           .printMessage(
-              Diagnostic.Kind.ERROR,
+              ERROR,
               "@${Plugin::class.java.simpleName} is only applicable on classes!",
               type)
-      return mapOf()
+      return emptyMap<String, String>() to emptySet()
     }
 
     // Must be instantiable (not abstract)
@@ -193,10 +199,10 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
           .processingEnv
           .messager
           .printMessage(
-              Diagnostic.Kind.ERROR,
+              ERROR,
               "@${Plugin::class.java.simpleName} is not applicable on abstract classes!",
               type)
-      return mapOf()
+      return emptyMap<String, String>() to emptySet()
     }
 
     // If they define a default constructor, it must be public
@@ -207,13 +213,16 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
           .processingEnv
           .messager
           .printMessage(
-              Diagnostic.Kind.ERROR,
+              ERROR,
               "Must have a public default constructor to be usable in plugin points.",
               type)
-      return mapOf()
+      return emptyMap<String, String>() to emptySet()
     }
-    return mapOf(METADATA_KEY to type.qualifiedName.toString())
+    return mapOf(METADATA_KEY to type.qualifiedName.toString()) to setOf(type)
   }
+
+  override fun producerIncrementalType(
+      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = AGGREGATING
 
   override fun supportedConsumerAnnotations() = setOf(PluginPoint::class.java)
 

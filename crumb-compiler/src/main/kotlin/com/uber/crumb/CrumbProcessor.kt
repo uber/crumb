@@ -20,7 +20,6 @@ import com.google.auto.service.AutoService
 import com.google.common.annotations.VisibleForTesting
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
-import com.uber.crumb.CrumbProcessor.Companion.OPTION_VERBOSE
 import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.CrumbConsumer
 import com.uber.crumb.annotations.CrumbProducer
@@ -29,6 +28,9 @@ import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
 import com.uber.crumb.compiler.api.CrumbExtension
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.AGGREGATING
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.ISOLATING
+import com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.UNKNOWN
 import com.uber.crumb.compiler.api.CrumbProducerExtension
 import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
@@ -37,13 +39,15 @@ import com.uber.crumb.core.CrumbLog.Client.MessagerClient
 import com.uber.crumb.core.CrumbManager
 import com.uber.crumb.core.CrumbOutputLanguage
 import okio.Buffer
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType.DYNAMIC
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
-import javax.annotation.processing.SupportedOptions
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
@@ -57,7 +61,7 @@ import javax.tools.Diagnostic.Kind.WARNING
  * Processes all [CrumbConsumer] and [CrumbProducer] annotated types.
  */
 @AutoService(Processor::class)
-@SupportedOptions(OPTION_VERBOSE)
+@IncrementalAnnotationProcessor(DYNAMIC)
 class CrumbProcessor : AbstractProcessor {
 
   companion object {
@@ -113,6 +117,27 @@ class CrumbProcessor : AbstractProcessor {
 
   override fun getSupportedSourceVersion(): SourceVersion {
     return SourceVersion.latestSupported()
+  }
+
+  override fun getSupportedOptions(): Set<String> {
+    val producerIncrementalType = producerExtensions.asSequence()
+        .map { it.producerIncrementalType(processingEnv) }
+        .min()
+        ?: ISOLATING
+    val consumerIncrementalType = consumerExtensions.asSequence()
+        .map { it.consumerIncrementalType(processingEnv) }
+        .min()
+        ?: ISOLATING
+    return arrayOf(OPTION_VERBOSE, producerIncrementalType.toOption(), consumerIncrementalType.toOption())
+        .filterNotNullTo(mutableSetOf())
+  }
+
+  private fun CrumbExtension.IncrementalExtensionType.toOption(): String? {
+    return when (this) {
+      ISOLATING -> IncrementalAnnotationProcessorType.ISOLATING.processorOption
+      AGGREGATING -> IncrementalAnnotationProcessorType.AGGREGATING.processorOption
+      UNKNOWN -> null
+    }
   }
 
   @Synchronized
@@ -210,7 +235,7 @@ class CrumbProcessor : AbstractProcessor {
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
           // Write metadata to resources for consumers to pick up
-          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras)
+          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras.mapValues { it.value.first })
           val buffer = Buffer().also {
             it.use {
               crumbAdapter.toJson(it, crumbModel)
@@ -221,7 +246,7 @@ class CrumbProcessor : AbstractProcessor {
               fileName = "$adapterName$CRUMB_INDEX_SUFFIX",
               dataToWrite = buffer,
               outputLanguage = CrumbOutputLanguage.languageForType(producer),
-              originatingElements = setOf(producer)
+              originatingElements = setOf(producer) + globalExtras.values.flatMap { it.second }
           )
         }
   }
