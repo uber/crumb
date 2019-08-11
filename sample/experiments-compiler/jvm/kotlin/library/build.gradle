@@ -27,9 +27,18 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   }
 }
 
+// https://youtrack.jetbrains.com/issue/KT-31641
+// https://youtrack.jetbrains.com/issue/KT-33206
+configurations {
+  kapt.extendsFrom(mppFriendlyKapt)
+}
+configurations.getByName("mppFriendlyKapt") {
+  attributes.attribute(Usage.USAGE_ATTRIBUTE, getObjects().named(Usage, Usage.JAVA_RUNTIME))
+}
+
 dependencies {
-  kapt project(":crumb-compiler")
-  kapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
+  mppFriendlyKapt project(":crumb-compiler")
+  mppFriendlyKapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
   api project(":crumb-annotations")
   api project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }
