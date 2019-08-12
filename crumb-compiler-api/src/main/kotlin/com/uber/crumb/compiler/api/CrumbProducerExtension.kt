@@ -47,9 +47,15 @@ interface CrumbProducerExtension : CrumbExtension {
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return true if the type is applicable.
    */
+  @JvmDefault
   fun isProducerApplicable(context: CrumbContext,
       type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean
+      annotations: Collection<AnnotationMirror>): Boolean {
+    // Note: AutoCommon's MoreElements#isAnnotationPresent() is a safer option but not used here to avoid the dependency
+    return supportedProducerAnnotations().any {
+      type.getAnnotation(it) != null
+    }
+  }
 
   /**
    * Invoked to request this extension's [ProducerMetadata].

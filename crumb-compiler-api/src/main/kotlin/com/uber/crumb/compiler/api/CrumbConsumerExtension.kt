@@ -47,9 +47,15 @@ interface CrumbConsumerExtension : CrumbExtension {
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return true if the type is applicable.
    */
+  @JvmDefault
   fun isConsumerApplicable(context: CrumbContext,
       type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean
+      annotations: Collection<AnnotationMirror>): Boolean {
+    // Note: AutoCommon's MoreElements#isAnnotationPresent() is a safer option but not used here to avoid the dependency
+    return supportedConsumerAnnotations().any {
+      type.getAnnotation(it) != null
+    }
+  }
 
   /**
    * Invoked to tell this extension to consume the set of collected [ConsumerMetadata].
