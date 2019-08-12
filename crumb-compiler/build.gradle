@@ -52,7 +52,7 @@ dependencies {
 
   api project(":crumb-core")
   api project(':crumb-compiler-api')
-  implementation 'com.squareup.wire:wire-runtime:3.0.0-rc01'
+  implementation deps.misc.wire
 
   implementation deps.apt.autoCommon
   implementation deps.kotlin.stdLibJdk8
