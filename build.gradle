@@ -18,8 +18,8 @@ buildscript {
   apply from: 'gradle/dependencies.gradle'
   repositories {
     mavenCentral()
-    jcenter()
     google()
+    jcenter()
   }
   dependencies {
     classpath deps.build.gradlePlugins.android
@@ -34,14 +34,16 @@ plugins {
 allprojects {
   buildscript {
     repositories {
-      jcenter()
+      mavenCentral()
       google()
+      jcenter()
     }
   }
 
   repositories {
-    jcenter()
+    mavenCentral()
     google()
+    jcenter()
   }
 }
 

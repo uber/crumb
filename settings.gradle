@@ -55,10 +55,10 @@ pluginManagement {
     }
   }
   repositories {
-    jcenter()
-    google()
     mavenCentral()
+    google()
     gradlePluginPortal()
+    jcenter()
   }
 }
 
