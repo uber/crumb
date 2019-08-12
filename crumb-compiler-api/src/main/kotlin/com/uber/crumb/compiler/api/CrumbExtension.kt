@@ -34,9 +34,8 @@ interface CrumbExtension {
    * metadata from the classpath. This is the key that [CrumbProducerExtension] data is written to
    * and [CrumbConsumerExtension] data is read from. By default, it's the name of the extension class.
    */
-  fun key(): ExtensionKey {
-    return javaClass.name
-  }
+  @JvmDefault
+  val key: ExtensionKey get() = javaClass.name
 
   /**
    * Indicates to an annotation processor environment supporting incremental annotation processing

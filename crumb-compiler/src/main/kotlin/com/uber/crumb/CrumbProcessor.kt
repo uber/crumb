@@ -228,7 +228,7 @@ class CrumbProcessor : AbstractProcessor {
           val globalExtras = mutableMapOf<ExtensionKey, ProducerMetadata>()
           applicableExtensions.forEach { extension ->
             val extras = extension.produce(context, producer, crumbAnnotations)
-            globalExtras[extension.key()] = extras
+            globalExtras[extension.key] = extras
           }
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
@@ -296,7 +296,7 @@ class CrumbProcessor : AbstractProcessor {
         .forEach { (consumer, crumbAnnotations) ->
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, crumbAnnotations)) {
-              val metadata = metadataByExtension[extension.key()].orEmpty()
+              val metadata = metadataByExtension[extension.key].orEmpty()
               extension.consume(context, consumer, crumbAnnotations, metadata)
             }
           }

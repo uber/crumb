@@ -180,5 +180,5 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
   override fun supportedProducerAnnotations(): Set<Class<out Annotation>> = setOf(
       Experiments::class.java)
 
-  override fun key() = METADATA_KEY
+  override val key= METADATA_KEY
 }

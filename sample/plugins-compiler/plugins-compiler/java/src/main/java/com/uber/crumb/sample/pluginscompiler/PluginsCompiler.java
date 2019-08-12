@@ -245,7 +245,7 @@ public final class PluginsCompiler implements CrumbProducerExtension, CrumbConsu
   }
 
   @Override
-  public String key() {
+  public String getKey() {
     return METADATA_KEY;
   }
 }
