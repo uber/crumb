@@ -22,6 +22,14 @@ package com.uber.crumb.compiler.api
 interface CrumbExtension {
 
   /**
+   * Convenience init callback when extension processing is beginning.
+   */
+  @JvmDefault
+  fun init(context: CrumbContext) {
+
+  }
+
+  /**
    * @return the [ExtensionKey] for this extension, used to indicate what key to use in storing/retrieving
    * metadata from the classpath. This is the key that [CrumbProducerExtension] data is written to
    * and [CrumbConsumerExtension] data is read from. By default, it's the name of the extension class.
