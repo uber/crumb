@@ -32,6 +32,7 @@ interface CrumbConsumerExtension : CrumbExtension {
    * Supported consumer annotations, if any, that the CrumbProcessor should collect on this
    * extension's behalf. Empty by default.
    */
+  @JvmDefault
   fun supportedConsumerAnnotations(): Set<Class<out Annotation>> {
     return emptySet()
   }

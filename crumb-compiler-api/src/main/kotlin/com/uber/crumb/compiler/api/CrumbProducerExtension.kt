@@ -32,6 +32,7 @@ interface CrumbProducerExtension : CrumbExtension {
    * Supported producer annotations, if any, that the CrumbProcessor should collect on this
    * extension's behalf. Empty by default.
    */
+  @JvmDefault
   fun supportedProducerAnnotations(): Set<Class<out Annotation>> {
     return emptySet()
   }
