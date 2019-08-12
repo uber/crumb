@@ -18,13 +18,10 @@ package com.uber.crumb
 
 import com.google.auto.service.AutoService
 import com.google.common.annotations.VisibleForTesting
-import com.squareup.moshi.JsonClass
-import com.squareup.moshi.Moshi
 import com.uber.crumb.annotations.CrumbConsumable
 import com.uber.crumb.annotations.CrumbConsumer
 import com.uber.crumb.annotations.CrumbProducer
 import com.uber.crumb.annotations.CrumbQualifier
-import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
 import com.uber.crumb.compiler.api.CrumbExtension
@@ -38,10 +35,15 @@ import com.uber.crumb.core.CrumbLog
 import com.uber.crumb.core.CrumbLog.Client.MessagerClient
 import com.uber.crumb.core.CrumbManager
 import com.uber.crumb.core.CrumbOutputLanguage
-import okio.Buffer
+import com.uber.crumb.internal.CrumbModel
+import com.uber.crumb.internal.CrumbModelExtra
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType.DYNAMIC
+import okio.Buffer
+import okio.GzipSink
+import okio.GzipSource
+import okio.buffer
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import javax.annotation.processing.AbstractProcessor
@@ -75,10 +77,6 @@ class CrumbProcessor : AbstractProcessor {
 
     private const val CRUMB_INDICES_PACKAGE = "com.uber.crumb.indices"
   }
-
-  private val crumbAdapter = Moshi.Builder()
-      .build()
-      .adapter(CrumbModel::class.java)
 
   // Depending on how this CrumbProcessor was constructed, we might already have a list of
   // extensions when init() is run, or, if `extensions` is null, we have a ClassLoader that will be
@@ -235,10 +233,11 @@ class CrumbProcessor : AbstractProcessor {
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
           // Write metadata to resources for consumers to pick up
-          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras.mapValues { it.value.first })
-          val buffer = Buffer().also {
+          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras.map { (extensionKey, producerMetadata) -> CrumbModelExtra(extensionKey, producerMetadata.first) })
+          val buffer = Buffer()
+          GzipSink(buffer).buffer().also {
             it.use {
-              crumbAdapter.toJson(it, crumbModel)
+              CrumbModel.ADAPTER.encode(it, crumbModel)
             }
           }
           crumbManager.store(
@@ -282,11 +281,14 @@ class CrumbProcessor : AbstractProcessor {
       return
     }
 
-    val producerMetadata = producerMetadataBlobs.map { it.use { crumbAdapter.fromJson(it)!! } }
+    val producerMetadata = producerMetadataBlobs.map { blob ->
+      GzipSource(blob).buffer().use {
+        CrumbModel.ADAPTER.decode(it)
+      }
+    }
     val metadataByExtension = producerMetadata
-        .map { it.extras }
-        .flatMap { it.entries }
-        .groupBy({ it.key }) { it.value }
+        .flatMap { it.extras }
+        .groupBy({ it.extensionKey }) { it.producerMetadata }
         .mapValues { it.value.toSet() }
 
     // Iterate through the consumers to generate their implementations.
@@ -321,8 +323,3 @@ class CrumbProcessor : AbstractProcessor {
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 private inline fun <T> Iterable<*>.cast() = map { it as T }
-
-@JsonClass(generateAdapter = true)
-internal data class CrumbModel(
-    val name: String,
-    val extras: Map<ExtensionKey, ConsumerMetadata>)

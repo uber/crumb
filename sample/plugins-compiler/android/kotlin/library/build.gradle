@@ -36,9 +36,18 @@ android {
   }
 }
 
+// https://youtrack.jetbrains.com/issue/KT-31641
+// https://youtrack.jetbrains.com/issue/KT-33206
+configurations {
+  kapt.extendsFrom(mppFriendlyKapt)
+}
+configurations.getByName("mppFriendlyKapt") {
+  attributes.attribute(Usage.USAGE_ATTRIBUTE, getObjects().named(Usage, Usage.JAVA_RUNTIME))
+}
+
 dependencies {
-  kapt project(":crumb-compiler")
-  kapt project(":sample:plugins-compiler:plugins-compiler:kotlin")
+  mppFriendlyKapt project(":crumb-compiler")
+  mppFriendlyKapt project(":sample:plugins-compiler:plugins-compiler:kotlin")
   implementation deps.kotlin.stdLib
   implementation project(":crumb-annotations")
   implementation project(":sample:plugins-compiler:plugins-compiler:annotations")

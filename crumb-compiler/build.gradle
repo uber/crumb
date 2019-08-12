@@ -17,6 +17,7 @@ plugins {
   id 'org.jetbrains.kotlin.jvm'
   id 'org.jetbrains.kotlin.kapt'
   id 'org.jetbrains.dokka'
+  id 'com.squareup.wire'
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -26,16 +27,32 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   }
 }
 
+sourceSets {
+  main {
+    java {
+      srcDir "${project.buildDir}/generated/src/main/java"
+    }
+  }
+}
+
+wire {
+  kotlin {
+    javaInterop = false
+  }
+}
+
 dependencies {
   kapt deps.apt.autoService
-  kapt deps.apt.moshiKotlinCodegen
   kapt deps.apt.incapProcessor
   compileOnly deps.apt.autoServiceAnnotations
 
   api deps.apt.incap
   api deps.misc.moshi
+  compileOnly deps.apt.autoServiceAnnotations
+
   api project(":crumb-core")
   api project(':crumb-compiler-api')
+  implementation deps.misc.wire
 
   implementation deps.apt.autoCommon
   implementation deps.kotlin.stdLibJdk8

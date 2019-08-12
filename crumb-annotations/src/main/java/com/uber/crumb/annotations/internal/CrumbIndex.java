@@ -28,6 +28,5 @@ import static java.lang.annotation.ElementType.TYPE;
 @Retention(RetentionPolicy.CLASS)
 @Target(TYPE)
 public @interface CrumbIndex {
-  // TODO(zsweers) Maybe use a bytearray? Mirroring Kotlin's metadata annotations & they use String
-  String value();
+  byte[] value();
 }

@@ -45,6 +45,9 @@ pluginManagement {
         case 'net.ltgt.apt-idea':
           useVersion("0.21")
           break
+        case 'com.squareup.wire':
+          useModule("com.squareup.wire:wire-gradle-plugin:${deps.versions.wire}")
+          break
         case 'com.diffplug.gradle.spotless':
           useVersion(deps.versions.spotless)
           break
@@ -52,9 +55,10 @@ pluginManagement {
     }
   }
   repositories {
-    jcenter()
+    mavenCentral()
     google()
     gradlePluginPortal()
+    jcenter()
   }
 }
 
