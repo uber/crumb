@@ -40,8 +40,6 @@ interface CrumbProducerExtension : CrumbExtension {
   /**
    * Determines whether or not a given type is applicable to this extension.
    *
-   * *Note:* If you need anything from the processingEnv for later, it is recommended to save it here.
-   *
    * @param context the [CrumbContext].
    * @param type the type to check.
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].

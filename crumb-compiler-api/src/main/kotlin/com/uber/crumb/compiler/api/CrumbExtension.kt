@@ -16,6 +16,8 @@
 
 package com.uber.crumb.compiler.api
 
+import javax.annotation.processing.ProcessingEnvironment
+
 /**
  * Base extension for CrumbExtensions. This class isn't one you would implement directly.
  */
@@ -23,9 +25,11 @@ interface CrumbExtension {
 
   /**
    * Convenience init callback when extension processing is beginning.
+   *
+   * If you need anything from the processingEnv for later, it is recommended to save its instance here.
    */
   @JvmDefault
-  fun init(context: CrumbContext) {
+  fun init(processingEnvironment: ProcessingEnvironment) {
 
   }
 

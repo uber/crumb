@@ -173,6 +173,7 @@ class CrumbProcessor : AbstractProcessor {
       producerExtensions = setOf()
       consumerExtensions = setOf()
     }
+    producerExtensions.plus(consumerExtensions).forEach { it.init(processingEnv) }
     val producerAnnotatedAnnotations = producerExtensions.flatMap { it.supportedProducerAnnotations() }
         .filter { it.getAnnotation(CrumbProducer::class.java) != null }
     val consumerAnnotatedAnnotations = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
