@@ -40,7 +40,6 @@ import com.uber.crumb.internal.CrumbModelExtra
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType.DYNAMIC
-import okio.Buffer
 import okio.GzipSink
 import okio.GzipSource
 import okio.buffer
@@ -234,21 +233,18 @@ class CrumbProcessor : AbstractProcessor {
           }
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
-          // Write metadata to resources for consumers to pick up
+          val sink = crumbManager.store(
+              packageName = CRUMB_INDICES_PACKAGE,
+              fileName = "$adapterName$CRUMB_INDEX_SUFFIX",
+              outputLanguage = CrumbOutputLanguage.languageForType(producer),
+              originatingElements = setOf(producer) + globalExtras.values.flatMap { it.second }
+          )
           val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras.map { (extensionKey, producerMetadata) -> CrumbModelExtra(extensionKey, producerMetadata.first) })
-          val buffer = Buffer()
-          GzipSink(buffer).buffer().also {
+          GzipSink(sink).buffer().also {
             it.use {
               CrumbModel.ADAPTER.encode(it, crumbModel)
             }
           }
-          crumbManager.store(
-              packageName = CRUMB_INDICES_PACKAGE,
-              fileName = "$adapterName$CRUMB_INDEX_SUFFIX",
-              dataToWrite = buffer,
-              outputLanguage = CrumbOutputLanguage.languageForType(producer),
-              originatingElements = setOf(producer) + globalExtras.values.flatMap { it.second }
-          )
         }
   }
 
