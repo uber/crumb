@@ -161,15 +161,16 @@ class CrumbProcessor : AbstractProcessor {
             .iterator().asSequence().toSet()
       }
     } catch (t: Throwable) {
-      val warning = StringBuilder()
-      warning.append(
-          "An exception occurred while looking for Crumb extensions. " + "No extensions will function.")
-      if (t is ServiceConfigurationError) {
-        warning.append(" This may be due to a corrupt jar file in the compiler's classpath.")
+      val warning = buildString {
+        append(
+            "An exception occurred while looking for Crumb extensions. " + "No extensions will function.")
+        if (t is ServiceConfigurationError) {
+          append(" This may be due to a corrupt jar file in the compiler's classpath.")
+        }
+        append(" Exception: ")
+            .append(t)
       }
-      warning.append(" Exception: ")
-          .append(t)
-      processingEnv.messager.printMessage(WARNING, warning.toString(), null)
+      processingEnv.messager.printMessage(WARNING, warning, null)
       producerExtensions = setOf()
       consumerExtensions = setOf()
     }
