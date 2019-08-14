@@ -23,7 +23,8 @@ import com.squareup.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.uber.crumb.annotations.internal.CrumbIndex
-import okio.BufferedSource
+import okio.Buffer
+import okio.BufferedSink
 import javax.annotation.processing.Filer
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier.FINAL
@@ -43,25 +44,29 @@ enum class CrumbOutputLanguage {
         filer: Filer,
         packageName: String,
         fileName: String,
-        dataToWrite: BufferedSource,
         originatingElements: Set<Element>
-    ) {
-      val typeSpec = TypeSpec.classBuilder(fileName)
-          .addJavadoc(EXPLANATORY_COMMENT)
-          .addAnnotation(AnnotationSpec.builder(CrumbIndex::class.java)
-              .addMember("value", "\$L", dataToWrite.readByteArray().joinToString(",", prefix = "{", postfix = "}"))
-              .build())
-          .addModifiers(FINAL)
-          .addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())
-          .apply {
-            originatingElements.forEach { addOriginatingElement(it) }
-          }
-          .build()
-      JavaFile.builder(packageName, typeSpec)
-          .addFileComment(GENERATED_COMMENT)
-          .indent(INDENT)
-          .build()
-          .writeTo(filer)
+    ): BufferedSink {
+      val buffer = Buffer()
+      return object : BufferedSink by buffer {
+        override fun close() {
+          val typeSpec = TypeSpec.classBuilder(fileName)
+              .addJavadoc(EXPLANATORY_COMMENT)
+              .addAnnotation(AnnotationSpec.builder(CrumbIndex::class.java)
+                  .addMember("value", "\$L", buffer.readByteArray().joinToString(",", prefix = "{", postfix = "}"))
+                  .build())
+              .addModifiers(FINAL)
+              .addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())
+              .apply {
+                originatingElements.forEach { addOriginatingElement(it) }
+              }
+              .build()
+          JavaFile.builder(packageName, typeSpec)
+              .addFileComment(GENERATED_COMMENT)
+              .indent(INDENT)
+              .build()
+              .writeTo(filer)
+        }
+      }
     }
   },
   KOTLIN {
@@ -69,25 +74,29 @@ enum class CrumbOutputLanguage {
         filer: Filer,
         packageName: String,
         fileName: String,
-        dataToWrite: BufferedSource,
         originatingElements: Set<Element>
-    ) {
-      val typeSpec = KotlinTypeSpec.objectBuilder(fileName)
-          .addKdoc(EXPLANATORY_COMMENT)
-          .addAnnotation(KotlinAnnotationSpec.builder(CrumbIndex::class)
-              .addMember("%L", dataToWrite.readByteArray().joinToString(",", prefix = "[", postfix = "]"))
-              .build())
-          .addModifiers(KModifier.PRIVATE)
-          .apply {
-            this.originatingElements += originatingElements
-          }
-          .build()
-      FileSpec.builder(packageName, fileName)
-          .addComment(GENERATED_COMMENT)
-          .addType(typeSpec)
-          .indent(INDENT)
-          .build()
-          .writeTo(filer)
+    ): BufferedSink {
+      val buffer = Buffer()
+      return object : BufferedSink by buffer {
+        override fun close() {
+          val typeSpec = KotlinTypeSpec.objectBuilder(fileName)
+              .addKdoc(EXPLANATORY_COMMENT)
+              .addAnnotation(KotlinAnnotationSpec.builder(CrumbIndex::class)
+                  .addMember("%L", buffer.readByteArray().joinToString(",", prefix = "[", postfix = "]"))
+                  .build())
+              .addModifiers(KModifier.PRIVATE)
+              .apply {
+                this.originatingElements += originatingElements
+              }
+              .build()
+          FileSpec.builder(packageName, fileName)
+              .addComment(GENERATED_COMMENT)
+              .addType(typeSpec)
+              .indent(INDENT)
+              .build()
+              .writeTo(filer)
+        }
+      }
     }
   };
 
@@ -98,15 +107,15 @@ enum class CrumbOutputLanguage {
    * @param packageName The package to write to. Note that this should be the package that all metadata index-holder
    *                    types are written to, and not necessarily the package name of the source element.
    * @param fileName The file name.
-   * @param dataToWrite The metadata to write to the eventual [CrumbIndex].
    * @param originatingElements Any originating elements for the metadata.
+   * @return A [BufferedSink] to write metadata to. This will (only) be written to the eventual [CrumbIndex] once
+   *         [BufferedSink.close] is called.
    */
   abstract fun writeTo(filer: Filer,
       packageName: String,
       fileName: String,
-      dataToWrite: BufferedSource,
       originatingElements: Set<Element> = emptySet()
-  )
+  ): BufferedSink
 
   companion object {
     private const val EXPLANATORY_COMMENT = "This type + annotation exists for sharing information to the Crumb annotation processor and should not be considered public API."

@@ -17,6 +17,7 @@ package com.uber.crumb.core
 
 import com.uber.crumb.annotations.internal.CrumbIndex
 import okio.Buffer
+import okio.BufferedSink
 import okio.BufferedSource
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
@@ -58,22 +59,23 @@ class CrumbManager(private val env: ProcessingEnvironment,
   }
 
   /**
-   * This writes a given [String] [dataToWrite] to a [CrumbIndex] type in the given [packageName].
+   * This facilitates writing data to a [CrumbIndex] type in the given [packageName].[fileName] with the contents
+   * written to the returned [BufferedSink].
    *
    * @param packageName The package name to use for the file in writing. Note that this should be the package that all
    *                    metadata index-holder types are written to, and not necessarily the package name of the source
    *                    element.
    * @param fileName The file name to use in writing.
-   * @param dataToWrite The metadata to write to the eventual [CrumbIndex].
    * @param outputLanguage The target output language.
    * @param originatingElements Any originating elements for the metadata.
+   * @return A [BufferedSink] to write metadata to. This will (only) be written to the eventual [CrumbIndex] once
+   *         [BufferedSink.close] is called.
    */
   fun store(
       packageName: String,
       fileName: String,
-      dataToWrite: BufferedSource,
       outputLanguage: CrumbOutputLanguage,
-      originatingElements: Set<Element> = emptySet()) {
-    outputLanguage.writeTo(env.filer, packageName, fileName, dataToWrite, originatingElements)
+      originatingElements: Set<Element> = emptySet()): BufferedSink {
+    return outputLanguage.writeTo(env.filer, packageName, fileName, originatingElements)
   }
 }
