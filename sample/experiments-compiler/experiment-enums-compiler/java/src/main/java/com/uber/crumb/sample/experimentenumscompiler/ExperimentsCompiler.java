@@ -209,7 +209,7 @@ public final class ExperimentsCompiler implements CrumbProducerExtension, CrumbC
   }
 
   @Override
-  public String key() {
+  public String getKey() {
     return METADATA_KEY;
   }
 }

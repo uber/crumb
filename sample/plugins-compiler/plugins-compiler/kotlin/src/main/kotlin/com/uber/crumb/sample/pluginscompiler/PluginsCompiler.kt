@@ -228,5 +228,5 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
   override fun supportedProducerAnnotations() = setOf(Plugin::class.java)
 
-  override fun key() = METADATA_KEY
+  override val key = METADATA_KEY
 }

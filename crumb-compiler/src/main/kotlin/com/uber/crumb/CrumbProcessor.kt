@@ -161,18 +161,20 @@ class CrumbProcessor : AbstractProcessor {
             .iterator().asSequence().toSet()
       }
     } catch (t: Throwable) {
-      val warning = StringBuilder()
-      warning.append(
-          "An exception occurred while looking for Crumb extensions. " + "No extensions will function.")
-      if (t is ServiceConfigurationError) {
-        warning.append(" This may be due to a corrupt jar file in the compiler's classpath.")
+      val warning = buildString {
+        append(
+            "An exception occurred while looking for Crumb extensions. " + "No extensions will function.")
+        if (t is ServiceConfigurationError) {
+          append(" This may be due to a corrupt jar file in the compiler's classpath.")
+        }
+        append(" Exception: ")
+            .append(t)
       }
-      warning.append(" Exception: ")
-          .append(t)
-      processingEnv.messager.printMessage(WARNING, warning.toString(), null)
+      processingEnv.messager.printMessage(WARNING, warning, null)
       producerExtensions = setOf()
       consumerExtensions = setOf()
     }
+    producerExtensions.plus(consumerExtensions).forEach { it.init(processingEnv) }
     val producerAnnotatedAnnotations = producerExtensions.flatMap { it.supportedProducerAnnotations() }
         .filter { it.getAnnotation(CrumbProducer::class.java) != null }
     val consumerAnnotatedAnnotations = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
@@ -228,7 +230,7 @@ class CrumbProcessor : AbstractProcessor {
           val globalExtras = mutableMapOf<ExtensionKey, ProducerMetadata>()
           applicableExtensions.forEach { extension ->
             val extras = extension.produce(context, producer, crumbAnnotations)
-            globalExtras[extension.key()] = extras
+            globalExtras[extension.key] = extras
           }
           val adapterName = producer.classNameOf()
           val packageName = producer.packageName()
@@ -296,7 +298,7 @@ class CrumbProcessor : AbstractProcessor {
         .forEach { (consumer, crumbAnnotations) ->
           consumerExtensions.forEach { extension ->
             if (extension.isConsumerApplicable(context, consumer, crumbAnnotations)) {
-              val metadata = metadataByExtension[extension.key()].orEmpty()
+              val metadata = metadataByExtension[extension.key].orEmpty()
               extension.consume(context, consumer, crumbAnnotations, metadata)
             }
           }

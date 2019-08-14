@@ -16,19 +16,30 @@
 
 package com.uber.crumb.compiler.api
 
+import javax.annotation.processing.ProcessingEnvironment
+
 /**
  * Base extension for CrumbExtensions. This class isn't one you would implement directly.
  */
 interface CrumbExtension {
 
   /**
+   * Convenience init callback when extension processing is beginning.
+   *
+   * If you need anything from the processingEnv for later, it is recommended to save its instance here.
+   */
+  @JvmDefault
+  fun init(processingEnvironment: ProcessingEnvironment) {
+
+  }
+
+  /**
    * @return the [ExtensionKey] for this extension, used to indicate what key to use in storing/retrieving
    * metadata from the classpath. This is the key that [CrumbProducerExtension] data is written to
    * and [CrumbConsumerExtension] data is read from. By default, it's the name of the extension class.
    */
-  fun key(): ExtensionKey {
-    return javaClass.name
-  }
+  @JvmDefault
+  val key: ExtensionKey get() = javaClass.name
 
   /**
    * Indicates to an annotation processor environment supporting incremental annotation processing

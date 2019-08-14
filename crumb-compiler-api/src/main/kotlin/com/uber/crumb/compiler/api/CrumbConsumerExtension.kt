@@ -32,6 +32,7 @@ interface CrumbConsumerExtension : CrumbExtension {
    * Supported consumer annotations, if any, that the CrumbProcessor should collect on this
    * extension's behalf. Empty by default.
    */
+  @JvmDefault
   fun supportedConsumerAnnotations(): Set<Class<out Annotation>> {
     return emptySet()
   }
@@ -39,16 +40,20 @@ interface CrumbConsumerExtension : CrumbExtension {
   /**
    * Determines whether or not a given type is applicable to this.
    *
-   * *Note:* If you need anything from the processingEnv for later, it is recommended to save it here.
-   *
    * @param context the [CrumbContext].
    * @param type the type to check.
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return true if the type is applicable.
    */
+  @JvmDefault
   fun isConsumerApplicable(context: CrumbContext,
       type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean
+      annotations: Collection<AnnotationMirror>): Boolean {
+    // Note: AutoCommon's MoreElements#isAnnotationPresent() is a safer option but not used here to avoid the dependency
+    return supportedConsumerAnnotations().any {
+      type.getAnnotation(it) != null
+    }
+  }
 
   /**
    * Invoked to tell this extension to consume the set of collected [ConsumerMetadata].
