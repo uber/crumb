@@ -47,11 +47,10 @@ ext.deps = [
     ],
 
     build: [
-        buildToolsVersion: '28.0.3',
-        compileSdkVersion: 28,
+        compileSdkVersion: 29,
         ci: 'true' == System.getenv('CI'),
         minSdkVersion: 14,
-        targetSdkVersion: 28,
+        targetSdkVersion: 29,
         errorProne: "com.google.errorprone:error_prone_core:${versions.errorProne}",
 
         gradlePlugins: [
