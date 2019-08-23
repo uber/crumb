@@ -23,7 +23,6 @@ apply from: rootProject.file('gradle/config-kotlin-sources.gradle')
 
 android {
   compileSdkVersion deps.build.compileSdkVersion
-  buildToolsVersion deps.build.buildToolsVersion
 
   defaultConfig {
     minSdkVersion deps.build.minSdkVersion
