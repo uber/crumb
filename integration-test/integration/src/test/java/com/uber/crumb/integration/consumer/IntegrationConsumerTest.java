@@ -24,6 +24,8 @@ import com.uber.crumb.integration.lib2.Lib2Enum;
 import com.uber.crumb.integration.lib2.Lib2Model;
 import com.uber.crumb.integration.lib3.Lib3Enum;
 import com.uber.crumb.integration.lib3.Lib3Model;
+import com.uber.crumb.integration.localmodels.LocalEnum;
+import com.uber.crumb.integration.localmodels.LocalModel;
 import java.io.IOException;
 import org.junit.Test;
 
@@ -36,13 +38,9 @@ public final class IntegrationConsumerTest {
   // output keys in the same
   // order.
   private static final String EXPECTED_GSON_JSON =
-      "{\"lib1Model\":{\"foo\":\"lib1Model\"},"
-          + "\"lib1Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib2Enum\":"
-          + "\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"},\"lib3Enum\":\"foo\"}";
+      "{\"lib1Model\":{\"foo\":\"lib1Model\"},\"lib1Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib2Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"},\"lib3Enum\":\"foo\",\"localModel\":{\"foo\":\"localModel\"},\"localEnum\":\"foo\"}";
   private static final String EXPECTED_MOSHI_JSON =
-      "{\"lib1Enum\":\"foo\",\"lib1Model\""
-          + ":{\"foo\":\"lib1Model\"},\"lib2Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"}"
-          + ",\"lib3Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"}}";
+      "{\"lib1Enum\":\"foo\",\"lib1Model\":{\"foo\":\"lib1Model\"},\"lib2Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib3Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"},\"localEnum\":\"foo\",\"localModel\":{\"foo\":\"localModel\"}}";
 
   private final Gson gson =
       new GsonBuilder().registerTypeAdapterFactory(IntegrationConsumer.gson()).create();
@@ -58,7 +56,9 @@ public final class IntegrationConsumerTest {
             Lib2Model.create("lib2Model"),
             Lib2Enum.FOO,
             Lib3Model.create("lib3Model"),
-            Lib3Enum.FOO);
+            Lib3Enum.FOO,
+            LocalModel.create("localModel"),
+            LocalEnum.FOO);
 
     String json = gson.toJson(data);
     assertThat(json).isEqualTo(EXPECTED_GSON_JSON);
@@ -79,7 +79,9 @@ public final class IntegrationConsumerTest {
             Lib2Model.create("lib2Model"),
             Lib2Enum.FOO,
             Lib3Model.create("lib3Model"),
-            Lib3Enum.FOO);
+            Lib3Enum.FOO,
+            LocalModel.create("localModel"),
+            LocalEnum.FOO);
 
     String json = moshi.adapter(TestData.class).toJson(data);
     assertThat(json).isEqualTo(EXPECTED_MOSHI_JSON);
@@ -105,20 +107,25 @@ public final class IntegrationConsumerTest {
     public final Lib2Enum lib2Enum;
     public final Lib3Model lib3Model;
     public final Lib3Enum lib3Enum;
+    public final LocalModel localModel;
+    public final LocalEnum localEnum;
 
-    public TestData(
-        Lib1Model lib1Model,
+    public TestData(Lib1Model lib1Model,
         Lib1Enum lib1Enum,
         Lib2Model lib2Model,
         Lib2Enum lib2Enum,
         Lib3Model lib3Model,
-        Lib3Enum lib3Enum) {
+        Lib3Enum lib3Enum,
+        LocalModel localModel,
+        LocalEnum localEnum) {
       this.lib1Model = lib1Model;
       this.lib1Enum = lib1Enum;
       this.lib2Model = lib2Model;
       this.lib2Enum = lib2Enum;
       this.lib3Model = lib3Model;
       this.lib3Enum = lib3Enum;
+      this.localModel = localModel;
+      this.localEnum = localEnum;
     }
 
     @Override
@@ -147,7 +154,13 @@ public final class IntegrationConsumerTest {
       if (!lib3Model.equals(testData.lib3Model)) {
         return false;
       }
-      return lib3Enum == testData.lib3Enum;
+      if (lib3Enum != testData.lib3Enum) {
+        return false;
+      }
+      if (!localModel.equals(testData.localModel)) {
+        return false;
+      }
+      return localEnum == testData.localEnum;
     }
 
     @Override
@@ -158,6 +171,8 @@ public final class IntegrationConsumerTest {
       result = 31 * result + lib2Enum.hashCode();
       result = 31 * result + lib3Model.hashCode();
       result = 31 * result + lib3Enum.hashCode();
+      result = 31 * result + localModel.hashCode();
+      result = 31 * result + localEnum.hashCode();
       return result;
     }
   }
