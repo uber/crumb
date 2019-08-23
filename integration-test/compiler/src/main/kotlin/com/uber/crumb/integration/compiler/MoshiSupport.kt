@@ -19,6 +19,7 @@ package com.uber.crumb.integration.compiler
 import com.google.auto.common.MoreTypes
 import com.google.auto.service.AutoService
 import com.google.common.collect.ImmutableSet
+import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ArrayTypeName
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
@@ -49,6 +50,7 @@ import com.uber.crumb.integration.annotations.MoshiFactory.Type.CONSUMER
 import com.uber.crumb.integration.annotations.MoshiFactory.Type.PRODUCER
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import javax.annotation.Nullable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
@@ -196,6 +198,7 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     val create = MethodSpec.methodBuilder("create")
         .addModifiers(PUBLIC)
+        .addAnnotation(Nullable::class.java)
         .addAnnotation(Override::class.java)
         .addParameters(ImmutableSet.of(typeParam, annotationsParam, moshi))
         .returns(
@@ -344,6 +347,9 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     // A utility createTypeAdapter method for methods to use and not worry about reflection stuff
     val jsonAdapterCreator = MethodSpec.methodBuilder("createJsonAdapter")
+        .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java)
+            .addMember("value", "\$S", "unchecked")
+            .build())
         .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
         .addTypeVariable(t)
         .returns(returnType)
@@ -377,7 +383,6 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     val factoryCreator = MethodSpec.methodBuilder("getJsonAdapterFactory")
         .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-        .addTypeVariable(t)
         .returns(JsonAdapter.Factory::class.java)
         .addParameter(String::class.java, "modelName")
         .addParameter(String::class.java, "methodName")
@@ -407,6 +412,7 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     val create = MethodSpec.methodBuilder("create")
         .addModifiers(PUBLIC)
+        .addAnnotation(Nullable::class.java)
         .addAnnotation(Override::class.java)
         .addParameters(ImmutableSet.of(
             TYPE_SPEC,
@@ -439,10 +445,14 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     // Begin the switch
     create.beginControlFlow("switch (packageName)",
         TYPE_SPEC)
-    modelsByPackage.forEach { packageName, entries ->
+    modelsByPackage.forEach { (packageName, entries) ->
       // Create the package-specific method
       val packageCreatorMethod = MethodSpec.methodBuilder(
           nameAllocator.newName("${packageName}JsonAdapter"))
+          .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java)
+              .addMember("value", "\$S", "unchecked")
+              .build())
+          .addAnnotation(Nullable::class.java)
           .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
           .addTypeVariable(t)
           .returns(returnType)
