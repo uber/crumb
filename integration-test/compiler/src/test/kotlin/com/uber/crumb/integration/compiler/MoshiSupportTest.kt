@@ -97,11 +97,12 @@ import java.lang.Override;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 final class MoshiProducer_MyAdapterFactory implements JsonAdapter.Factory {
-  @Override public JsonAdapter<?> create(Type type,
-          Set<? extends Annotation> annotations,
-          Moshi moshi) {
+  @Nullable
+  @Override
+  public JsonAdapter<?> create(Type type, Set<? extends Annotation> annotations, Moshi moshi) {
     if (!annotations.isEmpty()) return null;
     if (type.equals(Foo.class)) {
       return Foo.jsonAdapter(moshi);

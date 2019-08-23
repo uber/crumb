@@ -67,26 +67,29 @@ public abstract class MyAdapterFactory {
 
     val expected = JavaFileObjects.forSourceString("test.GsonProducer_MyAdapterFactory", """
 package test;
+
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import java.lang.Override;
 import java.lang.SuppressWarnings;
+import javax.annotation.Nullable;
 
 final class GsonProducer_MyAdapterFactory implements TypeAdapterFactory {
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-        Class<T> rawType = (Class<T>) type.getRawType();
-        if (Foo.class.isAssignableFrom(rawType)) {
-            return (TypeAdapter<T>) Foo.typeAdapter(gson);
-        } else if (Bar.class.isAssignableFrom(rawType)) {
-            return (TypeAdapter<T>) Bar.jsonAdapter(gson);
-        } else {
-            return null;
-        }
+  @Nullable
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+    Class<T> rawType = (Class<T>) type.getRawType();
+    if (Foo.class.isAssignableFrom(rawType)) {
+      return (TypeAdapter<T>) Foo.typeAdapter(gson);
+    } else if (Bar.class.isAssignableFrom(rawType)) {
+      return (TypeAdapter<T>) Bar.jsonAdapter(gson);
+    } else {
+      return null;
     }
+  }
 }""")
 
     assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
