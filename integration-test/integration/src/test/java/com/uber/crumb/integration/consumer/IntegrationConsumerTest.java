@@ -38,9 +38,13 @@ public final class IntegrationConsumerTest {
   // output keys in the same
   // order.
   private static final String EXPECTED_GSON_JSON =
-      "{\"lib1Model\":{\"foo\":\"lib1Model\"},\"lib1Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib2Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"},\"lib3Enum\":\"foo\",\"localModel\":{\"foo\":\"localModel\"},\"localEnum\":\"foo\"}";
+      "{\"lib1Model\":{\"foo\":\"lib1Model\"},\"lib1Enum\":\"foo\",\"lib2Model\":{\"foo\":"
+          + "\"lib2Model\"},\"lib2Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"},"
+          + "\"lib3Enum\":\"foo\",\"localModel\":{\"foo\":\"localModel\"},\"localEnum\":\"foo\"}";
   private static final String EXPECTED_MOSHI_JSON =
-      "{\"lib1Enum\":\"foo\",\"lib1Model\":{\"foo\":\"lib1Model\"},\"lib2Enum\":\"foo\",\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib3Enum\":\"foo\",\"lib3Model\":{\"foo\":\"lib3Model\"},\"localEnum\":\"foo\",\"localModel\":{\"foo\":\"localModel\"}}";
+      "{\"lib1Enum\":\"foo\",\"lib1Model\":{\"foo\":\"lib1Model\"},\"lib2Enum\":\"foo\","
+          + "\"lib2Model\":{\"foo\":\"lib2Model\"},\"lib3Enum\":\"foo\",\"lib3Model\":{\"foo\":"
+          + "\"lib3Model\"},\"localEnum\":\"foo\",\"localModel\":{\"foo\":\"localModel\"}}";
 
   private final Gson gson =
       new GsonBuilder().registerTypeAdapterFactory(IntegrationConsumer.gson()).create();
