@@ -28,11 +28,18 @@ dependencies {
   api deps.misc.moshi
   annotationProcessor project(":crumb-compiler")
   annotationProcessor project(":integration-test:compiler")
+  annotationProcessor deps.apt.autoValue
+  annotationProcessor deps.apt.autoValueAnnotations
+  annotationProcessor deps.apt.autoValueGson
+  annotationProcessor deps.apt.autoValueMoshi
   api project(":crumb-annotations")
   api project(":integration-test:lib1")
   api project(":integration-test:lib2")
   api project(":integration-test:lib3")
   api project(":integration-test:annotations")
+  compileOnly deps.misc.javaxExtras
+  compileOnly deps.apt.autoValueAnnotations
+  implementation deps.apt.autoValueGsonRuntime
 
   testImplementation deps.test.truth
 

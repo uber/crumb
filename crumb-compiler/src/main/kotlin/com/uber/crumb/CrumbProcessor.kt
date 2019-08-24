@@ -187,13 +187,13 @@ class CrumbProcessor : AbstractProcessor {
   }
 
   override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean {
-    processProducers(roundEnv)
-    processConsumers(roundEnv)
+    val localModels = processProducers(roundEnv)
+    processConsumers(roundEnv, localModels)
 
     return false
   }
 
-  private fun processProducers(roundEnv: RoundEnvironment) {
+  private fun processProducers(roundEnv: RoundEnvironment): Set<CrumbModel> {
     val context = CrumbContext(processingEnv, roundEnv)
     val producers = producerExtensions.flatMap { it.supportedProducerAnnotations() }
         .filter { it.getAnnotation(CrumbProducer::class.java) != null }
@@ -212,8 +212,8 @@ class CrumbProcessor : AbstractProcessor {
           }
         }
 
-    producers
-        .forEach { (producer, crumbAnnotations) ->
+    return producers
+        .mapNotNullTo(mutableSetOf()) { (producer, crumbAnnotations) ->
           val applicableExtensions = producerExtensions
               .filter { it.isProducerApplicable(context, producer, crumbAnnotations) }
 
@@ -223,7 +223,7 @@ class CrumbProcessor : AbstractProcessor {
               |Detected producers: [${producers.joinToString { it.toString() }}]
               |Available extensions: [${producerExtensions.joinToString()}]
               """.trimMargin())
-            return@forEach
+            return@mapNotNullTo null
           }
 
           val globalExtras = mutableMapOf<ExtensionKey, ProducerMetadata>()
@@ -245,10 +245,11 @@ class CrumbProcessor : AbstractProcessor {
               CrumbModel.ADAPTER.encode(it, crumbModel)
             }
           }
+          return@mapNotNullTo crumbModel
         }
   }
 
-  private fun processConsumers(roundEnv: RoundEnvironment) {
+  private fun processConsumers(roundEnv: RoundEnvironment, localModels: Set<CrumbModel>) {
     val context = CrumbContext(processingEnv, roundEnv)
     val consumers = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
         .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
@@ -279,7 +280,7 @@ class CrumbProcessor : AbstractProcessor {
       return
     }
 
-    val producerMetadata = producerMetadataBlobs.map { blob ->
+    val producerMetadata = localModels + producerMetadataBlobs.map { blob ->
       GzipSource(blob).buffer().use {
         CrumbModel.ADAPTER.decode(it)
       }

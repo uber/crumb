@@ -52,6 +52,7 @@ import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.integration.annotations.GsonFactory
 import com.uber.crumb.integration.annotations.GsonFactory.Type.CONSUMER
 import com.uber.crumb.integration.annotations.GsonFactory.Type.PRODUCER
+import javax.annotation.Nullable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
@@ -200,6 +201,7 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
     val create = MethodSpec.methodBuilder("create")
         .addModifiers(PUBLIC)
         .addTypeVariable(t)
+        .addAnnotation(Nullable::class.java)
         .addAnnotation(Override::class.java)
         .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java)
             .addMember("value", "\"unchecked\"")
@@ -307,6 +309,9 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     // A utility createTypeAdapter method for methods to use and not worry about reflection stuff
     val typeAdapterCreator = MethodSpec.methodBuilder("createTypeAdapter")
+        .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java)
+            .addMember("value", "\$S", "unchecked")
+            .build())
         .addModifiers(PRIVATE, STATIC)
         .addTypeVariable(t)
         .returns(result)
@@ -358,6 +363,7 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
     val create = MethodSpec.methodBuilder("create")
         .addModifiers(PUBLIC)
         .addTypeVariable(t)
+        .addAnnotation(Nullable::class.java)
         .addAnnotation(Override::class.java)
         .addParameters(ImmutableSet.of(gson, typeParam))
         .returns(result)
@@ -383,10 +389,11 @@ class GsonSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     // Begin the switch
     create.beginControlFlow("switch (packageName)")
-    modelsByPackage.forEach { packageName, entries ->
+    modelsByPackage.forEach { (packageName, entries) ->
       // Create the package-specific method
       val packageCreatorMethod = MethodSpec.methodBuilder(
           nameAllocator.newName("${packageName}TypeAdapter"))
+          .addAnnotation(Nullable::class.java)
           .addModifiers(PRIVATE, STATIC)
           .addTypeVariable(t)
           .returns(result)
