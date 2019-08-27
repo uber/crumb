@@ -2,13 +2,13 @@
 // Source file: com/uber/crumb/internal/model/crumb_model.proto
 package com.uber.crumb.internal.model
 
-import com.squareup.wire.FieldEncoding
-import com.squareup.wire.Message
-import com.squareup.wire.ProtoAdapter
-import com.squareup.wire.ProtoReader
-import com.squareup.wire.ProtoWriter
-import com.squareup.wire.WireField
-import com.squareup.wire.internal.missingRequiredFields
+import com.uber.crumb.internal.wire.FieldEncoding
+import com.uber.crumb.internal.wire.Message
+import com.uber.crumb.internal.wire.ProtoAdapter
+import com.uber.crumb.internal.wire.ProtoReader
+import com.uber.crumb.internal.wire.ProtoWriter
+import com.uber.crumb.internal.wire.WireField
+import com.uber.crumb.internal.wire.internal.missingRequiredFields
 import kotlin.Any
 import kotlin.AssertionError
 import kotlin.Boolean
@@ -21,7 +21,7 @@ import kotlin.collections.Map
 import kotlin.jvm.JvmField
 import okio.ByteString
 
-class CrumbMetadata(
+internal class CrumbMetadata(
   @field:WireField(
     tag = 1,
     adapter = "com.squareup.wire.ProtoAdapter#STRING",
