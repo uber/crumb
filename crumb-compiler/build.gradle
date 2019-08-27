@@ -17,7 +17,10 @@ plugins {
   id 'org.jetbrains.kotlin.jvm'
   id 'org.jetbrains.kotlin.kapt'
   id 'org.jetbrains.dokka'
-  id 'com.squareup.wire'
+  // TODO Reenable once Kapt fixes MPP dependency resolution
+  //  https://youtrack.jetbrains.com/issue/KT-31641
+  //  https://youtrack.jetbrains.com/issue/KT-33206
+//  id 'com.squareup.wire'
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -27,19 +30,19 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   }
 }
 
-sourceSets {
-  main {
-    java {
-      srcDir "${project.buildDir}/generated/src/main/java"
-    }
-  }
-}
+//sourceSets {
+//  main {
+//    java {
+//      srcDir "${project.buildDir}/generated/src/main/java"
+//    }
+//  }
+//}
 
-wire {
-  kotlin {
-    javaInterop = false
-  }
-}
+//wire {
+//  kotlin {
+//    javaInterop = false
+//  }
+//}
 
 dependencies {
   kapt deps.apt.autoService
