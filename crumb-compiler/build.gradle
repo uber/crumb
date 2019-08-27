@@ -55,7 +55,7 @@ dependencies {
 
   api project(":crumb-core")
   api project(':crumb-compiler-api')
-  implementation deps.misc.wire
+  implementation deps.misc.okio
 
   implementation deps.apt.autoCommon
   implementation deps.kotlin.stdLibJdk8
