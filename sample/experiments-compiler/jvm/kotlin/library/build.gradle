@@ -32,4 +32,5 @@ dependencies {
   kapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
   api project(":crumb-annotations")
   api project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
+  api deps.kotlin.stdLibJdk7
 }

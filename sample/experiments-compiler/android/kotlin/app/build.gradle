@@ -49,6 +49,7 @@ dependencies {
   implementation project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
   implementation project(":crumb-annotations")
   implementation project(":sample:experiments-compiler:android:kotlin:library")
+  implementation deps.kotlin.stdLibJdk7
   implementation deps.misc.appCompat
   implementation deps.kotlin.stdLib
 }
