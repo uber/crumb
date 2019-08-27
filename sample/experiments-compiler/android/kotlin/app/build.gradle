@@ -43,18 +43,9 @@ repositories {
   google()
 }
 
-// https://youtrack.jetbrains.com/issue/KT-31641
-// https://youtrack.jetbrains.com/issue/KT-33206
-configurations {
-  kapt.extendsFrom(mppFriendlyKapt)
-}
-configurations.getByName("mppFriendlyKapt") {
-  attributes.attribute(Usage.USAGE_ATTRIBUTE, getObjects().named(Usage, Usage.JAVA_RUNTIME))
-}
-
 dependencies {
-  mppFriendlyKapt project(":crumb-compiler")
-  mppFriendlyKapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
+  kapt project(":crumb-compiler")
+  kapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
   implementation project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
   implementation project(":crumb-annotations")
   implementation project(":sample:experiments-compiler:android:kotlin:library")
