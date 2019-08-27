@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package com.uber.crumb.internal.model;
+
+option java_package = "com.uber.crumb.internal.model";
+
+message Crumb {
+  // The name of the specific data model, usually defined by source producer's canonical name
+  required string name = 1;
+
+  repeated CrumbMetadata extras = 2;
+}
+
+message CrumbMetadata {
+  required string extensionKey = 1;
+  map<string, string> producerMetadata = 2;
+}

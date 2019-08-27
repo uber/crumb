@@ -35,8 +35,8 @@ import com.uber.crumb.core.CrumbLog
 import com.uber.crumb.core.CrumbLog.Client.MessagerClient
 import com.uber.crumb.core.CrumbManager
 import com.uber.crumb.core.CrumbOutputLanguage
-import com.uber.crumb.internal.CrumbModel
-import com.uber.crumb.internal.CrumbModelExtra
+import com.uber.crumb.internal.model.Crumb
+import com.uber.crumb.internal.model.CrumbMetadata
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType.DYNAMIC
@@ -193,7 +193,7 @@ class CrumbProcessor : AbstractProcessor {
     return false
   }
 
-  private fun processProducers(roundEnv: RoundEnvironment): Set<CrumbModel> {
+  private fun processProducers(roundEnv: RoundEnvironment): Set<Crumb> {
     val context = CrumbContext(processingEnv, roundEnv)
     val producers = producerExtensions.flatMap { it.supportedProducerAnnotations() }
         .filter { it.getAnnotation(CrumbProducer::class.java) != null }
@@ -239,17 +239,15 @@ class CrumbProcessor : AbstractProcessor {
               outputLanguage = CrumbOutputLanguage.languageForType(producer),
               originatingElements = setOf(producer) + globalExtras.values.flatMap { it.second }
           )
-          val crumbModel = CrumbModel("$packageName.$adapterName", globalExtras.map { (extensionKey, producerMetadata) -> CrumbModelExtra(extensionKey, producerMetadata.first) })
-          GzipSink(sink).buffer().also {
-            it.use {
-              CrumbModel.ADAPTER.encode(it, crumbModel)
-            }
+          val crumbModel = Crumb("$packageName.$adapterName", globalExtras.map { (extensionKey, producerMetadata) -> CrumbMetadata(extensionKey, producerMetadata.first) })
+          GzipSink(sink).buffer().use {
+            Crumb.ADAPTER.encode(it, crumbModel)
           }
           return@mapNotNullTo crumbModel
         }
   }
 
-  private fun processConsumers(roundEnv: RoundEnvironment, localModels: Set<CrumbModel>) {
+  private fun processConsumers(roundEnv: RoundEnvironment, localModels: Set<Crumb>) {
     val context = CrumbContext(processingEnv, roundEnv)
     val consumers = consumerExtensions.flatMap { it.supportedConsumerAnnotations() }
         .filter { it.getAnnotation(CrumbConsumer::class.java) != null }
@@ -282,7 +280,7 @@ class CrumbProcessor : AbstractProcessor {
 
     val producerMetadata = localModels + producerMetadataBlobs.map { blob ->
       GzipSource(blob).buffer().use {
-        CrumbModel.ADAPTER.decode(it)
+        Crumb.ADAPTER.decode(it)
       }
     }
     val metadataByExtension = producerMetadata
