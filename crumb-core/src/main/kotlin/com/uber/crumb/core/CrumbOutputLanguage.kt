@@ -82,7 +82,7 @@ enum class CrumbOutputLanguage {
           val typeSpec = KotlinTypeSpec.objectBuilder(fileName)
               .addKdoc(EXPLANATORY_COMMENT)
               .addAnnotation(KotlinAnnotationSpec.builder(CrumbIndex::class)
-                  .addMember("%L", buffer.readByteArray().joinToString(",", prefix = "[", postfix = "]"))
+                  .addMember("value = %L", buffer.readByteArray().joinToString(",", prefix = "[", postfix = "]"))
                   .build())
               .addModifiers(KModifier.PRIVATE)
               .apply {
