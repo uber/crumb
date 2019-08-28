@@ -96,7 +96,7 @@ enum class CrumbOutputLanguage {
               .build()
           FileSpec.builder(packageName, "-$fileName")
               .addComment(GENERATED_COMMENT)
-              .addAnnotation(com.squareup.kotlinpoet.AnnotationSpec.builder(JvmName::class)
+              .addAnnotation(KotlinAnnotationSpec.builder(JvmName::class)
                   .addMember("name = %S", "-$fileName")
                   .useSiteTarget(FILE)
                   .build())
