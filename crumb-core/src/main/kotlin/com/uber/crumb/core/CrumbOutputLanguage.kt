@@ -20,7 +20,9 @@ import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
+import com.squareup.kotlinpoet.AnnotationSpec.UseSiteTarget.FILE
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.uber.crumb.annotations.internal.CrumbIndex
 import okio.Buffer
@@ -79,18 +81,25 @@ enum class CrumbOutputLanguage {
       val buffer = Buffer()
       return object : BufferedSink by buffer {
         override fun close() {
-          val typeSpec = KotlinTypeSpec.objectBuilder(fileName)
+          val typeSpec = KotlinTypeSpec.classBuilder(fileName)
               .addKdoc(EXPLANATORY_COMMENT)
               .addAnnotation(KotlinAnnotationSpec.builder(CrumbIndex::class)
                   .addMember("value = %L", buffer.readByteArray().joinToString(",", prefix = "[", postfix = "]"))
                   .build())
               .addModifiers(KModifier.PRIVATE)
+              .primaryConstructor(FunSpec.constructorBuilder()
+                  .addModifiers(KModifier.PRIVATE)
+                  .build())
               .apply {
                 this.originatingElements += originatingElements
               }
               .build()
-          FileSpec.builder(packageName, fileName)
+          FileSpec.builder(packageName, "-$fileName")
               .addComment(GENERATED_COMMENT)
+              .addAnnotation(com.squareup.kotlinpoet.AnnotationSpec.builder(JvmName::class)
+                  .addMember("name = %S", "-$fileName")
+                  .useSiteTarget(FILE)
+                  .build())
               .addType(typeSpec)
               .indent(INDENT)
               .build()
