@@ -8,14 +8,13 @@
 <a href="../../index.html">crumb-core</a>&nbsp;/&nbsp;<a href="../index.html">com.uber.crumb.core</a>&nbsp;/&nbsp;<a href="index.html">CrumbManager</a>&nbsp;/&nbsp;<a href="./load.html">load</a><br/>
 <br/>
 <h1>load</h1>
-<a name="com.uber.crumb.core.CrumbManager$load(kotlin.Function1((kotlin.String, kotlin.Boolean)))"></a>
-<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/io/Serializable.html"><span class="identifier">Serializable</span></a><span class="symbol">&gt;</span> <span class="identifier">load</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$load(kotlin.Function1((kotlin.String, kotlin.Boolean)))/nameFilter">nameFilter</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="load.html#T"><span class="identifier">T</span></a><span class="symbol">&gt;</span></code>
-<p>This loads a given <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a>&lt;<a href="load.html#T">T</a>&gt; from the Crumb <code>META-INF</code> store that matches the given <a href="load.html#com.uber.crumb.core.CrumbManager$load(kotlin.Function1((kotlin.String, kotlin.Boolean)))/nameFilter">nameFilter</a>.</p>
+<a name="com.uber.crumb.core.CrumbManager$load(kotlin.String)"></a>
+<code><span class="keyword">fun </span><span class="identifier">load</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$load(kotlin.String)/packageName">packageName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><span class="identifier">BufferedSource</span><span class="symbol">&gt;</span></code>
+<p>This loads a given <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a> from the available <a href="#">CrumbIndex</a> instances in the given <a href="load.html#com.uber.crumb.core.CrumbManager$load(kotlin.String)/packageName">packageName</a>.</p>
 <h3>Parameters</h3>
-<p><a name="nameFilter"></a>
-<code>nameFilter</code> - a name filter to match on. Conventionally, one could use a "known" file extension used for file
-    names in <a href="store.html">store</a>.</p>
+<p><a name="packageName"></a>
+<code>packageName</code> - The target package to load types containing <a href="#">CrumbIndex</a> annotations from.</p>
 <p><strong>Return</strong><br/>
-the loaded <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a>&lt;<a href="load.html#T">T</a>&gt;, or an empty set if none were found.</p>
+the loaded <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a>, or an empty set if none were found.</p>
 </BODY>
 </HTML>

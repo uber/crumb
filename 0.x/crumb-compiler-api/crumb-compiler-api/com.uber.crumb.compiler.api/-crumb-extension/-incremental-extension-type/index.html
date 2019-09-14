@@ -1,0 +1,54 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CrumbExtension.IncrementalExtensionType - crumb-compiler-api</title>
+<link rel="stylesheet" href="../../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../../index.html">crumb-compiler-api</a>&nbsp;/&nbsp;<a href="../../index.html">com.uber.crumb.compiler.api</a>&nbsp;/&nbsp;<a href="../index.html">CrumbExtension</a>&nbsp;/&nbsp;<a href="./index.html">IncrementalExtensionType</a><br/>
+<br/>
+<h1>IncrementalExtensionType</h1>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">IncrementalExtensionType</span></code>
+<p>Indicates to an annotation processor environment supporting incremental annotation processing
+(currently a feature specific to Gradle starting with version 4.8) the incremental type of an
+Extension.</p>
+<p>The constants for this enum are ordered by increasing performance (but also constraints).</p>
+<h3>Enum Values</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-u-n-k-n-o-w-n.html">UNKNOWN</a></p>
+</td>
+<td>
+<p>The incrementality of this extension is unknown, or it is neither aggregating nor isolating.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-a-g-g-r-e-g-a-t-i-n-g.html">AGGREGATING</a></p>
+</td>
+<td>
+<p>This extension is <em>aggregating</em>, meaning that it may generate outputs based on several
+annotated input classes and it respects the constraints imposed on aggregating processors.
+It is common for Crumb producer extensions to be aggregating and unusual for consumer
+extensions to be aggregating.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-i-s-o-l-a-t-i-n-g.html">ISOLATING</a></p>
+</td>
+<td>
+<p>This extension is <em>isolating</em>, meaning roughly that its output depends on the
+<code>@CrumbConsumer</code>/<code>@CrumbProducer</code> class and its dependencies, but not on other <code>@CrumbConsumer</code>/<code>@CrumbProducer</code>
+classes that might be compiled at the same time. The constraints that an isolating extension must
+respect are the same as those that Gradle imposes on an isolating annotation processor.
+It is unusual for Crumb producer extensions to be isolating and common for consumer
+extensions to be isolating.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

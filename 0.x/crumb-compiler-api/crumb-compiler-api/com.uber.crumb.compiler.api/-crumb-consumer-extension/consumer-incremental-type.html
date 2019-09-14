@@ -1,0 +1,21 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CrumbConsumerExtension.consumerIncrementalType - crumb-compiler-api</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">crumb-compiler-api</a>&nbsp;/&nbsp;<a href="../index.html">com.uber.crumb.compiler.api</a>&nbsp;/&nbsp;<a href="index.html">CrumbConsumerExtension</a>&nbsp;/&nbsp;<a href="./consumer-incremental-type.html">consumerIncrementalType</a><br/>
+<br/>
+<h1>consumerIncrementalType</h1>
+<a name="com.uber.crumb.compiler.api.CrumbConsumerExtension$consumerIncrementalType(javax.annotation.processing.ProcessingEnvironment)"></a>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">consumerIncrementalType</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbConsumerExtension$consumerIncrementalType(javax.annotation.processing.ProcessingEnvironment)/processingEnvironment">processingEnvironment</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/ProcessingEnvironment.html"><span class="identifier">ProcessingEnvironment</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../-crumb-extension/-incremental-extension-type/index.html"><span class="identifier">CrumbExtension.IncrementalExtensionType</span></a></code>
+<p>Determines the incremental type of this Extension.</p>
+<p>The <a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/ProcessingEnvironment.html">ProcessingEnvironment</a> can be used, among other things, to obtain the processor
+options, using <a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/ProcessingEnvironment.html#getOptions()">ProcessingEnvironment.getOptions</a>.</p>
+<p>The actual incremental type of the Crumb processor as a whole will be the loosest
+incremental types of the Extensions present in the annotation processor path. The default
+returned value is <a href="../-crumb-extension/-incremental-extension-type/-u-n-k-n-o-w-n.html">IncrementalExtensionType.UNKNOWN</a>, which will disable incremental
+annotation processing entirely.</p>
+</BODY>
+</HTML>

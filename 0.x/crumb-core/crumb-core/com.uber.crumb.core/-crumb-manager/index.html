@@ -9,11 +9,8 @@
 <br/>
 <h1>CrumbManager</h1>
 <code><span class="keyword">class </span><span class="identifier">CrumbManager</span></code>
-<p>A utility class that helps adding build specific objects to the jar file and their extraction later on. This
-specifically works by reading/writing metadata in the Crumb <code>META-INF</code> location of jars from the classpath.</p>
-<p>Optionally, a colon-delimited list of extra locations to search for in loading can be specified via specifying the
-<a href="-o-p-t-i-o-n_-e-x-t-r-a_-l-o-c-a-t-i-o-n-s.html">OPTION_EXTRA_LOCATIONS</a> option in the given <a href="#">env</a>.</p>
-<p>Adapted from the <a href="https://android.googlesource.com/platform/frameworks/data-binding/+/master">Android DataBinding library</a>.</p>
+<p>A utility class that helps with generating types to hold <a href="#">CrumbIndexes</a> of metadata and reading them
+later.</p>
 <h3>Constructors</h3>
 <table>
 <tbody>
@@ -22,9 +19,9 @@ specifically works by reading/writing metadata in the Crumb <code>META-INF</code
 <p><a href="-init-.html">&lt;init&gt;</a></p>
 </td>
 <td>
-<code><span class="identifier">CrumbManager</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$<init>(javax.annotation.processing.ProcessingEnvironment, com.uber.crumb.core.CrumbLog)/env">env</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/ProcessingEnvironment.html"><span class="identifier">ProcessingEnvironment</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$<init>(javax.annotation.processing.ProcessingEnvironment, com.uber.crumb.core.CrumbLog)/crumbLog">crumbLog</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-log/index.html"><span class="identifier">CrumbLog</span></a><span class="symbol">)</span></code>
-<p>A utility class that helps adding build specific objects to the jar file and their extraction later on. This
-specifically works by reading/writing metadata in the Crumb <code>META-INF</code> location of jars from the classpath.</p>
+<code><span class="identifier">CrumbManager</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$<init>(javax.annotation.processing.ProcessingEnvironment, com.uber.crumb.core.CrumbLog)/env">env</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/ProcessingEnvironment.html"><span class="identifier">ProcessingEnvironment</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$<init>(javax.annotation.processing.ProcessingEnvironment, com.uber.crumb.core.CrumbLog)/crumbLog">crumbLog</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-log/index.html"><span class="identifier">CrumbLog</span></a><span class="symbol">)</span></code>
+<p>A utility class that helps with generating types to hold <a href="#">CrumbIndexes</a> of metadata and reading them
+later.</p>
 </td>
 </tr>
 </tbody>
@@ -37,8 +34,8 @@ specifically works by reading/writing metadata in the Crumb <code>META-INF</code
 <p><a href="load.html">load</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/io/Serializable.html"><span class="identifier">Serializable</span></a><span class="symbol">&gt;</span> <span class="identifier">load</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$load(kotlin.Function1((kotlin.String, kotlin.Boolean)))/nameFilter">nameFilter</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="load.html#T"><span class="identifier">T</span></a><span class="symbol">&gt;</span></code>
-<p>This loads a given <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a>&lt;<a href="load.html#T">T</a>&gt; from the Crumb <code>META-INF</code> store that matches the given <a href="load.html#com.uber.crumb.core.CrumbManager$load(kotlin.Function1((kotlin.String, kotlin.Boolean)))/nameFilter">nameFilter</a>.</p>
+<code><span class="keyword">fun </span><span class="identifier">load</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$load(kotlin.String)/packageName">packageName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><span class="identifier">BufferedSource</span><span class="symbol">&gt;</span></code>
+<p>This loads a given <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a> from the available <a href="#">CrumbIndex</a> instances in the given <a href="load.html#com.uber.crumb.core.CrumbManager$load(kotlin.String)/packageName">packageName</a>.</p>
 </td>
 </tr>
 <tr>
@@ -46,22 +43,9 @@ specifically works by reading/writing metadata in the Crumb <code>META-INF</code
 <p><a href="store.html">store</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">store</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)/packageName">packageName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)/fileName">fileName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)/objectToWrite">objectToWrite</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/io/Serializable.html"><span class="identifier">Serializable</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
-<p>This writes a given <a href="store.html#com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)/objectToWrite">Serializable</a> to the Crumb <code>META-INF</code> store.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3>Companion Object Properties</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<p><a href="-o-p-t-i-o-n_-e-x-t-r-a_-l-o-c-a-t-i-o-n-s.html">OPTION_EXTRA_LOCATIONS</a></p>
-</td>
-<td>
-<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">OPTION_EXTRA_LOCATIONS</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code>
-<p>A colon-delimited list of extra locations to search in loading.</p>
+<code><span class="keyword">fun </span><span class="identifier">store</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/packageName">packageName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/fileName">fileName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/outputLanguage">outputLanguage</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-output-language/index.html"><span class="identifier">CrumbOutputLanguage</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/originatingElements">originatingElements</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="https://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/Element.html"><span class="identifier">Element</span></a><span class="symbol">&gt;</span>&nbsp;<span class="symbol">=</span>&nbsp;emptySet()<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">BufferedSink</span></code>
+<p>This facilitates writing data to a <a href="#">CrumbIndex</a> type in the given <a href="store.html#com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/packageName">packageName</a>.<a href="store.html#com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/fileName">fileName</a> with the contents
+written to the returned <a href="#">BufferedSink</a>.</p>
 </td>
 </tr>
 </tbody>

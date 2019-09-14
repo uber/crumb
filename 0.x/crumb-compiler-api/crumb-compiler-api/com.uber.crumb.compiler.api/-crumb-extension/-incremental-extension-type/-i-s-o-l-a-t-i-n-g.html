@@ -1,0 +1,20 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CrumbExtension.IncrementalExtensionType.ISOLATING - crumb-compiler-api</title>
+<link rel="stylesheet" href="../../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../../index.html">crumb-compiler-api</a>&nbsp;/&nbsp;<a href="../../index.html">com.uber.crumb.compiler.api</a>&nbsp;/&nbsp;<a href="../index.html">CrumbExtension</a>&nbsp;/&nbsp;<a href="index.html">IncrementalExtensionType</a>&nbsp;/&nbsp;<a href="./-i-s-o-l-a-t-i-n-g.html">ISOLATING</a><br/>
+<br/>
+<h1>ISOLATING</h1>
+<a name="com.uber.crumb.compiler.api.CrumbExtension.IncrementalExtensionType.ISOLATING"></a>
+<code><span class="identifier">ISOLATING</span></code>
+<p>This extension is <em>isolating</em>, meaning roughly that its output depends on the
+<code>@CrumbConsumer</code>/<code>@CrumbProducer</code> class and its dependencies, but not on other <code>@CrumbConsumer</code>/<code>@CrumbProducer</code>
+classes that might be compiled at the same time. The constraints that an isolating extension must
+respect are the same as those that Gradle imposes on an isolating annotation processor.
+It is unusual for Crumb producer extensions to be isolating and common for consumer
+extensions to be isolating.</p>
+</BODY>
+</HTML>

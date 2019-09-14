@@ -27,8 +27,18 @@
 </td>
 <td>
 <code><span class="keyword">class </span><span class="identifier">CrumbManager</span></code>
-<p>A utility class that helps adding build specific objects to the jar file and their extraction later on. This
-specifically works by reading/writing metadata in the Crumb <code>META-INF</code> location of jars from the classpath.</p>
+<p>A utility class that helps with generating types to hold <a href="#">CrumbIndexes</a> of metadata and reading them
+later.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-crumb-output-language/index.html">CrumbOutputLanguage</a></p>
+</td>
+<td>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">CrumbOutputLanguage</span></code>
+<p>Supported output languages for Crumb metadata. When <a href="-crumb-output-language/write-to.html">writeTo</a> is called, a simple empty class is generated to hold a
+<a href="#">CrumbIndex</a> annotation containing all the crumb metadata specified.</p>
 </td>
 </tr>
 </tbody>

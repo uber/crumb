@@ -11,7 +11,7 @@
 <code><span class="keyword">interface </span><span class="identifier">Client</span></code>
 <p>The basic interface of a logging client that logs from <a href="../index.html">CrumbLog</a> are routed through.</p>
 <p>There are two clients that can be used out of the box:</p>
-<ul><li><a href="-messager-client/index.html">MessagerClient</a> - a client implementation that routes through a given <a href="http://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/Messager.html">Messager</a>.</li>
+<ul><li><a href="-messager-client/index.html">MessagerClient</a> - a client implementation that routes through a given <a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/Messager.html">Messager</a>.</li>
 <li><a href="-default-client/index.html">DefaultClient</a> - a client implementation that just writes to stdout/stderr.</li>
 </ul>
 <h3>Types</h3>
@@ -22,7 +22,7 @@
 <p><a href="-default-client/index.html">DefaultClient</a></p>
 </td>
 <td>
-<code><span class="keyword">object </span><span class="identifier">DefaultClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Client</span></a></code>
+<code><span class="keyword">object </span><span class="identifier">DefaultClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">CrumbLog.Client</span></a></code>
 <p>Default <a href="./index.html">Client</a> that just writes to stdout and stderr.</p>
 </td>
 </tr>
@@ -31,8 +31,8 @@
 <p><a href="-messager-client/index.html">MessagerClient</a></p>
 </td>
 <td>
-<code><span class="keyword">class </span><span class="identifier">MessagerClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Client</span></a></code>
-<p>Custom <a href="./index.html">Client</a> that just writes to a <a href="http://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/Messager.html">Messager</a>.</p>
+<code><span class="keyword">class </span><span class="identifier">MessagerClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">CrumbLog.Client</span></a></code>
+<p>Custom <a href="./index.html">Client</a> that just writes to a <a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/Messager.html">Messager</a>.</p>
 </td>
 </tr>
 </tbody>
@@ -45,7 +45,7 @@
 <p><a href="print-message.html">printMessage</a></p>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">printMessage</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbLog.Client$printMessage(javax.tools.Diagnostic.Kind, kotlin.String, kotlin.String, javax.lang.model.element.Element)/kind">kind</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/tools/Diagnostic/Kind.html"><span class="identifier">Kind</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbLog.Client$printMessage(javax.tools.Diagnostic.Kind, kotlin.String, kotlin.String, javax.lang.model.element.Element)/prefix">prefix</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbLog.Client$printMessage(javax.tools.Diagnostic.Kind, kotlin.String, kotlin.String, javax.lang.model.element.Element)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbLog.Client$printMessage(javax.tools.Diagnostic.Kind, kotlin.String, kotlin.String, javax.lang.model.element.Element)/element">element</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/Element.html"><span class="identifier">Element</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">printMessage</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbLog.Client$printMessage(javax.tools.Diagnostic.Kind, kotlin.String, kotlin.String, javax.lang.model.element.Element)/kind">kind</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/javax/tools/Diagnostic/Kind.html"><span class="identifier">Kind</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbLog.Client$printMessage(javax.tools.Diagnostic.Kind, kotlin.String, kotlin.String, javax.lang.model.element.Element)/prefix">prefix</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbLog.Client$printMessage(javax.tools.Diagnostic.Kind, kotlin.String, kotlin.String, javax.lang.model.element.Element)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbLog.Client$printMessage(javax.tools.Diagnostic.Kind, kotlin.String, kotlin.String, javax.lang.model.element.Element)/element">element</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/Element.html"><span class="identifier">Element</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>The main entry point for a Crumb log.</p>
 </td>
 </tr>
@@ -59,7 +59,7 @@
 <p><a href="-default-client/index.html">DefaultClient</a></p>
 </td>
 <td>
-<code><span class="keyword">object </span><span class="identifier">DefaultClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Client</span></a></code>
+<code><span class="keyword">object </span><span class="identifier">DefaultClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">CrumbLog.Client</span></a></code>
 <p>Default <a href="./index.html">Client</a> that just writes to stdout and stderr.</p>
 </td>
 </tr>
@@ -68,8 +68,8 @@
 <p><a href="-messager-client/index.html">MessagerClient</a></p>
 </td>
 <td>
-<code><span class="keyword">class </span><span class="identifier">MessagerClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Client</span></a></code>
-<p>Custom <a href="./index.html">Client</a> that just writes to a <a href="http://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/Messager.html">Messager</a>.</p>
+<code><span class="keyword">class </span><span class="identifier">MessagerClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">CrumbLog.Client</span></a></code>
+<p>Custom <a href="./index.html">Client</a> that just writes to a <a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/Messager.html">Messager</a>.</p>
 </td>
 </tr>
 </tbody>

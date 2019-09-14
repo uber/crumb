@@ -10,6 +10,18 @@
 <h1>CrumbProducerExtension</h1>
 <code><span class="keyword">interface </span><span class="identifier">CrumbProducerExtension</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-crumb-extension/index.html"><span class="identifier">CrumbExtension</span></a></code>
 <p>Interface for <a href="#">CrumbProducer</a> extensions.</p>
+<h3>Inherited Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../-crumb-extension/key.html">key</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">val </span><span class="identifier">key</span><span class="symbol">: </span><a href="../-extension-key.html"><span class="identifier">ExtensionKey</span></a></code></td>
+</tr>
+</tbody>
+</table>
 <h3>Functions</h3>
 <table>
 <tbody>
@@ -18,7 +30,7 @@
 <p><a href="is-producer-applicable.html">isProducerApplicable</a></p>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">isProducerApplicable</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/context">context</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-context/index.html"><span class="identifier">CrumbContext</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/type">type</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/TypeElement.html"><span class="identifier">TypeElement</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/annotations">annotations</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/AnnotationMirror.html"><span class="identifier">AnnotationMirror</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">isProducerApplicable</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/context">context</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-context/index.html"><span class="identifier">CrumbContext</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/type">type</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/TypeElement.html"><span class="identifier">TypeElement</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$isProducerApplicable(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/annotations">annotations</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="https://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/AnnotationMirror.html"><span class="identifier">AnnotationMirror</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
 <p>Determines whether or not a given type is applicable to this extension.</p>
 </td>
 </tr>
@@ -27,8 +39,17 @@
 <p><a href="produce.html">produce</a></p>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">produce</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/context">context</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-context/index.html"><span class="identifier">CrumbContext</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/type">type</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/TypeElement.html"><span class="identifier">TypeElement</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/annotations">annotations</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/AnnotationMirror.html"><span class="identifier">AnnotationMirror</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-producer-metadata.html"><span class="identifier">ProducerMetadata</span></a></code>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">produce</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/context">context</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-context/index.html"><span class="identifier">CrumbContext</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/type">type</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/TypeElement.html"><span class="identifier">TypeElement</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$produce(com.uber.crumb.compiler.api.CrumbContext, javax.lang.model.element.TypeElement, kotlin.collections.Collection((javax.lang.model.element.AnnotationMirror)))/annotations">annotations</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="https://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/AnnotationMirror.html"><span class="identifier">AnnotationMirror</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-producer-metadata.html"><span class="identifier">ProducerMetadata</span></a></code>
 <p>Invoked to request this extension's <a href="../-producer-metadata.html">ProducerMetadata</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="producer-incremental-type.html">producerIncrementalType</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">producerIncrementalType</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbProducerExtension$producerIncrementalType(javax.annotation.processing.ProcessingEnvironment)/processingEnvironment">processingEnvironment</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/ProcessingEnvironment.html"><span class="identifier">ProcessingEnvironment</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../-crumb-extension/-incremental-extension-type/index.html"><span class="identifier">CrumbExtension.IncrementalExtensionType</span></a></code>
+<p>Determines the incremental type of this Extension.</p>
 </td>
 </tr>
 <tr>
@@ -36,7 +57,7 @@
 <p><a href="supported-producer-annotations.html">supportedProducerAnnotations</a></p>
 </td>
 <td>
-<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">supportedProducerAnnotations</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/java/lang/Class.html"><span class="identifier">Class</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-annotation/index.html"><span class="identifier">Annotation</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">supportedProducerAnnotations</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="https://docs.oracle.com/javase/6/docs/api/java/lang/Class.html"><span class="identifier">Class</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-annotation/index.html"><span class="identifier">Annotation</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
 <p>Supported producer annotations, if any, that the CrumbProcessor should collect on this
 extension's behalf. Empty by default.</p>
 </td>
@@ -48,10 +69,12 @@ extension's behalf. Empty by default.</p>
 <tbody>
 <tr>
 <td>
-<p><a href="../-crumb-extension/key.html">key</a></p>
+<p><a href="../-crumb-extension/init.html">init</a></p>
 </td>
 <td>
-<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">key</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-extension-key.html"><span class="identifier">ExtensionKey</span></a></code></td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">init</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.compiler.api.CrumbExtension$init(javax.annotation.processing.ProcessingEnvironment)/processingEnvironment">processingEnvironment</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/javax/annotation/processing/ProcessingEnvironment.html"><span class="identifier">ProcessingEnvironment</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Convenience init callback when extension processing is beginning.</p>
+</td>
 </tr>
 </tbody>
 </table>

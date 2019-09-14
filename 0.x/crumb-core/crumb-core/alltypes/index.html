@@ -20,8 +20,16 @@
 <td>
 <a href="../com.uber.crumb.core/-crumb-manager/index.html">com.uber.crumb.core.CrumbManager</a></td>
 <td>
-<p>A utility class that helps adding build specific objects to the jar file and their extraction later on. This
-specifically works by reading/writing metadata in the Crumb <code>META-INF</code> location of jars from the classpath.</p>
+<p>A utility class that helps with generating types to hold <a href="#">CrumbIndexes</a> of metadata and reading them
+later.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="../com.uber.crumb.core/-crumb-output-language/index.html">com.uber.crumb.core.CrumbOutputLanguage</a></td>
+<td>
+<p>Supported output languages for Crumb metadata. When <a href="../com.uber.crumb.core/-crumb-output-language/write-to.html">writeTo</a> is called, a simple empty class is generated to hold a
+<a href="#">CrumbIndex</a> annotation containing all the crumb metadata specified.</p>
 </td>
 </tr>
 </tbody>

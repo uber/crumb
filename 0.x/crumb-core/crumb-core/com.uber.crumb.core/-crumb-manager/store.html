@@ -8,15 +8,23 @@
 <a href="../../index.html">crumb-core</a>&nbsp;/&nbsp;<a href="../index.html">com.uber.crumb.core</a>&nbsp;/&nbsp;<a href="index.html">CrumbManager</a>&nbsp;/&nbsp;<a href="./store.html">store</a><br/>
 <br/>
 <h1>store</h1>
-<a name="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)"></a>
-<code><span class="keyword">fun </span><span class="identifier">store</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)/packageName">packageName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)/fileName">fileName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)/objectToWrite">objectToWrite</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/io/Serializable.html"><span class="identifier">Serializable</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
-<p>This writes a given <a href="store.html#com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, java.io.Serializable)/objectToWrite">Serializable</a> to the Crumb <code>META-INF</code> store.</p>
+<a name="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))"></a>
+<code><span class="keyword">fun </span><span class="identifier">store</span><span class="symbol">(</span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/packageName">packageName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/fileName">fileName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/outputLanguage">outputLanguage</span><span class="symbol">:</span>&nbsp;<a href="../-crumb-output-language/index.html"><span class="identifier">CrumbOutputLanguage</span></a><span class="symbol">, </span><span class="identifier" id="com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/originatingElements">originatingElements</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="https://docs.oracle.com/javase/6/docs/api/javax/lang/model/element/Element.html"><span class="identifier">Element</span></a><span class="symbol">&gt;</span>&nbsp;<span class="symbol">=</span>&nbsp;emptySet()<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">BufferedSink</span></code>
+<p>This facilitates writing data to a <a href="#">CrumbIndex</a> type in the given <a href="store.html#com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/packageName">packageName</a>.<a href="store.html#com.uber.crumb.core.CrumbManager$store(kotlin.String, kotlin.String, com.uber.crumb.core.CrumbOutputLanguage, kotlin.collections.Set((javax.lang.model.element.Element)))/fileName">fileName</a> with the contents
+written to the returned <a href="#">BufferedSink</a>.</p>
 <h3>Parameters</h3>
 <p><a name="packageName"></a>
-<code>packageName</code> - the package name to use for the file in writing.</p>
+<code>packageName</code> - The package name to use for the file in writing. Note that this should be the package that all
+    metadata index-holder types are written to, and not necessarily the package name of the source
+    element.</p>
 <p><a name="fileName"></a>
-<code>fileName</code> - the file name to use in writing.</p>
-<p><a name="objectToWrite"></a>
-<code>objectToWrite</code> - the <a href="http://docs.oracle.com/javase/6/docs/api/java/io/Serializable.html">Serializable</a> object to write.</p>
+<code>fileName</code> - The file name to use in writing.</p>
+<p><a name="outputLanguage"></a>
+<code>outputLanguage</code> - The target output language.</p>
+<p><a name="originatingElements"></a>
+<code>originatingElements</code> - Any originating elements for the metadata.</p>
+<p><strong>Return</strong><br/>
+A <a href="#">BufferedSink</a> to write metadata to. This will (only) be written to the eventual <a href="#">CrumbIndex</a> once
+    <a href="#">BufferedSink.close</a> is called.</p>
 </BODY>
 </HTML>
