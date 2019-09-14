@@ -53,9 +53,9 @@ dependencies {
   api project(":crumb-core")
   api project(':crumb-compiler-api')
   api deps.apt.incap
-  api deps.misc.okio
-  api deps.apt.autoCommon
-  api deps.kotlin.stdLibJdk8
+  implementation deps.misc.okio
+  implementation deps.apt.autoCommon
+  implementation deps.kotlin.stdLibJdk8
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
