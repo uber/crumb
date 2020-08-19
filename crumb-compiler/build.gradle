@@ -17,10 +17,7 @@ plugins {
   id 'org.jetbrains.kotlin.jvm'
   id 'org.jetbrains.kotlin.kapt'
   id 'org.jetbrains.dokka'
-  // TODO Reenable once Kapt fixes MPP dependency resolution
-  //  https://youtrack.jetbrains.com/issue/KT-31641
-  //  https://youtrack.jetbrains.com/issue/KT-33206
-//  id 'com.squareup.wire'
+  id 'com.squareup.wire'
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -30,19 +27,39 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   }
 }
 
-//sourceSets {
-//  main {
-//    java {
-//      srcDir "${project.buildDir}/generated/src/main/java"
+sourceSets {
+  main {
+    java {
+      srcDir "${project.buildDir}/generated/source/wire"
+    }
+  }
+}
+
+wire {
+  kotlin {
+    javaInterop = false
+  }
+}
+
+//configurations {
+//  "compileProtoPath" {
+//    attributes {
+//      attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
+//    }
+//  }
+//  "testCompileProtoPath" {
+//    attributes {
+//      attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
 //    }
 //  }
 //}
 
-//wire {
-//  kotlin {
-//    javaInterop = false
-//  }
-//}
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+  kotlinOptions {
+    jvmTarget = "1.8"
+    freeCompilerArgs = ['-progressive', '-Xjsr305=strict']
+  }
+}
 
 dependencies {
   kapt deps.apt.autoService
@@ -54,6 +71,7 @@ dependencies {
   api project(':crumb-compiler-api')
   api deps.apt.incap
   implementation deps.misc.okio
+  implementation deps.misc.wire
   implementation deps.apt.autoCommon
 }
 
