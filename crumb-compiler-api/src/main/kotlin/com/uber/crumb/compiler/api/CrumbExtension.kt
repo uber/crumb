@@ -28,7 +28,6 @@ interface CrumbExtension {
    *
    * If you need anything from the processingEnv for later, it is recommended to save its instance here.
    */
-  @JvmDefault
   fun init(processingEnvironment: ProcessingEnvironment) {
 
   }
@@ -38,7 +37,6 @@ interface CrumbExtension {
    * metadata from the classpath. This is the key that [CrumbProducerExtension] data is written to
    * and [CrumbConsumerExtension] data is read from. By default, it's the name of the extension class.
    */
-  @JvmDefault
   val key: ExtensionKey get() = javaClass.name
 
   /**

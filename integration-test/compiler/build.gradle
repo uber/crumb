@@ -24,7 +24,7 @@ plugins {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   kotlinOptions {
     jvmTarget = "1.8"
-    freeCompilerArgs = ['-Xjsr305=strict', '-Xjvm-default=enable']
+    freeCompilerArgs = ['-Xjsr305=strict', '-Xjvm-default=all']
   }
 }
 
@@ -37,7 +37,6 @@ dependencies {
   implementation deps.misc.javapoet
   implementation deps.misc.gson
   implementation deps.misc.moshi
-  implementation deps.kotlin.stdLibJdk8
   implementation project(":crumb-compiler-api")
   implementation project(":integration-test:annotations")
 

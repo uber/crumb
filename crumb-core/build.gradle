@@ -28,7 +28,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
   api project(":crumb-annotations")
   api deps.misc.okio
-  api deps.kotlin.stdLibJdk8
   implementation deps.misc.javapoet
   implementation deps.misc.kotlinpoet
 }

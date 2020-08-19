@@ -32,7 +32,6 @@ interface CrumbConsumerExtension : CrumbExtension {
    * Supported consumer annotations, if any, that the CrumbProcessor should collect on this
    * extension's behalf. Empty by default.
    */
-  @JvmDefault
   fun supportedConsumerAnnotations(): Set<Class<out Annotation>> {
     return emptySet()
   }
@@ -45,7 +44,6 @@ interface CrumbConsumerExtension : CrumbExtension {
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return true if the type is applicable.
    */
-  @JvmDefault
   fun isConsumerApplicable(context: CrumbContext,
       type: TypeElement,
       annotations: Collection<AnnotationMirror>): Boolean {
@@ -79,7 +77,6 @@ interface CrumbConsumerExtension : CrumbExtension {
    * returned value is [IncrementalExtensionType.UNKNOWN], which will disable incremental
    * annotation processing entirely.
    */
-  @JvmDefault
   fun consumerIncrementalType(processingEnvironment: ProcessingEnvironment): IncrementalExtensionType {
     return IncrementalExtensionType.UNKNOWN
   }

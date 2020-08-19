@@ -55,7 +55,6 @@ dependencies {
   api deps.apt.incap
   implementation deps.misc.okio
   implementation deps.apt.autoCommon
-  implementation deps.kotlin.stdLibJdk8
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
