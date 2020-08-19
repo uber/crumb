@@ -15,33 +15,33 @@
  */
 
 def versions = [
-    autoService: '1.0-rc6',
-    autoValue: '1.6.5',
+    autoService: '1.0-rc7',
+    autoValue: '1.7.3',
     autoValueGson: '1.0.0',
-    errorProne: '2.3.3',
+    errorProne: '2.4.0',
     dokka: '0.9.18',
     errorPronePlugin: '0.7.1',
     incap: '0.2',
     gjf: '1.7',
-    kotlin: '1.3.41',
+    kotlin: '1.4.0',
     ktlint: '0.34.2',
-    moshi: '1.8.0',
+    moshi: '1.9.3',
     spotless: '3.24.2',
-    wire: "3.0.0-rc01"
+    wire: "3.2.2"
 ]
 
 ext.deps = [
     versions: versions,
 
     apt: [
-        autoCommon: "com.google.auto:auto-common:0.10",
+        autoCommon: "com.google.auto:auto-common:0.1",
         autoServiceAnnotations: "com.google.auto.service:auto-service-annotations:${versions.autoService}",
         autoService: "com.google.auto.service:auto-service:${versions.autoService}",
         autoValue: "com.google.auto.value:auto-value:${versions.autoValue}",
         autoValueAnnotations: "com.google.auto.value:auto-value-annotations:${versions.autoValue}",
         autoValueGson: "com.ryanharter.auto.value:auto-value-gson:${versions.autoValueGson}",
         autoValueGsonRuntime: "com.ryanharter.auto.value:auto-value-gson-runtime:${versions.autoValueGson}",
-        autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi:0.4.7",
+        autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi-extension:1.0.0",
         incap: "net.ltgt.gradle.incap:incap:${versions.incap}",
         incapProcessor: "net.ltgt.gradle.incap:incap-processor:${versions.incap}"
     ],
@@ -61,34 +61,23 @@ ext.deps = [
         ]
     ],
 
-    kotlin: [
-        stdLib: "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}",
-        stdLibJdk7: "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${versions.kotlin}",
-        stdLibJdk8: "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
-    ],
-
     misc: [
-        appCompat: 'androidx.appcompat:appcompat:1.0.2',
+        appCompat: 'androidx.appcompat:appcompat:1.2.0',
         errorProneAnnotations: "com.google.errorprone:error_prone_annotations:${versions.errorProne}",
-        gson: "com.google.code.gson:gson:2.8.5",
-        guava: "com.google.guava:guava:28.0-jre",
-        javapoet: "com.squareup:javapoet:1.11.1",
+        gson: "com.google.code.gson:gson:2.8.6",
+        guava: "com.google.guava:guava:29.0-jre",
+        javapoet: "com.squareup:javapoet:1.13.0",
         javaxExtras: 'com.uber.javaxextras:javax-extras:0.1.0',
         kotlinMetadata: 'me.eugeniomarletti.kotlin.metadata:kotlin-metadata:1.4.0',
-        kotlinpoet: 'com.squareup:kotlinpoet:1.3.0',
+        kotlinpoet: 'com.squareup:kotlinpoet:1.6.0',
         moshi: "com.squareup.moshi:moshi:${versions.moshi}",
-        okio: "com.squareup.okio:okio:2.2.0",
-        wire: "com.squareup.wire:wire-runtime:3.0.0-rc01"
-    ],
-
-    rx: [
-        android: 'io.reactivex.rxjava2:rxandroid:2.1.1',
-        java: 'io.reactivex.rxjava2:rxjava:2.2.11'
+        okio: "com.squareup.okio:okio:2.8.0",
+        wire: "com.squareup.wire:wire-runtime:3.2.2"
     ],
 
     test: [
         compileTesting: 'com.google.testing.compile:compile-testing:0.18',
-        junit: 'junit:junit:4.12',
-        truth: 'com.google.truth:truth:1.0'
+        junit: 'junit:junit:4.13',
+        truth: 'com.google.truth:truth:1.0.1'
     ]
 ]
