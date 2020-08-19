@@ -114,7 +114,18 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       return
     }
 
-    val classData = kmetadata.data
+    val classData = try {
+      kmetadata.data
+    } catch (e: KotlinNullPointerException) {
+      context.processingEnv
+        .messager
+        .printMessage(
+          ERROR,
+          "Could not look up class data for type.",
+          type
+        )
+      throw e
+    }
     val (nameResolver, classProto) = classData
 
     // Must be an abstract class because we're generating the backing implementation.
