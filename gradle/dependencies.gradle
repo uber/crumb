@@ -34,7 +34,7 @@ ext.deps = [
     versions: versions,
 
     apt: [
-        autoCommon: "com.google.auto:auto-common:0.1",
+        autoCommon: "com.google.auto:auto-common:0.11",
         autoServiceAnnotations: "com.google.auto.service:auto-service-annotations:${versions.autoService}",
         autoService: "com.google.auto.service:auto-service:${versions.autoService}",
         autoValue: "com.google.auto.value:auto-value:${versions.autoValue}",
