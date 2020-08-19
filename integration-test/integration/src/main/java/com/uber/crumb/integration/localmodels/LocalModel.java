@@ -18,23 +18,19 @@ package com.uber.crumb.integration.localmodels;
 import com.google.auto.value.AutoValue;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
+import com.ryanharter.auto.value.gson.GenerateTypeAdapter;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonClass;
 import com.squareup.moshi.Moshi;
 import com.uber.crumb.annotations.CrumbConsumable;
 
 @AutoValue
 @CrumbConsumable
+@GenerateTypeAdapter
+@JsonClass(generateAdapter = true, generator = "avm")
 public abstract class LocalModel {
 
   abstract String foo();
-
-  public static TypeAdapter<LocalModel> typeAdapter(Gson gson) {
-    return new AutoValue_LocalModel.GsonTypeAdapter(gson);
-  }
-
-  public static JsonAdapter<LocalModel> jsonAdapter(Moshi moshi) {
-    return new AutoValue_LocalModel.MoshiJsonAdapter(moshi);
-  }
 
   public static LocalModel create(String foo) {
     return new AutoValue_LocalModel(foo);

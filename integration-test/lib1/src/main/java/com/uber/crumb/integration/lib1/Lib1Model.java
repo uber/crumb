@@ -18,23 +18,19 @@ package com.uber.crumb.integration.lib1;
 import com.google.auto.value.AutoValue;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
+import com.ryanharter.auto.value.gson.GenerateTypeAdapter;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonClass;
 import com.squareup.moshi.Moshi;
 import com.uber.crumb.annotations.CrumbConsumable;
 
 @AutoValue
 @CrumbConsumable
+@GenerateTypeAdapter
+@JsonClass(generateAdapter = true, generator = "avm")
 public abstract class Lib1Model {
 
   abstract String foo();
-
-  public static TypeAdapter<Lib1Model> typeAdapter(Gson gson) {
-    return new AutoValue_Lib1Model.GsonTypeAdapter(gson);
-  }
-
-  public static JsonAdapter<Lib1Model> jsonAdapter(Moshi moshi) {
-    return new AutoValue_Lib1Model.MoshiJsonAdapter(moshi);
-  }
 
   public static Lib1Model create(String foo) {
     return new AutoValue_Lib1Model(foo);

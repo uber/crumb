@@ -20,6 +20,7 @@ import static junit.framework.TestCase.fail;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.ryanharter.auto.value.gson.GenerateTypeAdapter;
 import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import org.junit.Test;
@@ -29,7 +30,10 @@ public final class Lib1ProducerTest {
   private static final String EXPECTED_MODEL_JSON = "{\"foo\":\"foo\"}";
   private static final String EXPECTED_ENUM_JSON = "\"foo\"";
   private final Gson gson =
-      new GsonBuilder().registerTypeAdapterFactory(Lib1Producer.gson()).create();
+      new GsonBuilder()
+          .registerTypeAdapterFactory(Lib1Producer.gson())
+          .registerTypeAdapterFactory(GenerateTypeAdapter.FACTORY)
+          .create();
   private final Moshi moshi = new Moshi.Builder().add(Lib1Producer.moshi()).build();
 
   @Test
