@@ -1,11 +1,11 @@
 /*
- * Copyright 2013 Square Inc.
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -63,11 +63,12 @@ internal class RuntimeMessageAdapter<M : Message<M, B>, B : Builder<M, B>>(
     for (fieldBinding in fieldBindings.values) {
       if (fieldBinding.redacted && fieldBinding.label == WireField.Label.REQUIRED) {
         throw UnsupportedOperationException(
-            "Field '${fieldBinding.name}' in ${type?.javaObjectType?.name} is required and " +
-                "cannot be redacted.")
+          "Field '${fieldBinding.name}' in ${type?.javaObjectType?.name} is required and " +
+            "cannot be redacted."
+        )
       }
       val isMessage = Message::class.java
-          .isAssignableFrom(fieldBinding.singleAdapter().type?.javaObjectType)
+        .isAssignableFrom(fieldBinding.singleAdapter().type?.javaObjectType)
       if (fieldBinding.redacted || isMessage && !fieldBinding.label.isRepeated) {
         val builderValue = fieldBinding.getFromBuilder(builder)
         if (builderValue != null) {
@@ -133,7 +134,6 @@ internal class RuntimeMessageAdapter<M : Message<M, B>, B : Builder<M, B>>(
         // An unknown Enum value was encountered, store it as an unknown field.
         builder.addUnknownField(tag, FieldEncoding.VARINT, e.value.toLong())
       }
-
     }
     reader.endMessageAndGetUnknownFields(token) // Ignore return value
 
@@ -157,8 +157,10 @@ internal class RuntimeMessageAdapter<M : Message<M, B>, B : Builder<M, B>>(
         }
       }
 
-      return RuntimeMessageAdapter(messageType, builderType,
-          Collections.unmodifiableMap(fieldBindings))
+      return RuntimeMessageAdapter(
+        messageType, builderType,
+        Collections.unmodifiableMap(fieldBindings)
+      )
     }
 
     private fun <M : Message<M, B>, B : Builder<M, B>> getBuilderType(
@@ -168,7 +170,8 @@ internal class RuntimeMessageAdapter<M : Message<M, B>, B : Builder<M, B>>(
         return Class.forName("${messageType.name}\$Builder") as Class<B>
       } catch (_: ClassNotFoundException) {
         throw IllegalArgumentException(
-            "No builder class found for message type ${messageType.name}")
+          "No builder class found for message type ${messageType.name}"
+        )
       }
     }
   }

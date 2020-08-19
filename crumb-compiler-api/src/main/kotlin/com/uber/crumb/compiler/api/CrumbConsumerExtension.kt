@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.compiler.api
 
 import com.uber.crumb.annotations.CrumbConsumer
@@ -44,9 +43,11 @@ interface CrumbConsumerExtension : CrumbExtension {
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return true if the type is applicable.
    */
-  fun isConsumerApplicable(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
+  fun isConsumerApplicable(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
     // Note: AutoCommon's MoreElements#isAnnotationPresent() is a safer option but not used here to avoid the dependency
     return supportedConsumerAnnotations().any {
       type.getAnnotation(it) != null
@@ -61,10 +62,12 @@ interface CrumbConsumerExtension : CrumbExtension {
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @param metadata collected metadata associated with this extension.
    */
-  fun consume(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>,
-      metadata: Set<ConsumerMetadata>)
+  fun consume(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>,
+    metadata: Set<ConsumerMetadata>
+  )
 
   /**
    * Determines the incremental type of this Extension.

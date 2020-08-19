@@ -1,11 +1,11 @@
 /*
- * Copyright 2015 Square Inc.
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,7 +43,7 @@ internal abstract class ProtoAdapter<E> constructor(
   internal var packedAdapter: ProtoAdapter<List<E>>? = null
   internal var repeatedAdapter: ProtoAdapter<List<E>>? = null
 
-  constructor(fieldEncoding: FieldEncoding, type: Class<*>): this(fieldEncoding, type.kotlin)
+  constructor(fieldEncoding: FieldEncoding, type: Class<*>) : this(fieldEncoding, type.kotlin)
 
   abstract fun redact(value: E): E
 
@@ -118,7 +118,7 @@ internal abstract class ProtoAdapter<E> constructor(
     @JvmField val value: Int,
     type: KClass<*>?
   ) : IllegalArgumentException("Unknown enum tag $value for ${type?.java?.name}") {
-    constructor(value: Int, type: Class<*>): this(value, type.kotlin)
+    constructor(value: Int, type: Class<*>) : this(value, type.kotlin)
   }
 
   companion object {
@@ -207,9 +207,9 @@ internal inline fun <E> ProtoAdapter<E>.commonEncodedSizeWithTag(tag: Int, value
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun <E> ProtoAdapter<E>.commonEncodeWithTag(
-    writer: ProtoWriter,
-    tag: Int,
-    value: E?
+  writer: ProtoWriter,
+  tag: Int,
+  value: E?
 ) {
   if (value == null) return
   writer.writeTag(tag, fieldEncoding)
@@ -348,8 +348,8 @@ internal inline fun <E> ProtoAdapter<E>.commonCreateRepeated(): ProtoAdapter<Lis
 }
 
 internal class MapProtoAdapter<K, V> internal constructor(
-    keyAdapter: ProtoAdapter<K>,
-    valueAdapter: ProtoAdapter<V>
+  keyAdapter: ProtoAdapter<K>,
+  valueAdapter: ProtoAdapter<V>
 ) : ProtoAdapter<Map<K, V>>(FieldEncoding.LENGTH_DELIMITED, Map::class) {
   private val entryAdapter = MapEntryProtoAdapter(keyAdapter, valueAdapter)
 
@@ -404,13 +404,13 @@ internal class MapProtoAdapter<K, V> internal constructor(
 }
 
 private class MapEntryProtoAdapter<K, V> internal constructor(
-    internal val keyAdapter: ProtoAdapter<K>,
-    internal val valueAdapter: ProtoAdapter<V>
+  internal val keyAdapter: ProtoAdapter<K>,
+  internal val valueAdapter: ProtoAdapter<V>
 ) : ProtoAdapter<Map.Entry<K, V>>(FieldEncoding.LENGTH_DELIMITED, Map.Entry::class) {
 
   override fun encodedSize(value: Map.Entry<K, V>): Int {
     return keyAdapter.encodedSizeWithTag(1, value.key) +
-        valueAdapter.encodedSizeWithTag(2, value.value)
+      valueAdapter.encodedSizeWithTag(2, value.value)
   }
 
   @Throws(IOException::class)
@@ -434,15 +434,15 @@ private const val FIXED_64_SIZE = 8
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun <K, V> commonNewMapAdapter(
-    keyAdapter: ProtoAdapter<K>,
-    valueAdapter: ProtoAdapter<V>
+  keyAdapter: ProtoAdapter<K>,
+  valueAdapter: ProtoAdapter<V>
 ): ProtoAdapter<Map<K, V>> {
   return MapProtoAdapter(keyAdapter, valueAdapter)
 }
 
 internal fun commonBool(): ProtoAdapter<Boolean> = object : ProtoAdapter<Boolean>(
-    FieldEncoding.VARINT,
-    Boolean::class
+  FieldEncoding.VARINT,
+  Boolean::class
 ) {
   override fun encodedSize(value: Boolean): Int = FIXED_BOOL_SIZE
 
@@ -461,8 +461,8 @@ internal fun commonBool(): ProtoAdapter<Boolean> = object : ProtoAdapter<Boolean
   override fun redact(value: Boolean): Boolean = throw UnsupportedOperationException()
 }
 internal fun commonInt32(): ProtoAdapter<Int> = object : ProtoAdapter<Int>(
-    FieldEncoding.VARINT,
-    Int::class
+  FieldEncoding.VARINT,
+  Int::class
 ) {
   override fun encodedSize(value: Int): Int = int32Size(value)
 
@@ -477,8 +477,8 @@ internal fun commonInt32(): ProtoAdapter<Int> = object : ProtoAdapter<Int>(
   override fun redact(value: Int): Int = throw UnsupportedOperationException()
 }
 internal fun commonUint32(): ProtoAdapter<Int> = object : ProtoAdapter<Int>(
-    FieldEncoding.VARINT,
-    Int::class
+  FieldEncoding.VARINT,
+  Int::class
 ) {
   override fun encodedSize(value: Int): Int = varint32Size(value)
 
@@ -493,8 +493,8 @@ internal fun commonUint32(): ProtoAdapter<Int> = object : ProtoAdapter<Int>(
   override fun redact(value: Int): Int = throw UnsupportedOperationException()
 }
 internal fun commonSint32(): ProtoAdapter<Int> = object : ProtoAdapter<Int>(
-    FieldEncoding.VARINT,
-    Int::class
+  FieldEncoding.VARINT,
+  Int::class
 ) {
   override fun encodedSize(value: Int): Int = varint32Size(encodeZigZag32(value))
 
@@ -509,8 +509,8 @@ internal fun commonSint32(): ProtoAdapter<Int> = object : ProtoAdapter<Int>(
   override fun redact(value: Int): Int = throw UnsupportedOperationException()
 }
 internal fun commonFixed32(): ProtoAdapter<Int> = object : ProtoAdapter<Int>(
-    FieldEncoding.FIXED32,
-    Int::class
+  FieldEncoding.FIXED32,
+  Int::class
 ) {
   override fun encodedSize(value: Int): Int = FIXED_32_SIZE
 
@@ -526,8 +526,8 @@ internal fun commonFixed32(): ProtoAdapter<Int> = object : ProtoAdapter<Int>(
 }
 internal fun commonSfixed32() = commonFixed32()
 internal fun commonInt64(): ProtoAdapter<Long> = object : ProtoAdapter<Long>(
-    FieldEncoding.VARINT,
-    Long::class
+  FieldEncoding.VARINT,
+  Long::class
 ) {
   override fun encodedSize(value: Long): Int = varint64Size(value)
 
@@ -546,8 +546,8 @@ internal fun commonInt64(): ProtoAdapter<Long> = object : ProtoAdapter<Long>(
  * in JSON.
  */
 internal fun commonUint64(): ProtoAdapter<Long> = object : ProtoAdapter<Long>(
-    FieldEncoding.VARINT,
-    Long::class
+  FieldEncoding.VARINT,
+  Long::class
 ) {
   override fun encodedSize(value: Long): Int = varint64Size(value)
 
@@ -562,8 +562,8 @@ internal fun commonUint64(): ProtoAdapter<Long> = object : ProtoAdapter<Long>(
   override fun redact(value: Long): Long = throw UnsupportedOperationException()
 }
 internal fun commonSint64(): ProtoAdapter<Long> = object : ProtoAdapter<Long>(
-    FieldEncoding.VARINT,
-    Long::class
+  FieldEncoding.VARINT,
+  Long::class
 ) {
   override fun encodedSize(value: Long): Int = varint64Size(encodeZigZag64(value))
 
@@ -578,8 +578,8 @@ internal fun commonSint64(): ProtoAdapter<Long> = object : ProtoAdapter<Long>(
   override fun redact(value: Long): Long = throw UnsupportedOperationException()
 }
 internal fun commonFixed64(): ProtoAdapter<Long> = object : ProtoAdapter<Long>(
-    FieldEncoding.FIXED64,
-    Long::class
+  FieldEncoding.FIXED64,
+  Long::class
 ) {
   override fun encodedSize(value: Long): Int = FIXED_64_SIZE
 
@@ -595,8 +595,8 @@ internal fun commonFixed64(): ProtoAdapter<Long> = object : ProtoAdapter<Long>(
 }
 internal fun commonSfixed64() = commonFixed64()
 internal fun commonFloat(): ProtoAdapter<Float> = object : ProtoAdapter<Float>(
-    FieldEncoding.FIXED32,
-    Float::class
+  FieldEncoding.FIXED32,
+  Float::class
 ) {
   override fun encodedSize(value: Float): Int = FIXED_32_SIZE
 
@@ -613,8 +613,8 @@ internal fun commonFloat(): ProtoAdapter<Float> = object : ProtoAdapter<Float>(
   override fun redact(value: Float): Float = throw UnsupportedOperationException()
 }
 internal fun commonDouble(): ProtoAdapter<Double> = object : ProtoAdapter<Double>(
-    FieldEncoding.FIXED64,
-    Double::class
+  FieldEncoding.FIXED64,
+  Double::class
 ) {
   override fun encodedSize(value: Double): Int = FIXED_64_SIZE
 
@@ -631,8 +631,8 @@ internal fun commonDouble(): ProtoAdapter<Double> = object : ProtoAdapter<Double
   override fun redact(value: Double): Double = throw UnsupportedOperationException()
 }
 internal fun commonString(): ProtoAdapter<String> = object : ProtoAdapter<String>(
-    FieldEncoding.LENGTH_DELIMITED,
-    String::class
+  FieldEncoding.LENGTH_DELIMITED,
+  String::class
 ) {
   override fun encodedSize(value: String): Int = value.utf8Size().toInt()
 
@@ -647,8 +647,8 @@ internal fun commonString(): ProtoAdapter<String> = object : ProtoAdapter<String
   override fun redact(value: String): String = throw UnsupportedOperationException()
 }
 internal fun commonBytes(): ProtoAdapter<ByteString> = object : ProtoAdapter<ByteString>(
-    FieldEncoding.LENGTH_DELIMITED,
-    ByteString::class
+  FieldEncoding.LENGTH_DELIMITED,
+  ByteString::class
 ) {
   override fun encodedSize(value: ByteString): Int = value.size
 

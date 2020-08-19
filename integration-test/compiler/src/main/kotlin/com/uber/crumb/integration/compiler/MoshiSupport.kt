@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.integration.compiler
 
 import com.google.auto.common.MoreTypes
@@ -81,24 +80,30 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     private val TYPE_SPEC = ParameterSpec.builder(Type::class.java, "type").build()
     private val WILDCARD_TYPE_NAME = WildcardTypeName.subtypeOf(Annotation::class.java)
     private val ANNOTATIONS_SPEC = ParameterSpec.builder(
-        ParameterizedTypeName.get(ClassName.get(Set::class.java),
-            WILDCARD_TYPE_NAME),
-        "annotations")
-        .build()
+      ParameterizedTypeName.get(
+        ClassName.get(Set::class.java),
+        WILDCARD_TYPE_NAME
+      ),
+      "annotations"
+    )
+      .build()
     private val MOSHI_SPEC = ParameterSpec.builder(Moshi::class.java, "moshi").build()
     private val FACTORY_RETURN_TYPE_NAME = ParameterizedTypeName.get(
-        ADAPTER_CLASS_NAME,
-        WildcardTypeName.subtypeOf(TypeName.OBJECT))
+      ADAPTER_CLASS_NAME,
+      WildcardTypeName.subtypeOf(TypeName.OBJECT)
+    )
   }
 
   private val metaMapAdapter = Moshi.Builder()
-      .add(MoshiSupportMetaAdapter.FACTORY)
-      .build()
-      .adapter<Map<ModelName, MoshiSupportMeta>>(
-          MoshiTypes.newParameterizedType(
-              Map::class.java,
-              String::class.java,
-              MoshiSupportMeta::class.java))
+    .add(MoshiSupportMetaAdapter.FACTORY)
+    .build()
+    .adapter<Map<ModelName, MoshiSupportMeta>>(
+      MoshiTypes.newParameterizedType(
+        Map::class.java,
+        String::class.java,
+        MoshiSupportMeta::class.java
+      )
+    )
 
   override fun toString() = "MoshiSupport"
 
@@ -113,18 +118,19 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
   private fun isConsumableApplicable(context: CrumbContext, type: TypeElement): Boolean {
     // check that the class contains a public static method returning a JsonAdapter
     val jsonAdapterType = ParameterizedTypeName.get(
-        ADAPTER_CLASS_NAME, TypeName.get(type.asType()))
+      ADAPTER_CLASS_NAME, TypeName.get(type.asType())
+    )
     val returnedJsonAdapter: TypeName = ElementFilter.methodsIn(type.enclosedElements)
-        .filter { it.modifiers.containsAll(setOf(Modifier.STATIC, PUBLIC)) }
-        .find { method ->
-          val rType = method.returnType
-          val returnType = TypeName.get(rType)
-          if (returnType == jsonAdapterType || returnType == FACTORY_CLASS_NAME) {
-            return true
-          }
+      .filter { it.modifiers.containsAll(setOf(Modifier.STATIC, PUBLIC)) }
+      .find { method ->
+        val rType = method.returnType
+        val returnType = TypeName.get(rType)
+        if (returnType == jsonAdapterType || returnType == FACTORY_CLASS_NAME) {
+          return true
+        }
 
-          return@find returnType == jsonAdapterType.rawType || returnType is ParameterizedTypeName && returnType.rawType == jsonAdapterType.rawType
-        }?.let { TypeName.get(it.returnType) } ?: return false
+        return@find returnType == jsonAdapterType.rawType || returnType is ParameterizedTypeName && returnType.rawType == jsonAdapterType.rawType
+      }?.let { TypeName.get(it.returnType) } ?: return false
 
     // emit a warning if the user added a method returning a JsonAdapter, but not of the right type
     if (returnedJsonAdapter is ParameterizedTypeName) {
@@ -132,14 +138,19 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
         return true
       } else {
         val argument = returnedJsonAdapter.typeArguments[0]
-        context.processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
-            String.format(
-                "Found public static method returning JsonAdapter<%s> on %s class. Skipping MoshiJsonAdapter generation.",
-                argument, type))
+        context.processingEnv.messager.printMessage(
+          Diagnostic.Kind.WARNING,
+          String.format(
+            "Found public static method returning JsonAdapter<%s> on %s class. Skipping MoshiJsonAdapter generation.",
+            argument, type
+          )
+        )
       }
     } else {
-      context.processingEnv.messager.printMessage(Diagnostic.Kind.WARNING,
-          "Found public static method returning JsonAdapter with no type arguments, skipping MoshiJsonAdapter generation.")
+      context.processingEnv.messager.printMessage(
+        Diagnostic.Kind.WARNING,
+        "Found public static method returning JsonAdapter with no type arguments, skipping MoshiJsonAdapter generation."
+      )
     }
 
     return false
@@ -149,46 +160,62 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
   override fun supportedProducerAnnotations() = setOf(MoshiFactory::class.java)
 
-  override fun isProducerApplicable(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
-    return hasMoshiFactoryAnnotation(context, annotations)
-        && type.getAnnotation(MoshiFactory::class.java)?.value == PRODUCER
+  override fun isProducerApplicable(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
+    return hasMoshiFactoryAnnotation(context, annotations) &&
+      type.getAnnotation(MoshiFactory::class.java)?.value == PRODUCER
   }
 
-  override fun isConsumerApplicable(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
-    return hasMoshiFactoryAnnotation(context, annotations)
-        && type.getAnnotation(MoshiFactory::class.java)?.value == CONSUMER
+  override fun isConsumerApplicable(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
+    return hasMoshiFactoryAnnotation(context, annotations) &&
+      type.getAnnotation(MoshiFactory::class.java)?.value == CONSUMER
   }
 
-  private fun hasMoshiFactoryAnnotation(context: CrumbContext,
-      annotations: Collection<AnnotationMirror>): Boolean {
+  private fun hasMoshiFactoryAnnotation(
+    context: CrumbContext,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
     return annotations.any {
       MoreTypes.equivalence()
-          .equivalent(it.annotationType,
-              context.processingEnv.elementUtils.getTypeElement(
-                  MoshiFactory::class.java.name).asType())
+        .equivalent(
+          it.annotationType,
+          context.processingEnv.elementUtils.getTypeElement(
+            MoshiFactory::class.java.name
+          ).asType()
+        )
     }
   }
 
   override fun producerIncrementalType(
-      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = AGGREGATING
+    processingEnvironment: ProcessingEnvironment
+  ): IncrementalExtensionType = AGGREGATING
 
-  override fun produce(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): ProducerMetadata {
+  override fun produce(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): ProducerMetadata {
     val elements = context.roundEnv.findElementsAnnotatedWith<CrumbConsumable>()
-        .filterIsInstance(TypeElement::class.java)
-        .filter { isConsumableApplicable(context, it) }
+      .filterIsInstance(TypeElement::class.java)
+      .filter { isConsumableApplicable(context, it) }
 
     if (elements.isEmpty()) {
-      context.processingEnv.messager.printMessage(Kind.ERROR, """
+      context.processingEnv.messager.printMessage(
+        Kind.ERROR,
+        """
         |No @CrumbConsumable-annotated elements applicable for the given @CrumbProducer-annotated element with the current crumb extensions
         |CrumbProducer: $type
         |Extension: $this
-        """.trimMargin(), type)
+        """.trimMargin(),
+        type
+      )
       return emptyMap<String, String>() to emptySet()
     }
 
@@ -197,12 +224,13 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     val moshi = MOSHI_SPEC
 
     val create = MethodSpec.methodBuilder("create")
-        .addModifiers(PUBLIC)
-        .addAnnotation(Nullable::class.java)
-        .addAnnotation(Override::class.java)
-        .addParameters(ImmutableSet.of(typeParam, annotationsParam, moshi))
-        .returns(
-            FACTORY_RETURN_TYPE_NAME)
+      .addModifiers(PUBLIC)
+      .addAnnotation(Nullable::class.java)
+      .addAnnotation(Override::class.java)
+      .addParameters(ImmutableSet.of(typeParam, annotationsParam, moshi))
+      .returns(
+        FACTORY_RETURN_TYPE_NAME
+      )
 
     var classes: CodeBlock.Builder? = null
     var generics: CodeBlock.Builder? = null
@@ -224,31 +252,39 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
         val factoryMethodName = factoryMethod.simpleName.toString()
         factories = factories ?: CodeBlock.builder()
         if (numFactories == 0) {
-          factories!!.addStatement("\$T adapter",
-              FACTORY_RETURN_TYPE_NAME)
+          factories!!.addStatement(
+            "\$T adapter",
+            FACTORY_RETURN_TYPE_NAME
+          )
           factories.beginControlFlow(
-              "if ((adapter = \$L.\$L().create(type, annotations, moshi)) != null)",
-              element,
-              factoryMethod.simpleName)
+            "if ((adapter = \$L.\$L().create(type, annotations, moshi)) != null)",
+            element,
+            factoryMethod.simpleName
+          )
         } else {
           factories!!.nextControlFlow(
-              "else if ((adapter = \$L.\$L().create(type, annotations, moshi)) != null)",
-              element,
-              factoryMethod.simpleName)
+            "else if ((adapter = \$L.\$L().create(type, annotations, moshi)) != null)",
+            element,
+            factoryMethod.simpleName
+          )
         }
         factories.addStatement("return adapter")
         numFactories++
-        modelsMap[fqcn] = MoshiSupportMeta(factoryMethodName,
-            isFactory = true)
+        modelsMap[fqcn] = MoshiSupportMeta(
+          factoryMethodName,
+          isFactory = true
+        )
         continue
       }
       val elementTypeName = TypeName.get(element.asType())
 
       if (elementTypeName is ParameterizedTypeName) {
         generics = generics ?: CodeBlock.builder()
-            .beginControlFlow("if (\$N instanceof \$T)", typeParam, ParameterizedType::class.java)
-            .addStatement("\$T rawType = ((\$T) \$N).getRawType()", Type::class.java,
-                ParameterizedType::class.java, typeParam)
+          .beginControlFlow("if (\$N instanceof \$T)", typeParam, ParameterizedType::class.java)
+          .addStatement(
+            "\$T rawType = ((\$T) \$N).getRawType()", Type::class.java,
+            ParameterizedType::class.java, typeParam
+          )
 
         addControlFlowGeneric(generics!!, elementTypeName, element, numGenerics)
         numGenerics++
@@ -263,15 +299,21 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
           val paramsCount = jsonAdapterMethod.parameters.size
           if (paramsCount == 1) {
-            classes.addStatement("return \$T.\$L(\$N)", element, jsonAdapterMethod.simpleName,
-                moshi)
+            classes.addStatement(
+              "return \$T.\$L(\$N)", element, jsonAdapterMethod.simpleName,
+              moshi
+            )
           } else {
             // No arg factory
-            classes.addStatement("return \$L.\$L()", element.simpleName,
-                jsonAdapterMethod.simpleName)
+            classes.addStatement(
+              "return \$L.\$L()", element.simpleName,
+              jsonAdapterMethod.simpleName
+            )
           }
-          modelsMap[fqcn] = MoshiSupportMeta(adapterMethodName,
-              argCount = paramsCount)
+          modelsMap[fqcn] = MoshiSupportMeta(
+            adapterMethodName,
+            argCount = paramsCount
+          )
         }
       }
     }
@@ -300,41 +342,45 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     val adapterName = type.classNameOf()
     val packageName = type.packageName()
     val factorySpec = TypeSpec.classBuilder(
-        ClassName.get(packageName, PRODUCER_PREFIX + adapterName))
-        .addModifiers(FINAL)
-        .addSuperinterface(TypeName.get(JsonAdapter.Factory::class.java))
-        .addMethod(create.build())
-        .apply {
-          originatingElements.forEach { addOriginatingElement(it) }
-        }
-        .build()
+      ClassName.get(packageName, PRODUCER_PREFIX + adapterName)
+    )
+      .addModifiers(FINAL)
+      .addSuperinterface(TypeName.get(JsonAdapter.Factory::class.java))
+      .addMethod(create.build())
+      .apply {
+        originatingElements.forEach { addOriginatingElement(it) }
+      }
+      .build()
     JavaFile.builder(packageName, factorySpec).build()
-        .writeTo(context.processingEnv.filer)
+      .writeTo(context.processingEnv.filer)
     return mapOf(Pair(EXTRAS_KEY, metaMapAdapter.toJson(modelsMap))) to elements.toSet()
   }
 
   /** This is isolating because it only depends on the consumer type instance. */
   override fun consumerIncrementalType(
-      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
+    processingEnvironment: ProcessingEnvironment
+  ): IncrementalExtensionType = ISOLATING
 
-  override fun consume(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>,
-      metadata: Set<ConsumerMetadata>) {
+  override fun consume(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>,
+    metadata: Set<ConsumerMetadata>
+  ) {
     // Get a mapping of model names -> GsonSupportMeta
     val metaMaps = metadata
-        .filter { it.contains(EXTRAS_KEY) }
-        .map { metaMapAdapter.fromJson(it[EXTRAS_KEY]!!)!! }
-        .flatMap { it.entries }
-        .associateBy({ it.key }, { it.value })
+      .filter { it.contains(EXTRAS_KEY) }
+      .map { metaMapAdapter.fromJson(it[EXTRAS_KEY]!!)!! }
+      .flatMap { it.entries }
+      .associateBy({ it.key }, { it.value })
 
     // Organize them by package, so packageName -> Map<ModelName, GsonSupportMeta>
     val modelsByPackage = mutableMapOf<String, MutableMap<String, MoshiSupportMeta>>()
     metaMaps.entries
-        .forEach {
-          val (packageName, name) = it.key.asPackageAndName()
-          modelsByPackage.getOrPut(packageName, { mutableMapOf() })[name] = it.value
-        }
+      .forEach {
+        val (packageName, name) = it.key.asPackageAndName()
+        modelsByPackage.getOrPut(packageName, { mutableMapOf() })[name] = it.value
+      }
 
     val methods = mutableSetOf<MethodSpec>()
 
@@ -347,79 +393,104 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
     // A utility createTypeAdapter method for methods to use and not worry about reflection stuff
     val jsonAdapterCreator = MethodSpec.methodBuilder("createJsonAdapter")
-        .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java)
-            .addMember("value", "\$S", "unchecked")
-            .build())
-        .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-        .addTypeVariable(t)
-        .returns(returnType)
-        .addParameter(String::class.java, "modelName")
-        .addParameter(String::class.java, "methodName")
-        .addParameter(ArrayTypeName.of(Object::class.java), "args")
-        .varargs()
-        .beginControlFlow("try")
-        // If we have args, we need to create a Class[] to give the getMethod() call to properly resolve
-        .beginControlFlow("if (args != null && args.length > 0)")
-        .addStatement("\$1T[] params = new \$1T[args.length]", Class::class.java)
-        .beginControlFlow("for (int i = 0; i < args.length; i++)")
-        .addStatement("params[i] = args[i].getClass()")
-        .endControlFlow()
-        .addStatement("\treturn (\$T) \$T.forName(modelName)" +
-            ".getMethod(methodName, params).invoke(null, args)",
-            returnType,
-            Class::class.java)
-        .nextControlFlow("else")
-        .addStatement("\treturn (\$T) \$T.forName(modelName).getMethod(methodName).invoke(null)",
-            returnType,
-            Class::class.java)
-        .endControlFlow()
-        .nextControlFlow("catch (\$T e)",
-            Exception::class.java) // Can't use ReflectiveOperationException till API 19
-        .addStatement("throw new \$T(\$S, e)", RuntimeException::class.java,
-            "Cortex reflective jsonAdapter " +
-                "invocation failed.")
-        .endControlFlow()
-        .build()
+      .addAnnotation(
+        AnnotationSpec.builder(SuppressWarnings::class.java)
+          .addMember("value", "\$S", "unchecked")
+          .build()
+      )
+      .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+      .addTypeVariable(t)
+      .returns(returnType)
+      .addParameter(String::class.java, "modelName")
+      .addParameter(String::class.java, "methodName")
+      .addParameter(ArrayTypeName.of(Object::class.java), "args")
+      .varargs()
+      .beginControlFlow("try")
+      // If we have args, we need to create a Class[] to give the getMethod() call to properly resolve
+      .beginControlFlow("if (args != null && args.length > 0)")
+      .addStatement("\$1T[] params = new \$1T[args.length]", Class::class.java)
+      .beginControlFlow("for (int i = 0; i < args.length; i++)")
+      .addStatement("params[i] = args[i].getClass()")
+      .endControlFlow()
+      .addStatement(
+        "\treturn (\$T) \$T.forName(modelName)" +
+          ".getMethod(methodName, params).invoke(null, args)",
+        returnType,
+        Class::class.java
+      )
+      .nextControlFlow("else")
+      .addStatement(
+        "\treturn (\$T) \$T.forName(modelName).getMethod(methodName).invoke(null)",
+        returnType,
+        Class::class.java
+      )
+      .endControlFlow()
+      .nextControlFlow(
+        "catch (\$T e)",
+        Exception::class.java
+      ) // Can't use ReflectiveOperationException till API 19
+      .addStatement(
+        "throw new \$T(\$S, e)", RuntimeException::class.java,
+        "Cortex reflective jsonAdapter " +
+          "invocation failed."
+      )
+      .endControlFlow()
+      .build()
 
     val factoryCreator = MethodSpec.methodBuilder("getJsonAdapterFactory")
-        .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-        .returns(JsonAdapter.Factory::class.java)
-        .addParameter(String::class.java, "modelName")
-        .addParameter(String::class.java, "methodName")
-        .beginControlFlow("try")
-        .addStatement("\treturn (\$T) \$T.forName(modelName).getMethod(methodName).invoke(null)",
-            JsonAdapter.Factory::class.java,
-            Class::class.java)
-        .nextControlFlow("catch (\$T e)",
-            Exception::class.java) // Can't use ReflectiveOperationException till API 19
-        .addStatement("throw new \$T(\$S, e)", RuntimeException::class.java, "Cortex reflective " +
-            "jsonAdapterFactory invocation failed.")
-        .endControlFlow()
-        .build()
+      .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+      .returns(JsonAdapter.Factory::class.java)
+      .addParameter(String::class.java, "modelName")
+      .addParameter(String::class.java, "methodName")
+      .beginControlFlow("try")
+      .addStatement(
+        "\treturn (\$T) \$T.forName(modelName).getMethod(methodName).invoke(null)",
+        JsonAdapter.Factory::class.java,
+        Class::class.java
+      )
+      .nextControlFlow(
+        "catch (\$T e)",
+        Exception::class.java
+      ) // Can't use ReflectiveOperationException till API 19
+      .addStatement(
+        "throw new \$T(\$S, e)", RuntimeException::class.java,
+        "Cortex reflective " +
+          "jsonAdapterFactory invocation failed."
+      )
+      .endControlFlow()
+      .build()
 
     val nameResolver = MethodSpec.methodBuilder("resolveNameMoshiSupport")
-        .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-        .returns(String::class.java)
-        .addParameter(String::class.java, "simpleName")
-        .beginControlFlow("if (simpleName.startsWith(\$S))",
-            AV_PREFIX)
-        .addStatement("return simpleName.substring(\$S.length())",
-            AV_PREFIX)
-        .nextControlFlow("else")
-        .addStatement("return simpleName")
-        .endControlFlow()
-        .build()
+      .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+      .returns(String::class.java)
+      .addParameter(String::class.java, "simpleName")
+      .beginControlFlow(
+        "if (simpleName.startsWith(\$S))",
+        AV_PREFIX
+      )
+      .addStatement(
+        "return simpleName.substring(\$S.length())",
+        AV_PREFIX
+      )
+      .nextControlFlow("else")
+      .addStatement("return simpleName")
+      .endControlFlow()
+      .build()
 
     val create = MethodSpec.methodBuilder("create")
-        .addModifiers(PUBLIC)
-        .addAnnotation(Nullable::class.java)
-        .addAnnotation(Override::class.java)
-        .addParameters(ImmutableSet.of(
-            TYPE_SPEC,
-            ANNOTATIONS_SPEC,
-            MOSHI_SPEC))
-        .returns(
-            FACTORY_RETURN_TYPE_NAME)
+      .addModifiers(PUBLIC)
+      .addAnnotation(Nullable::class.java)
+      .addAnnotation(Override::class.java)
+      .addParameters(
+        ImmutableSet.of(
+          TYPE_SPEC,
+          ANNOTATIONS_SPEC,
+          MOSHI_SPEC
+        )
+      )
+      .returns(
+        FACTORY_RETURN_TYPE_NAME
+      )
         /*
          * First we want to pull out the package and simple names
          * The idea here is that we'll split on package names initially and then split on simple names in each
@@ -431,54 +502,70 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
          * Note that we only get the package name first. If we get a match, then we snag the simple name and
          * possibly strip the AutoValue_ prefix if necessary.
          */
-        .addComment("Avoid providing an adapter for an annotated type.")
-        .addStatement("if (!\$N.isEmpty()) return null",
-            ANNOTATIONS_SPEC)
-        .addStatement("\$T<?> rawType = \$T.getRawType(\$N)",
-            Class::class.java,
-            TypeName.get(MoshiTypes::class.java),
-            TYPE_SPEC)
-        .addStatement("if (rawType.isPrimitive()) return null")
-        .addStatement("if (!rawType.isAnnotationPresent(\$T.class)) return null",
-            CrumbConsumable::class.java)
-        .addStatement("String packageName = rawType.getPackage().getName()")
+      .addComment("Avoid providing an adapter for an annotated type.")
+      .addStatement(
+        "if (!\$N.isEmpty()) return null",
+        ANNOTATIONS_SPEC
+      )
+      .addStatement(
+        "\$T<?> rawType = \$T.getRawType(\$N)",
+        Class::class.java,
+        TypeName.get(MoshiTypes::class.java),
+        TYPE_SPEC
+      )
+      .addStatement("if (rawType.isPrimitive()) return null")
+      .addStatement(
+        "if (!rawType.isAnnotationPresent(\$T.class)) return null",
+        CrumbConsumable::class.java
+      )
+      .addStatement("String packageName = rawType.getPackage().getName()")
     // Begin the switch
-    create.beginControlFlow("switch (packageName)",
-        TYPE_SPEC)
+    create.beginControlFlow(
+      "switch (packageName)",
+      TYPE_SPEC
+    )
     modelsByPackage.forEach { (packageName, entries) ->
       // Create the package-specific method
       val packageCreatorMethod = MethodSpec.methodBuilder(
-          nameAllocator.newName("${packageName}JsonAdapter"))
-          .addAnnotation(AnnotationSpec.builder(SuppressWarnings::class.java)
-              .addMember("value", "\$S", "unchecked")
-              .build())
-          .addAnnotation(Nullable::class.java)
-          .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-          .addTypeVariable(t)
-          .returns(returnType)
-          .addParameter(String::class.java, "name")
-          .addParameters(ImmutableSet.of(
-              TYPE_SPEC,
-              ANNOTATIONS_SPEC,
-              MOSHI_SPEC))
-          .addCode(createPackageSwitch(packageName, entries, returnType))
-          .build()
+        nameAllocator.newName("${packageName}JsonAdapter")
+      )
+        .addAnnotation(
+          AnnotationSpec.builder(SuppressWarnings::class.java)
+            .addMember("value", "\$S", "unchecked")
+            .build()
+        )
+        .addAnnotation(Nullable::class.java)
+        .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+        .addTypeVariable(t)
+        .returns(returnType)
+        .addParameter(String::class.java, "name")
+        .addParameters(
+          ImmutableSet.of(
+            TYPE_SPEC,
+            ANNOTATIONS_SPEC,
+            MOSHI_SPEC
+          )
+        )
+        .addCode(createPackageSwitch(packageName, entries, returnType))
+        .build()
 
       // Switch on the package name and return the result from the corresponding method
       create.addCode("case \$S:\n", packageName)
-      create.addStatement("\treturn \$N(\$N(rawType.getSimpleName()), \$N, \$N, \$N)",
-          packageCreatorMethod,
-          nameResolver,
-          TYPE_SPEC,
-          ANNOTATIONS_SPEC,
-          MOSHI_SPEC)
+      create.addStatement(
+        "\treturn \$N(\$N(rawType.getSimpleName()), \$N, \$N, \$N)",
+        packageCreatorMethod,
+        nameResolver,
+        TYPE_SPEC,
+        ANNOTATIONS_SPEC,
+        MOSHI_SPEC
+      )
       methods += packageCreatorMethod
     }
 
     // Default is always to return null in adapters
     create.addCode("default:\n")
-        .addStatement("return null")
-        .endControlFlow()
+      .addStatement("return null")
+      .endControlFlow()
 
     methods += nameResolver
     methods += factoryCreator
@@ -488,13 +575,14 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
     val adapterName = type.classNameOf()
     val packageName = type.packageName()
     val factorySpec = TypeSpec.classBuilder(
-        ClassName.get(packageName, CONSUMER_PREFIX + adapterName))
-        .addModifiers(FINAL)
-        .addSuperinterface(TypeName.get(JsonAdapter.Factory::class.java))
-        .addMethods(methods)
-        .build()
+      ClassName.get(packageName, CONSUMER_PREFIX + adapterName)
+    )
+      .addModifiers(FINAL)
+      .addSuperinterface(TypeName.get(JsonAdapter.Factory::class.java))
+      .addMethods(methods)
+      .build()
     JavaFile.builder(packageName, factorySpec).build()
-        .writeTo(context.processingEnv.filer)
+      .writeTo(context.processingEnv.filer)
   }
 
   /**
@@ -505,47 +593,59 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
    * @param returnType the return type reference to if necessary
    */
   private fun createPackageSwitch(
-      packageName: String,
-      data: Map<String, MoshiSupportMeta>,
-      returnType: TypeName): CodeBlock {
+    packageName: String,
+    data: Map<String, MoshiSupportMeta>,
+    returnType: TypeName
+  ): CodeBlock {
     val code = CodeBlock.builder()
     code.beginControlFlow("switch (name)")
     data.forEach { modelName, (methodName, argCount, isFactory) ->
       code.add("case \$S:\n", modelName)
-      code.add(CodeBlock.builder()
+      code.add(
+        CodeBlock.builder()
           .apply {
             if (isFactory) {
-              addStatement("\treturn (\$T) getJsonAdapterFactory(\$S, \$S).create(\$N, \$N, \$N)",
-                  returnType,
-                  "$packageName.$modelName",
-                  methodName,
-                  TYPE_SPEC,
-                  ANNOTATIONS_SPEC,
-                  MOSHI_SPEC)
+              addStatement(
+                "\treturn (\$T) getJsonAdapterFactory(\$S, \$S).create(\$N, \$N, \$N)",
+                returnType,
+                "$packageName.$modelName",
+                methodName,
+                TYPE_SPEC,
+                ANNOTATIONS_SPEC,
+                MOSHI_SPEC
+              )
             } else {
-              add("\treturn createJsonAdapter(\$S, \$S",
-                  "$packageName.$modelName", methodName)
-                  .apply {
-                    if (argCount == 1) {
-                      // These need a moshi instance to defer to for other type adapters
-                      add(", \$N",
-                          MOSHI_SPEC)
-                    }
+              add(
+                "\treturn createJsonAdapter(\$S, \$S",
+                "$packageName.$modelName", methodName
+              )
+                .apply {
+                  if (argCount == 1) {
+                    // These need a moshi instance to defer to for other type adapters
+                    add(
+                      ", \$N",
+                      MOSHI_SPEC
+                    )
                   }
+                }
               add(");\n")
             }
           }
-          .build())
+          .build()
+      )
     }
     code.add("default:")
-        .addStatement("\nreturn null")
-        .endControlFlow()
+      .addStatement("\nreturn null")
+      .endControlFlow()
     return code.build()
   }
 
   private fun addControlFlowGeneric(
-      block: CodeBlock.Builder, elementTypeName: TypeName,
-      element: Element, numGenerics: Int) {
+    block: CodeBlock.Builder,
+    elementTypeName: TypeName,
+    element: Element,
+    numGenerics: Int
+  ) {
     getJsonAdapterMethod(element)?.run {
       val typeName = (elementTypeName as ParameterizedTypeName).rawType
       val typeBlock = CodeBlock.of("rawType")
@@ -555,21 +655,24 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
       val paramsCount = parameters.size
       if (paramsCount > 1) {
-        block.addStatement(returnStatement,
-            element.simpleName,
-            simpleName,
-            MOSHI_SPEC,
-            ParameterizedType::class.java,
-            TYPE_SPEC)
+        block.addStatement(
+          returnStatement,
+          element.simpleName,
+          simpleName,
+          MOSHI_SPEC,
+          ParameterizedType::class.java,
+          TYPE_SPEC
+        )
       }
     }
   }
 
   private fun addControlFlow(
-      block: CodeBlock.Builder,
-      typeBlock: CodeBlock,
-      elementTypeName: TypeName,
-      pos: Int) {
+    block: CodeBlock.Builder,
+    typeBlock: CodeBlock,
+    elementTypeName: TypeName,
+    pos: Int
+  ) {
     when (pos) {
       0 -> block.beginControlFlow("if (\$L.equals(\$T.class))", typeBlock, elementTypeName)
       else -> block.nextControlFlow("else if (\$L.equals(\$T.class))", typeBlock, elementTypeName)
@@ -578,16 +681,17 @@ class MoshiSupport : CrumbConsumerExtension, CrumbProducerExtension {
 
   private fun getJsonAdapterMethod(element: Element): ExecutableElement? {
     val jsonAdapterType = ParameterizedTypeName.get(
-        ClassName.get(JsonAdapter::class.java), TypeName.get(element.asType()))
+      ClassName.get(JsonAdapter::class.java), TypeName.get(element.asType())
+    )
     return ElementFilter.methodsIn(element.enclosedElements)
-        .filter { it.modifiers.containsAll(setOf(Modifier.STATIC, PUBLIC)) }
-        .find { TypeName.get(it.returnType) == jsonAdapterType }
+      .filter { it.modifiers.containsAll(setOf(Modifier.STATIC, PUBLIC)) }
+      .find { TypeName.get(it.returnType) == jsonAdapterType }
   }
 
   private fun getJsonAdapterFactoryMethod(element: Element): ExecutableElement? {
     return ElementFilter.methodsIn(element.enclosedElements)
-        .filter { it.modifiers.containsAll(setOf(Modifier.STATIC, PUBLIC)) }
-        .find { TypeName.get(it.returnType) == FACTORY_CLASS_NAME }
+      .filter { it.modifiers.containsAll(setOf(Modifier.STATIC, PUBLIC)) }
+      .find { TypeName.get(it.returnType) == FACTORY_CLASS_NAME }
   }
 }
 
@@ -611,8 +715,11 @@ class MoshiSupportMetaAdapter : JsonAdapter<MoshiSupportMeta>() {
     var isFactory = false
     reader.beginObject()
     while (reader.hasNext()) {
-      when (reader.selectName(
-          OPTIONS)) {
+      when (
+        reader.selectName(
+          OPTIONS
+        )
+      ) {
         0 -> methodName = reader.nextString()
         1 -> argCount = reader.nextInt()
         2 -> isFactory = reader.nextBoolean()
@@ -626,16 +733,19 @@ class MoshiSupportMetaAdapter : JsonAdapter<MoshiSupportMeta>() {
   override fun toJson(writer: com.squareup.moshi.JsonWriter, model: MoshiSupportMeta?) {
     model?.run {
       writer.beginObject()
-          .name("methodName")
-          .value(methodName)
-          .name("argCount")
-          .value(argCount)
-          .name("isFactory")
-          .value(isFactory)
+        .name("methodName")
+        .value(methodName)
+        .name("argCount")
+        .value(argCount)
+        .name("isFactory")
+        .value(isFactory)
       writer.endObject()
     }
   }
 }
 
-data class MoshiSupportMeta(val methodName: String, val argCount: Int = 0,
-    val isFactory: Boolean = false)
+data class MoshiSupportMeta(
+  val methodName: String,
+  val argCount: Int = 0,
+  val isFactory: Boolean = false
+)

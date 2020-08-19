@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.core
 
 import com.uber.crumb.core.CrumbLog.Client
@@ -37,9 +36,11 @@ import javax.tools.Diagnostic.Kind
  * @param client Optional custom [Client] for handling logs. Default is [DefaultClient], which just prints to stdout
  *               and stderr.
  */
-class CrumbLog(private val prefix: String,
-    private val debugEnabled: Boolean = false,
-    private val client: Client = DefaultClient) {
+class CrumbLog(
+  private val prefix: String,
+  private val debugEnabled: Boolean = false,
+  private val client: Client = DefaultClient
+) {
 
   internal fun d(msg: String, vararg args: Any) {
     if (debugEnabled) {
@@ -55,8 +56,10 @@ class CrumbLog(private val prefix: String,
 
   internal fun d(t: Throwable, msg: String, vararg args: Any) {
     if (debugEnabled) {
-      printMessage(null, Kind.NOTE,
-          String.format(msg, *args) + " " + getStackTrace(t))
+      printMessage(
+        null, Kind.NOTE,
+        String.format(msg, *args) + " " + getStackTrace(t)
+      )
     }
   }
 
@@ -69,8 +72,10 @@ class CrumbLog(private val prefix: String,
   }
 
   internal fun w(t: Throwable, msg: String, vararg args: Any) {
-    printMessage(null, Kind.WARNING,
-        String.format(msg, *args) + " " + getStackTrace(t))
+    printMessage(
+      null, Kind.WARNING,
+      String.format(msg, *args) + " " + getStackTrace(t)
+    )
   }
 
   internal fun e(msg: String, vararg args: Any) {
@@ -85,8 +90,10 @@ class CrumbLog(private val prefix: String,
 
   internal fun e(t: Throwable, msg: String, vararg args: Any) {
     val fullMsg = String.format(msg, *args)
-    printMessage(null, Kind.ERROR,
-        fullMsg + " " + getStackTrace(t))
+    printMessage(
+      null, Kind.ERROR,
+      fullMsg + " " + getStackTrace(t)
+    )
   }
 
   private fun printMessage(element: Element?, kind: Kind, message: String) {
@@ -98,8 +105,8 @@ class CrumbLog(private val prefix: String,
 
   private fun getStackTrace(t: Throwable): String {
     return StringWriter()
-        .apply { PrintWriter(this).use(t::printStackTrace) }
-        .toString()
+      .apply { PrintWriter(this).use(t::printStackTrace) }
+      .toString()
   }
 
   /**

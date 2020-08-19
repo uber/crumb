@@ -1,11 +1,11 @@
 /*
- * Copyright 2019 Square Inc.
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,8 +29,8 @@ internal fun <T> newMutableList(): MutableList<T> = MutableOnWriteList(emptyList
 internal fun <K, V> newMutableMap(): MutableMap<K, V> = LinkedHashMap()
 
 @Deprecated(
-    message = "Please regenerate code using wire-compiler version 3.0.0 or higher.",
-    replaceWith = ReplaceWith("com.squareup.internal.Internal.copyOf(list)")
+  message = "Please regenerate code using wire-compiler version 3.0.0 or higher.",
+  replaceWith = ReplaceWith("com.squareup.internal.Internal.copyOf(list)")
 )
 internal fun <T> copyOf(name: String, list: List<T>?): MutableList<T> = copyOf(list!!)
 
@@ -43,8 +43,8 @@ internal fun <T> copyOf(list: List<T>): MutableList<T> {
 }
 
 @Deprecated(
-    message = "Please regenerate code using wire-compiler version 3.0.0 or higher.",
-    replaceWith = ReplaceWith("com.squareup.internal.Internal.copyOf(map)")
+  message = "Please regenerate code using wire-compiler version 3.0.0 or higher.",
+  replaceWith = ReplaceWith("com.squareup.internal.Internal.copyOf(map)")
 )
 internal fun <K, V> copyOf(name: String, map: Map<K, V>?): MutableMap<K, V> = copyOf(map!!)
 
@@ -74,7 +74,6 @@ internal fun <K, V> immutableCopyOf(name: String, map: Map<K?, V?>): Map<K, V> {
   require(null !in result.values) { "$name.containsValue(null)" }
   return (result as MutableMap<K, V>).toUnmodifiableMap()
 }
-
 
 @JvmName("-redactElements") // Hide from Java
 internal fun <T> List<T>.redactElements(adapter: ProtoAdapter<T>): List<T> = map(adapter::redact)

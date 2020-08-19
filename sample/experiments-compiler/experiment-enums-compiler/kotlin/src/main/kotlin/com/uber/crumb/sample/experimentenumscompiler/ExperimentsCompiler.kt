@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.sample.experimentenumscompiler
 
 import com.google.auto.common.MoreElements.isAnnotationPresent
@@ -62,34 +61,43 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     private const val METADATA_KEY: ExtensionKey = "ExperimentsCompiler"
   }
 
-  override fun isConsumerApplicable(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
+  override fun isConsumerApplicable(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
     return isAnnotationPresent(type, ExperimentsCollector::class.java)
   }
 
-  override fun isProducerApplicable(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
+  override fun isProducerApplicable(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
     return isAnnotationPresent(type, Experiments::class.java)
   }
 
   /** This is isolating because it only depends on the consumer type instance.  */
   override fun consumerIncrementalType(
-      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
+    processingEnvironment: ProcessingEnvironment
+  ): IncrementalExtensionType = ISOLATING
 
-  override fun consume(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>,
-      metadata: Set<ConsumerMetadata>) {
+  override fun consume(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>,
+    metadata: Set<ConsumerMetadata>
+  ) {
 
     // Must be a type that supports extension values
     if (type.kind != CLASS) {
       context.processingEnv
-          .messager
-          .printMessage(ERROR,
-              "@${ExperimentsCollector::class.java.simpleName} is only applicable on classes when consuming!",
-              type)
+        .messager
+        .printMessage(
+          ERROR,
+          "@${ExperimentsCollector::class.java.simpleName} is only applicable on classes when consuming!",
+          type
+        )
       return
     }
 
@@ -97,10 +105,12 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
     if (kmetadata !is KotlinClassMetadata) {
       context.processingEnv
-          .messager
-          .printMessage(ERROR,
-              "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
-              type)
+        .messager
+        .printMessage(
+          ERROR,
+          "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
+          type
+        )
       return
     }
 
@@ -110,75 +120,90 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     // Must be an abstract class because we're generating the backing implementation.
     if (classProto.classKind != ProtoBuf.Class.Kind.OBJECT) {
       context.processingEnv
-          .messager
-          .printMessage(ERROR,
-              "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a Kotlin object class",
-              type)
+        .messager
+        .printMessage(
+          ERROR,
+          "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a Kotlin object class",
+          type
+        )
       return
     }
 
     val packageName = nameResolver.getString(classProto.fqName)
-        .substringBeforeLast('/')
-        .replace('/', '.')
+      .substringBeforeLast('/')
+      .replace('/', '.')
 
     // Map of enum TypeElement to its members
     val experimentClasses = metadata
-        .mapNotNull { it[METADATA_KEY] }
-        .map { enumClass -> context.processingEnv.elementUtils.getTypeElement(enumClass) }
-        .associate {
-          it to it.enclosedElements
-              .filter { it.kind == ENUM_CONSTANT }
-              .map(Element::toString)
-        }
+      .mapNotNull { it[METADATA_KEY] }
+      .map { enumClass -> context.processingEnv.elementUtils.getTypeElement(enumClass) }
+      .associate {
+        it to it.enclosedElements
+          .filter { it.kind == ENUM_CONSTANT }
+          .map(Element::toString)
+      }
 
     val initializerCode = experimentClasses
-        .map { "%T::class.java to listOf(${it.value.joinToString(", ") { "%S" }})" }
-        .joinToString()
+      .map { "%T::class.java to listOf(${it.value.joinToString(", ") { "%S" }})" }
+      .joinToString()
     val initializerValues = experimentClasses
-        .flatMap { listOf(it.key.asClassName(), *it.value.toTypedArray()) }
-        .toTypedArray()
+      .flatMap { listOf(it.key.asClassName(), *it.value.toTypedArray()) }
+      .toTypedArray()
     val mapFunction = FunSpec.builder("experiments")
-        .receiver(type.asClassName())
-        .returns(Map::class.asClassName().parameterizedBy(
-            Class::class.asClassName().parameterizedBy(
-                WildcardTypeName.producerOf(
-                    Enum::class.asClassName().parameterizedBy(STAR))),
-            List::class.asClassName().parameterizedBy(
-                String::class.asTypeName())))
-        .addStatement("return mapOf($initializerCode)", *initializerValues)
-        .build()
+      .receiver(type.asClassName())
+      .returns(
+        Map::class.asClassName().parameterizedBy(
+          Class::class.asClassName().parameterizedBy(
+            WildcardTypeName.producerOf(
+              Enum::class.asClassName().parameterizedBy(STAR)
+            )
+          ),
+          List::class.asClassName().parameterizedBy(
+            String::class.asTypeName()
+          )
+        )
+      )
+      .addStatement("return mapOf($initializerCode)", *initializerValues)
+      .build()
 
     // Generate the file
     val generatedDir = context.processingEnv.options[kaptGeneratedOption]?.let(::File)
-        ?: throw IllegalStateException("Could not resolve kotlin generated directory!")
+      ?: throw IllegalStateException("Could not resolve kotlin generated directory!")
     FileSpec.builder(packageName, "${type.simpleName}_Experiments")
-        .addFunction(mapFunction)
-        .build()
-        .writeTo(generatedDir)
+      .addFunction(mapFunction)
+      .build()
+      .writeTo(generatedDir)
   }
 
   override fun producerIncrementalType(
-      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
+    processingEnvironment: ProcessingEnvironment
+  ): IncrementalExtensionType = ISOLATING
 
-  override fun produce(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): ProducerMetadata {
+  override fun produce(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): ProducerMetadata {
     if (type.kind != ENUM) {
       context.processingEnv
-          .messager
-          .printMessage(ERROR,
-              "@${Experiments::class.java.simpleName} is only applicable on enums when producing!",
-              type)
+        .messager
+        .printMessage(
+          ERROR,
+          "@${Experiments::class.java.simpleName} is only applicable on enums when producing!",
+          type
+        )
       return emptyMap<String, String>() to emptySet()
     }
     return mapOf(METADATA_KEY to type.qualifiedName.toString()) to setOf(type)
   }
 
   override fun supportedConsumerAnnotations(): Set<Class<out Annotation>> = setOf(
-      ExperimentsCollector::class.java)
+    ExperimentsCollector::class.java
+  )
 
   override fun supportedProducerAnnotations(): Set<Class<out Annotation>> = setOf(
-      Experiments::class.java)
+    Experiments::class.java
+  )
 
-  override val key= METADATA_KEY
+  override val key = METADATA_KEY
 }
