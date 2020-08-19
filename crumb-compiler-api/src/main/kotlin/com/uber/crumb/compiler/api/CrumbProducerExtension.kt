@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.compiler.api
 
 import com.uber.crumb.annotations.CrumbProducer
@@ -32,7 +31,6 @@ interface CrumbProducerExtension : CrumbExtension {
    * Supported producer annotations, if any, that the CrumbProcessor should collect on this
    * extension's behalf. Empty by default.
    */
-  @JvmDefault
   fun supportedProducerAnnotations(): Set<Class<out Annotation>> {
     return emptySet()
   }
@@ -45,10 +43,11 @@ interface CrumbProducerExtension : CrumbExtension {
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return true if the type is applicable.
    */
-  @JvmDefault
-  fun isProducerApplicable(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
+  fun isProducerApplicable(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
     // Note: AutoCommon's MoreElements#isAnnotationPresent() is a safer option but not used here to avoid the dependency
     return supportedProducerAnnotations().any {
       type.getAnnotation(it) != null
@@ -63,9 +62,11 @@ interface CrumbProducerExtension : CrumbExtension {
    * @param annotations collected [CrumbQualifier]-annotated annotations on [type].
    * @return the aggregated [ProducerMetadata].
    */
-  fun produce(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): ProducerMetadata
+  fun produce(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): ProducerMetadata
 
   /**
    * Determines the incremental type of this Extension.
@@ -78,9 +79,7 @@ interface CrumbProducerExtension : CrumbExtension {
    * returned value is [IncrementalExtensionType.UNKNOWN], which will disable incremental
    * annotation processing entirely.
    */
-  @JvmDefault
   fun producerIncrementalType(processingEnvironment: ProcessingEnvironment): IncrementalExtensionType {
     return IncrementalExtensionType.UNKNOWN
   }
-
 }

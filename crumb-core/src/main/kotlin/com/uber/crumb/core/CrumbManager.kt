@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,8 +30,10 @@ import javax.lang.model.element.PackageElement
  * @property env A given [ProcessingEnvironment] instance.
  * @property crumbLog A [CrumbLog] instance for logging information.
  */
-class CrumbManager(private val env: ProcessingEnvironment,
-    private val crumbLog: CrumbLog) {
+class CrumbManager(
+  private val env: ProcessingEnvironment,
+  private val crumbLog: CrumbLog
+) {
 
   /**
    * This loads a given [Set]<String> from the available [CrumbIndex] instances in the given [packageName].
@@ -72,10 +74,11 @@ class CrumbManager(private val env: ProcessingEnvironment,
    *         [BufferedSink.close] is called.
    */
   fun store(
-      packageName: String,
-      fileName: String,
-      outputLanguage: CrumbOutputLanguage,
-      originatingElements: Set<Element> = emptySet()): BufferedSink {
+    packageName: String,
+    fileName: String,
+    outputLanguage: CrumbOutputLanguage,
+    originatingElements: Set<Element> = emptySet()
+  ): BufferedSink {
     return outputLanguage.writeTo(env.filer, packageName, fileName, originatingElements)
   }
 }

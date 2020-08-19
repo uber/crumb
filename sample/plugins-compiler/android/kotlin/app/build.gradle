@@ -49,6 +49,5 @@ dependencies {
   implementation project(":crumb-annotations")
   implementation project(":sample:plugins-compiler:android:kotlin:library")
   implementation deps.misc.appCompat
-  implementation deps.kotlin.stdLib
   implementation project(":sample:plugins-compiler:translations-api")
 }

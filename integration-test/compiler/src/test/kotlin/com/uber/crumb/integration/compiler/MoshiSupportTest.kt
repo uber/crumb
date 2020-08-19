@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.integration.compiler
 
 import com.google.common.collect.ImmutableSet
@@ -29,7 +28,9 @@ class MoshiSupportTest {
 
   @Test
   fun generatesJsonAdapterFactory() {
-    val source1 = JavaFileObjects.forSourceString("test.Foo", """
+    val source1 = JavaFileObjects.forSourceString(
+      "test.Foo",
+      """
 package test;
 import com.uber.crumb.annotations.CrumbConsumable;
 import com.squareup.moshi.JsonAdapter;
@@ -40,9 +41,12 @@ import com.squareup.moshi.Moshi;
   }
   public abstract String getName();
   public abstract boolean isAwesome();
-}""")
+}"""
+    )
 
-    val source2 = JavaFileObjects.forSourceString("test.Bar", """
+    val source2 = JavaFileObjects.forSourceString(
+      "test.Bar",
+      """
 package test;
 import com.uber.crumb.annotations.CrumbConsumable;
 import com.squareup.moshi.JsonAdapter;
@@ -52,10 +56,13 @@ import com.squareup.moshi.Moshi;
     return null;
   }
   public abstract String getName();
-}""")
+}"""
+    )
 
     // Param-less adapter method
-    val source3 = JavaFileObjects.forSourceString("test.Baz", """
+    val source3 = JavaFileObjects.forSourceString(
+      "test.Baz",
+      """
 package test;
 import com.uber.crumb.annotations.CrumbConsumable;
 import com.squareup.moshi.JsonAdapter;
@@ -64,9 +71,12 @@ import com.squareup.moshi.JsonAdapter;
     return null;
   }
   public abstract String getName();
-}""")
+}"""
+    )
     // Factory method
-    val source4 = JavaFileObjects.forSourceString("test.BazFactory", """
+    val source4 = JavaFileObjects.forSourceString(
+      "test.BazFactory",
+      """
 package test;
 import com.uber.crumb.annotations.CrumbConsumable;
 import com.squareup.moshi.JsonAdapter;
@@ -75,9 +85,12 @@ import com.squareup.moshi.JsonAdapter;
     return null;
   }
   public abstract String getName();
-}""")
+}"""
+    )
 
-    val source5 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
+    val source5 = JavaFileObjects.forSourceString(
+      "test.MyAdapterFactory",
+      """
 package test;
 import com.squareup.moshi.JsonAdapter;
 import com.uber.crumb.integration.annotations.MoshiFactory;
@@ -86,9 +99,12 @@ public abstract class MyAdapterFactory {
   public static JsonAdapter.Factory create() {
     return new MoshiProducer_MyAdapterFactory();
   }
-}""")
+}"""
+    )
 
-    val expected = JavaFileObjects.forSourceString("test.AutoValueMoshi_MyAdapterFactory", """
+    val expected = JavaFileObjects.forSourceString(
+      "test.AutoValueMoshi_MyAdapterFactory",
+      """
 package test;
 
 import com.squareup.moshi.JsonAdapter;
@@ -117,12 +133,14 @@ final class MoshiProducer_MyAdapterFactory implements JsonAdapter.Factory {
     }
     return null;
   }
-}""")
+}"""
+    )
     assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources()).that(
-        ImmutableSet.of(source1, source2, source3, source4, source5))
-        .processedWith(CrumbProcessor(listOf(MoshiSupport())))
-        .compilesWithoutError()
-        .and()
-        .generatesSources(expected)
+      ImmutableSet.of(source1, source2, source3, source4, source5)
+    )
+      .processedWith(CrumbProcessor(listOf(MoshiSupport())))
+      .compilesWithoutError()
+      .and()
+      .generatesSources(expected)
   }
 }

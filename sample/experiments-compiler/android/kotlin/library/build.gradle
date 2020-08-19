@@ -37,7 +37,6 @@ android {
 dependencies {
   kapt project(":crumb-compiler")
   kapt project(":sample:experiments-compiler:experiment-enums-compiler:kotlin")
-  api deps.kotlin.stdLibJdk7
   implementation project(":crumb-annotations")
   implementation project(":sample:experiments-compiler:experiment-enums-compiler:annotations")
 }

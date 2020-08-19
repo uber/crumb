@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.sample.pluginscompiler
 
-import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreElements.isAnnotationPresent
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec
@@ -24,6 +22,10 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.classinspector.elements.ElementsClassInspector
+import com.squareup.kotlinpoet.metadata.isObject
+import com.squareup.kotlinpoet.metadata.specs.toFileSpec
+import com.squareup.kotlinpoet.metadata.toImmutableKmClass
 import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
@@ -35,12 +37,6 @@ import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.sample.pluginscompiler.annotations.Plugin
 import com.uber.crumb.sample.pluginscompiler.annotations.PluginPoint
-import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
-import me.eugeniomarletti.kotlin.metadata.classKind
-import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
-import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
-import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
-import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.ElementKind.CLASS
@@ -65,77 +61,63 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
     private const val METADATA_FQCN = "kotlin.Metadata"
   }
 
-  override fun isConsumerApplicable(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
+  override fun isConsumerApplicable(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
     return isAnnotationPresent(type, PluginPoint::class.java)
   }
 
-  override fun isProducerApplicable(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): Boolean {
+  override fun isProducerApplicable(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): Boolean {
     return isAnnotationPresent(type, Plugin::class.java)
   }
 
   /** This is isolating because it only depends on the consumer type instance.  */
   override fun consumerIncrementalType(
-      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = ISOLATING
+    processingEnvironment: ProcessingEnvironment
+  ): IncrementalExtensionType = ISOLATING
 
-  override fun consume(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>,
-      metadata: Set<ConsumerMetadata>) {
+  override fun consume(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>,
+    metadata: Set<ConsumerMetadata>
+  ) {
 
     // Must be a type that supports extension values
     if (type.kind != CLASS) {
       context.processingEnv
-          .messager
-          .printMessage(ERROR,
-              "@${PluginPoint::class.java.simpleName} is only applicable on classes when consuming!",
-              type)
+        .messager
+        .printMessage(
+          ERROR,
+          "@${PluginPoint::class.java.simpleName} is only applicable on classes when consuming!",
+          type
+        )
       return
     }
 
-    val kmetadata = type.kotlinMetadata
-
-    if (kmetadata == null
-        && type.annotationMirrors.any {
-          MoreElements.asType(it.annotationType.asElement()).qualifiedName.toString() == METADATA_FQCN
-        }) {
-      context.processingEnv
-          .messager
-          .printMessage(ERROR,
-              "Metadata annotation was unreadable on $type. Please ensure the kotlin standard library is a " +
-                  "dependency of this project.",
-              type)
-      return
-    }
-
-    if (kmetadata !is KotlinClassMetadata) {
-      context.processingEnv
-          .messager
-          .printMessage(ERROR,
-              "@${PluginPoint::class.java.simpleName} can't be applied to $type: must be a class.",
-              type)
-      return
-    }
-
-    val classData = kmetadata.data
-    val (nameResolver, classProto) = classData
+    val kmClass = type.toImmutableKmClass()
 
     // Must be an object class.
-    if (classProto.classKind != ProtoBuf.Class.Kind.OBJECT) {
+    if (!kmClass.isObject) {
       context.processingEnv
-          .messager
-          .printMessage(ERROR,
-              "@${PluginPoint::class.java.simpleName} can't be applied to $type: must be a Kotlin object class",
-              type)
+        .messager
+        .printMessage(
+          ERROR,
+          "@${PluginPoint::class.java.simpleName} can't be applied to $type: must be a Kotlin object class",
+          type
+        )
       return
     }
 
-    val packageName = nameResolver.getString(classProto.fqName)
-        .substringBeforeLast('/')
-        .replace('/', '.')
+    val elementsInspector = ElementsClassInspector.create(context.processingEnv.elementUtils, context.processingEnv.typeUtils)
+    val spec = kmClass.toFileSpec(elementsInspector, type.asClassName())
+    val packageName = spec.packageName
 
     // Read the pluginpoint's target type, e.g. "MyPluginInterface"
     val pluginPoint = type.getAnnotation(PluginPoint::class.java)
@@ -148,81 +130,89 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
 
     // List of plugin TypeElements
     val pluginClasses = metadata
-        .mapNotNull { it[METADATA_KEY] }
-        .map { pluginClass -> context.processingEnv.elementUtils.getTypeElement(pluginClass) }
-        .filter {
-          context
-              .processingEnv
-              .typeUtils
-              .isAssignable(it.asType(), targetPlugin)
-        }
-        .toSet()
+      .mapNotNull { it[METADATA_KEY] }
+      .map { pluginClass -> context.processingEnv.elementUtils.getTypeElement(pluginClass) }
+      .filter {
+        context
+          .processingEnv
+          .typeUtils
+          .isAssignable(it.asType(), targetPlugin)
+      }
+      .toSet()
 
     val initializerCode = "return setOf(${pluginClasses.joinToString { "%T()" }})"
     val initializerValues = pluginClasses
-        .map { it.asClassName() }
-        .toTypedArray()
+      .map { it.asClassName() }
+      .toTypedArray()
     val pluginsFunction = FunSpec.builder("obtain")
-        .receiver(type.asClassName())
-        .returns(Set::class.asClassName().parameterizedBy(
-            targetPlugin.asTypeName()))
-        .addStatement(initializerCode, *initializerValues)
-        .build()
+      .receiver(type.asClassName())
+      .returns(
+        Set::class.asClassName().parameterizedBy(
+          targetPlugin.asTypeName()
+        )
+      )
+      .addStatement(initializerCode, *initializerValues)
+      .addOriginatingElement(type)
+      .build()
 
     // Generate the file
-    val generatedDir = context.processingEnv.options[kaptGeneratedOption]?.let(::File)
-        ?: throw IllegalStateException("Could not resolve kotlin generated directory!")
     FileSpec.builder(packageName, "${type.simpleName}_Plugins")
-        .addFunction(pluginsFunction)
-        .build()
-        .writeTo(generatedDir)
+      .addFunction(pluginsFunction)
+      .build()
+      .writeTo(context.processingEnv.filer)
   }
 
-  override fun produce(context: CrumbContext,
-      type: TypeElement,
-      annotations: Collection<AnnotationMirror>): ProducerMetadata {
+  override fun produce(
+    context: CrumbContext,
+    type: TypeElement,
+    annotations: Collection<AnnotationMirror>
+  ): ProducerMetadata {
     // Must be a class
     if (type.kind != CLASS) {
       context
-          .processingEnv
-          .messager
-          .printMessage(
-              ERROR,
-              "@${Plugin::class.java.simpleName} is only applicable on classes!",
-              type)
+        .processingEnv
+        .messager
+        .printMessage(
+          ERROR,
+          "@${Plugin::class.java.simpleName} is only applicable on classes!",
+          type
+        )
       return emptyMap<String, String>() to emptySet()
     }
 
     // Must be instantiable (not abstract)
     if (ABSTRACT in type.modifiers) {
       context
-          .processingEnv
-          .messager
-          .printMessage(
-              ERROR,
-              "@${Plugin::class.java.simpleName} is not applicable on abstract classes!",
-              type)
+        .processingEnv
+        .messager
+        .printMessage(
+          ERROR,
+          "@${Plugin::class.java.simpleName} is not applicable on abstract classes!",
+          type
+        )
       return emptyMap<String, String>() to emptySet()
     }
 
     // If they define a default constructor, it must be public
     val defaultConstructor = ElementFilter.constructorsIn(type.enclosedElements)
-        .firstOrNull { it.isDefault }
+      .firstOrNull { it.isDefault }
     if (defaultConstructor?.modifiers?.contains(Modifier.PUBLIC) == true) {
       context
-          .processingEnv
-          .messager
-          .printMessage(
-              ERROR,
-              "Must have a public default constructor to be usable in plugin points.",
-              type)
+        .processingEnv
+        .messager
+        .printMessage(
+          ERROR,
+          "Must have a public default constructor to be usable in plugin points.",
+          type
+        )
       return emptyMap<String, String>() to emptySet()
     }
     return mapOf(METADATA_KEY to type.qualifiedName.toString()) to setOf(type)
   }
 
   override fun producerIncrementalType(
-      processingEnvironment: ProcessingEnvironment): IncrementalExtensionType = AGGREGATING
+    processingEnvironment: ProcessingEnvironment
+  ): IncrementalExtensionType = AGGREGATING
 
   override fun supportedConsumerAnnotations() = setOf(PluginPoint::class.java)
 

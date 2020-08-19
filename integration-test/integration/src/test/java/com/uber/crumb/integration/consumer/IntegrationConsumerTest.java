@@ -17,9 +17,11 @@ package com.uber.crumb.integration.consumer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.ryanharter.auto.value.gson.GenerateTypeAdapter;
 import com.squareup.moshi.Moshi;
 import com.uber.crumb.integration.lib1.Lib1Enum;
 import com.uber.crumb.integration.lib1.Lib1Model;
+import com.uber.crumb.integration.lib1.Lib1Model_GsonTypeAdapter;
 import com.uber.crumb.integration.lib2.Lib2Enum;
 import com.uber.crumb.integration.lib2.Lib2Model;
 import com.uber.crumb.integration.lib3.Lib3Enum;
@@ -47,7 +49,10 @@ public final class IntegrationConsumerTest {
           + "\"lib3Model\"},\"localEnum\":\"foo\",\"localModel\":{\"foo\":\"localModel\"}}";
 
   private final Gson gson =
-      new GsonBuilder().registerTypeAdapterFactory(IntegrationConsumer.gson()).create();
+      new GsonBuilder()
+          .registerTypeAdapterFactory(IntegrationConsumer.gson())
+          .registerTypeAdapterFactory(GenerateTypeAdapter.FACTORY)
+          .create();
 
   private final Moshi moshi = new Moshi.Builder().add(IntegrationConsumer.moshi()).build();
 
@@ -71,7 +76,7 @@ public final class IntegrationConsumerTest {
 
     // Another check to make sure we're not messing up the adapter on AutoValue_ prefixes
     assertThat(gson.getAdapter(newData.lib1Model.getClass()))
-        .isInstanceOf(Lib1Model.typeAdapter(gson).getClass());
+        .isInstanceOf(Lib1Model_GsonTypeAdapter.class);
   }
 
   @Test
@@ -96,11 +101,6 @@ public final class IntegrationConsumerTest {
       fail("Moshi deserialization failed: " + e.getMessage());
     }
     assertThat(data).isEqualTo(newData);
-
-    // Another check to make sure we're not messing up the adapter on AutoValue_ prefixes
-    //noinspection ConstantConditions
-    assertThat(moshi.adapter(newData.lib1Model.getClass()))
-        .isInstanceOf(Lib1Model.jsonAdapter(moshi).getClass());
   }
 
   public static final class TestData {

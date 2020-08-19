@@ -33,5 +33,4 @@ dependencies {
   implementation project(":crumb-annotations")
   implementation project(":sample:plugins-compiler:jvm:kotlin:library")
   implementation project(":sample:plugins-compiler:translations-api")
-  implementation deps.kotlin.stdLib
 }

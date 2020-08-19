@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2019. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.core
 
 import com.squareup.javapoet.AnnotationSpec
@@ -43,67 +42,75 @@ private typealias KotlinAnnotationSpec = com.squareup.kotlinpoet.AnnotationSpec
 enum class CrumbOutputLanguage {
   JAVA {
     override fun writeTo(
-        filer: Filer,
-        packageName: String,
-        fileName: String,
-        originatingElements: Set<Element>
+      filer: Filer,
+      packageName: String,
+      fileName: String,
+      originatingElements: Set<Element>
     ): BufferedSink {
       val buffer = Buffer()
       return object : BufferedSink by buffer {
         override fun close() {
           val typeSpec = TypeSpec.classBuilder(fileName)
-              .addJavadoc(EXPLANATORY_COMMENT)
-              .addAnnotation(AnnotationSpec.builder(CrumbIndex::class.java)
-                  .addMember("value", "\$L", buffer.readByteArray().joinToString(",", prefix = "{", postfix = "}"))
-                  .build())
-              .addModifiers(FINAL)
-              .addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())
-              .apply {
-                originatingElements.forEach { addOriginatingElement(it) }
-              }
-              .build()
+            .addJavadoc(EXPLANATORY_COMMENT)
+            .addAnnotation(
+              AnnotationSpec.builder(CrumbIndex::class.java)
+                .addMember("value", "\$L", buffer.readByteArray().joinToString(",", prefix = "{", postfix = "}"))
+                .build()
+            )
+            .addModifiers(FINAL)
+            .addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())
+            .apply {
+              originatingElements.forEach { addOriginatingElement(it) }
+            }
+            .build()
           JavaFile.builder(packageName, typeSpec)
-              .addFileComment(GENERATED_COMMENT)
-              .indent(INDENT)
-              .build()
-              .writeTo(filer)
+            .addFileComment(GENERATED_COMMENT)
+            .indent(INDENT)
+            .build()
+            .writeTo(filer)
         }
       }
     }
   },
   KOTLIN {
     override fun writeTo(
-        filer: Filer,
-        packageName: String,
-        fileName: String,
-        originatingElements: Set<Element>
+      filer: Filer,
+      packageName: String,
+      fileName: String,
+      originatingElements: Set<Element>
     ): BufferedSink {
       val buffer = Buffer()
       return object : BufferedSink by buffer {
         override fun close() {
           val typeSpec = KotlinTypeSpec.classBuilder(fileName)
-              .addKdoc(EXPLANATORY_COMMENT)
-              .addAnnotation(KotlinAnnotationSpec.builder(CrumbIndex::class)
-                  .addMember("value = %L", buffer.readByteArray().joinToString(",", prefix = "[", postfix = "]"))
-                  .build())
-              .addModifiers(KModifier.PRIVATE)
-              .primaryConstructor(FunSpec.constructorBuilder()
-                  .addModifiers(KModifier.PRIVATE)
-                  .build())
-              .apply {
-                this.originatingElements += originatingElements
-              }
-              .build()
+            .addKdoc(EXPLANATORY_COMMENT)
+            .addAnnotation(
+              KotlinAnnotationSpec.builder(CrumbIndex::class)
+                .addMember("value = %L", buffer.readByteArray().joinToString(",", prefix = "[", postfix = "]"))
+                .build()
+            )
+            .addModifiers(KModifier.PRIVATE)
+            .primaryConstructor(
+              FunSpec.constructorBuilder()
+                .addModifiers(KModifier.PRIVATE)
+                .build()
+            )
+            .apply {
+              this.originatingElements += originatingElements
+            }
+            .build()
           FileSpec.builder(packageName, "-$fileName")
-              .addComment(GENERATED_COMMENT)
-              .addAnnotation(KotlinAnnotationSpec.builder(JvmName::class)
-                  .addMember("name = %S", "-$fileName")
-                  .useSiteTarget(FILE)
-                  .build())
-              .addType(typeSpec)
-              .indent(INDENT)
-              .build()
-              .writeTo(filer)
+            .addComment(GENERATED_COMMENT)
+            .addAnnotation(
+              KotlinAnnotationSpec.builder(JvmName::class)
+                .addMember("name = %S", "-$fileName")
+                .useSiteTarget(FILE)
+                .build()
+            )
+            .addType(typeSpec)
+            .indent(INDENT)
+            .build()
+            .writeTo(filer)
         }
       }
     }
@@ -120,10 +127,11 @@ enum class CrumbOutputLanguage {
    * @return A [BufferedSink] to write metadata to. This will (only) be written to the eventual [CrumbIndex] once
    *         [BufferedSink.close] is called.
    */
-  abstract fun writeTo(filer: Filer,
-      packageName: String,
-      fileName: String,
-      originatingElements: Set<Element> = emptySet()
+  abstract fun writeTo(
+    filer: Filer,
+    packageName: String,
+    fileName: String,
+    originatingElements: Set<Element> = emptySet()
   ): BufferedSink
 
   companion object {

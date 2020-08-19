@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.compiler.api
 
 import javax.annotation.processing.ProcessingEnvironment
@@ -28,9 +27,7 @@ interface CrumbExtension {
    *
    * If you need anything from the processingEnv for later, it is recommended to save its instance here.
    */
-  @JvmDefault
   fun init(processingEnvironment: ProcessingEnvironment) {
-
   }
 
   /**
@@ -38,7 +35,6 @@ interface CrumbExtension {
    * metadata from the classpath. This is the key that [CrumbProducerExtension] data is written to
    * and [CrumbConsumerExtension] data is read from. By default, it's the name of the extension class.
    */
-  @JvmDefault
   val key: ExtensionKey get() = javaClass.name
 
   /**

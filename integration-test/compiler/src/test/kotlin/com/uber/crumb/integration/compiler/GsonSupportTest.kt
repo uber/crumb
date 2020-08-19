@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018. Uber Technologies
+ * Copyright 2020. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.uber.crumb.integration.compiler
 
 import com.google.common.collect.ImmutableSet
@@ -29,7 +28,9 @@ class GsonSupportTest {
 
   @Test
   fun generatesTypeAdapterFactory() {
-    val source1 = JavaFileObjects.forSourceString("test.Foo", """
+    val source1 = JavaFileObjects.forSourceString(
+      "test.Foo",
+      """
 package test;
 import com.uber.crumb.annotations.CrumbConsumable;
 import com.google.gson.TypeAdapter;
@@ -40,9 +41,12 @@ import com.google.gson.Gson;
   }
   public abstract String getName();
   public abstract boolean isAwesome();
-}""")
+}"""
+    )
 
-    val source2 = JavaFileObjects.forSourceString("test.Bar", """
+    val source2 = JavaFileObjects.forSourceString(
+      "test.Bar",
+      """
 package test;
 import com.uber.crumb.annotations.CrumbConsumable;
 import com.google.gson.TypeAdapter;
@@ -52,9 +56,12 @@ import com.google.gson.Gson;
     return null;
   }
   public abstract String getName();
-}""")
+}"""
+    )
 
-    val source3 = JavaFileObjects.forSourceString("test.MyAdapterFactory", """
+    val source3 = JavaFileObjects.forSourceString(
+      "test.MyAdapterFactory",
+      """
 package test;
 import com.google.gson.TypeAdapterFactory;
 import com.uber.crumb.integration.annotations.GsonFactory;
@@ -63,9 +70,12 @@ public abstract class MyAdapterFactory {
   public static TypeAdapterFactory create() {
       return new GsonProducer_MyAdapterFactory();
         }
-}""")
+}"""
+    )
 
-    val expected = JavaFileObjects.forSourceString("test.GsonProducer_MyAdapterFactory", """
+    val expected = JavaFileObjects.forSourceString(
+      "test.GsonProducer_MyAdapterFactory",
+      """
 package test;
 
 import com.google.gson.Gson;
@@ -90,13 +100,14 @@ final class GsonProducer_MyAdapterFactory implements TypeAdapterFactory {
       return null;
     }
   }
-}""")
+}"""
+    )
 
     assertAbout<JavaSourcesSubject, Iterable<JavaFileObject>>(javaSources())
-        .that(ImmutableSet.of(source1, source2, source3))
-        .processedWith(CrumbProcessor(listOf(GsonSupport())))
-        .compilesWithoutError()
-        .and()
-        .generatesSources(expected)
+      .that(ImmutableSet.of(source1, source2, source3))
+      .processedWith(CrumbProcessor(listOf(GsonSupport())))
+      .compilesWithoutError()
+      .and()
+      .generatesSources(expected)
   }
 }

@@ -48,7 +48,7 @@ pluginManagement {
         case 'com.squareup.wire':
           useModule("com.squareup.wire:wire-gradle-plugin:${deps.versions.wire}")
           break
-        case 'com.diffplug.gradle.spotless':
+        case 'com.diffplug.spotless':
           useVersion(deps.versions.spotless)
           break
       }

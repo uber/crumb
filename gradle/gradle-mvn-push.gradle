@@ -48,10 +48,6 @@ def kotlinAndroidArtifactTasks() {
   }
 
   dokka {
-    externalDocumentationLink {
-      url = new URL("http://reactivex.io/RxJava/2.x/javadoc/")
-    }
-
     outputFormat = 'html'
     outputDirectory = "$buildDir/docs/kdoc"
     sourceDirs = android.sourceSets.main.java.srcDirs
@@ -74,10 +70,6 @@ def kotlinArtifactTasks() {
   }
 
   dokka {
-    externalDocumentationLink {
-      url = new URL("http://reactivex.io/RxJava/2.x/javadoc/")
-    }
-
     outputFormat = 'html'
     outputDirectory = "$buildDir/docs/kdoc"
     sourceDirs = sourceSets.main.allSource
