@@ -28,7 +28,7 @@ buildscript {
 }
 
 plugins {
-  id 'com.diffplug.gradle.spotless'
+  id 'com.diffplug.spotless'
 }
 
 allprojects {
@@ -60,7 +60,7 @@ subprojects {
   }
 
   apply from: rootProject.file('gradle/dependencies.gradle')
-  apply plugin: 'com.diffplug.gradle.spotless'
+  apply plugin: 'com.diffplug.spotless'
   spotless {
     format 'misc', {
       target '**/*.md', '**/.gitignore'
@@ -70,11 +70,11 @@ subprojects {
       endWithNewline()
     }
     // Not yet, pending https://github.com/diffplug/spotless/issues/142
-    //    kotlin {
-    //      target "**/*.kt"
-    //      ktlint(deps.versions.ktlint)
-    //      licenseHeaderFile rootProject.file('spotless/copyright.kt')
-    //    }
+    kotlin {
+      target "**/*.kt"
+      ktlint(deps.versions.ktlint).userData(["indent_size": "2", "continuation_indent_size": "4"])
+      licenseHeaderFile rootProject.file('spotless/copyright.kt')
+    }
     java {
       target "**/src/main/**/com/uber/*.java"
       googleJavaFormat(deps.versions.gjf)

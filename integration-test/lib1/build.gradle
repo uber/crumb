@@ -33,6 +33,7 @@ dependencies {
   annotationProcessor project(":integration-test:compiler")
   compileOnly deps.misc.javaxExtras
   compileOnly deps.apt.autoValueAnnotations
+  compileOnly deps.apt.autoValueMoshiAnnotations
 
   api deps.misc.gson
   api deps.misc.moshi

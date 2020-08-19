@@ -20,13 +20,13 @@ def versions = [
     autoValueGson: '1.0.0',
     errorProne: '2.4.0',
     dokka: '0.9.18',
-    errorPronePlugin: '0.7.1',
+    errorPronePlugin: '1.2.1',
     incap: '0.2',
     gjf: '1.7',
     kotlin: '1.4.0',
-    ktlint: '0.34.2',
+    ktlint: '0.37.2',
     moshi: '1.9.3',
-    spotless: '3.24.2',
+    spotless: '5.1.1',
     wire: "3.2.2"
 ]
 
@@ -42,6 +42,7 @@ ext.deps = [
         autoValueGson: "com.ryanharter.auto.value:auto-value-gson:${versions.autoValueGson}",
         autoValueGsonRuntime: "com.ryanharter.auto.value:auto-value-gson-runtime:${versions.autoValueGson}",
         autoValueMoshi: "com.ryanharter.auto.value:auto-value-moshi-extension:1.0.0",
+        autoValueMoshiAnnotations: "com.ryanharter.auto.value:auto-value-moshi-annotations:1.0.0",
         incap: "net.ltgt.gradle.incap:incap:${versions.incap}",
         incapProcessor: "net.ltgt.gradle.incap:incap-processor:${versions.incap}"
     ],
