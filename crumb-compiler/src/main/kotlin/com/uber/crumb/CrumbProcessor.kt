@@ -117,12 +117,12 @@ class CrumbProcessor : AbstractProcessor {
 
   override fun getSupportedOptions(): Set<String> {
     val producerIncrementalType = producerExtensions.asSequence()
-      .map { it.producerIncrementalType(processingEnv) }
-      .min()
+        .map { it.producerIncrementalType(processingEnv) }
+        .minOrNull()
       ?: ISOLATING
     val consumerIncrementalType = consumerExtensions.asSequence()
-      .map { it.consumerIncrementalType(processingEnv) }
-      .min()
+        .map { it.consumerIncrementalType(processingEnv) }
+        .minOrNull()
       ?: ISOLATING
     return arrayOf(OPTION_VERBOSE, producerIncrementalType.toOption(), consumerIncrementalType.toOption())
       .filterNotNullTo(mutableSetOf())
