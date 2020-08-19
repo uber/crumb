@@ -22,7 +22,7 @@ plugins {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   kotlinOptions {
     jvmTarget = "1.8"
-    freeCompilerArgs = ['-Xjsr305=strict', '-Xjvm-default=all']
+    freeCompilerArgs = ['-Xjsr305=strict', '-Xjvm-default=all', '-Xopt-in=kotlin.RequiresOptIn', '-Xopt-in=com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview']
   }
 }
 
@@ -32,7 +32,9 @@ dependencies {
   implementation deps.apt.autoServiceAnnotations
   implementation deps.apt.autoCommon
   implementation deps.misc.guava
-  implementation deps.misc.kotlinMetadata
+  implementation deps.misc.kotlinpoetMetadata
+  implementation deps.misc.kotlinpoetMetadataSpecs
+  implementation deps.misc.kotlinpoetClassInspectorElements
   implementation deps.misc.kotlinpoet
   implementation project(":crumb-compiler")
   implementation project(":sample:experiments-compiler:experiment-enums-compiler:annotations")

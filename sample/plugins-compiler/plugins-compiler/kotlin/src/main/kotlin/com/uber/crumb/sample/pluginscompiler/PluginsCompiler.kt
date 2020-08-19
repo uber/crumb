@@ -15,7 +15,6 @@
  */
 package com.uber.crumb.sample.pluginscompiler
 
-import com.google.auto.common.MoreElements
 import com.google.auto.common.MoreElements.isAnnotationPresent
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec
@@ -23,6 +22,10 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.classinspector.elements.ElementsClassInspector
+import com.squareup.kotlinpoet.metadata.isObject
+import com.squareup.kotlinpoet.metadata.specs.toFileSpec
+import com.squareup.kotlinpoet.metadata.toImmutableKmClass
 import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
@@ -34,12 +37,6 @@ import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.sample.pluginscompiler.annotations.Plugin
 import com.uber.crumb.sample.pluginscompiler.annotations.PluginPoint
-import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
-import me.eugeniomarletti.kotlin.metadata.classKind
-import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
-import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
-import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
-import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.ElementKind.CLASS
@@ -104,40 +101,10 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       return
     }
 
-    val kmetadata = type.kotlinMetadata
-
-    if (kmetadata == null &&
-      type.annotationMirrors.any {
-        MoreElements.asType(it.annotationType.asElement()).qualifiedName.toString() == METADATA_FQCN
-      }
-    ) {
-      context.processingEnv
-        .messager
-        .printMessage(
-          ERROR,
-          "Metadata annotation was unreadable on $type. Please ensure the kotlin standard library is a " +
-            "dependency of this project.",
-          type
-        )
-      return
-    }
-
-    if (kmetadata !is KotlinClassMetadata) {
-      context.processingEnv
-        .messager
-        .printMessage(
-          ERROR,
-          "@${PluginPoint::class.java.simpleName} can't be applied to $type: must be a class.",
-          type
-        )
-      return
-    }
-
-    val classData = kmetadata.data
-    val (nameResolver, classProto) = classData
+    val kmClass = type.toImmutableKmClass()
 
     // Must be an object class.
-    if (classProto.classKind != ProtoBuf.Class.Kind.OBJECT) {
+    if (!kmClass.isObject) {
       context.processingEnv
         .messager
         .printMessage(
@@ -148,9 +115,9 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       return
     }
 
-    val packageName = nameResolver.getString(classProto.fqName)
-      .substringBeforeLast('/')
-      .replace('/', '.')
+    val elementsInspector = ElementsClassInspector.create(context.processingEnv.elementUtils, context.processingEnv.typeUtils)
+    val spec = kmClass.toFileSpec(elementsInspector, type.asClassName())
+    val packageName = spec.packageName
 
     // Read the pluginpoint's target type, e.g. "MyPluginInterface"
     val pluginPoint = type.getAnnotation(PluginPoint::class.java)
@@ -185,15 +152,14 @@ class PluginsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
         )
       )
       .addStatement(initializerCode, *initializerValues)
+      .addOriginatingElement(type)
       .build()
 
     // Generate the file
-    val generatedDir = context.processingEnv.options[kaptGeneratedOption]?.let(::File)
-      ?: throw IllegalStateException("Could not resolve kotlin generated directory!")
     FileSpec.builder(packageName, "${type.simpleName}_Plugins")
       .addFunction(pluginsFunction)
       .build()
-      .writeTo(generatedDir)
+      .writeTo(context.processingEnv.filer)
   }
 
   override fun produce(

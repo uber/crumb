@@ -24,6 +24,10 @@ import com.squareup.kotlinpoet.STAR
 import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.classinspector.elements.ElementsClassInspector
+import com.squareup.kotlinpoet.metadata.isObject
+import com.squareup.kotlinpoet.metadata.specs.toFileSpec
+import com.squareup.kotlinpoet.metadata.toImmutableKmClass
 import com.uber.crumb.compiler.api.ConsumerMetadata
 import com.uber.crumb.compiler.api.CrumbConsumerExtension
 import com.uber.crumb.compiler.api.CrumbContext
@@ -34,12 +38,6 @@ import com.uber.crumb.compiler.api.ExtensionKey
 import com.uber.crumb.compiler.api.ProducerMetadata
 import com.uber.crumb.sample.experimentsenumscompiler.annotations.Experiments
 import com.uber.crumb.sample.experimentsenumscompiler.annotations.ExperimentsCollector
-import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
-import me.eugeniomarletti.kotlin.metadata.classKind
-import me.eugeniomarletti.kotlin.metadata.kaptGeneratedOption
-import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
-import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
-import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
@@ -101,35 +99,10 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       return
     }
 
-    val kmetadata = type.kotlinMetadata
+    val kmClass = type.toImmutableKmClass()
 
-    if (kmetadata !is KotlinClassMetadata) {
-      context.processingEnv
-        .messager
-        .printMessage(
-          ERROR,
-          "@${ExperimentsCollector::class.java.simpleName} can't be applied to $type: must be a class. KMetadata was $kmetadata and annotations were [${type.annotationMirrors.joinToString { it.annotationType.asElement().simpleName }}]",
-          type
-        )
-      return
-    }
-
-    val classData = try {
-      kmetadata.data
-    } catch (e: KotlinNullPointerException) {
-      context.processingEnv
-        .messager
-        .printMessage(
-          ERROR,
-          "Could not look up class data for type.",
-          type
-        )
-      throw e
-    }
-    val (nameResolver, classProto) = classData
-
-    // Must be an abstract class because we're generating the backing implementation.
-    if (classProto.classKind != ProtoBuf.Class.Kind.OBJECT) {
+    // Must be an object
+    if (!kmClass.isObject) {
       context.processingEnv
         .messager
         .printMessage(
@@ -140,16 +113,16 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
       return
     }
 
-    val packageName = nameResolver.getString(classProto.fqName)
-      .substringBeforeLast('/')
-      .replace('/', '.')
+    val elementsInspector = ElementsClassInspector.create(context.processingEnv.elementUtils, context.processingEnv.typeUtils)
+    val spec = kmClass.toFileSpec(elementsInspector, type.asClassName())
+    val packageName = spec.packageName
 
     // Map of enum TypeElement to its members
     val experimentClasses = metadata
       .mapNotNull { it[METADATA_KEY] }
       .map { enumClass -> context.processingEnv.elementUtils.getTypeElement(enumClass) }
-      .associate {
-        it to it.enclosedElements
+      .associateWith {
+        it.enclosedElements
           .filter { it.kind == ENUM_CONSTANT }
           .map(Element::toString)
       }
@@ -175,15 +148,14 @@ class ExperimentsCompiler : CrumbProducerExtension, CrumbConsumerExtension {
         )
       )
       .addStatement("return mapOf($initializerCode)", *initializerValues)
+      .addOriginatingElement(type)
       .build()
 
     // Generate the file
-    val generatedDir = context.processingEnv.options[kaptGeneratedOption]?.let(::File)
-      ?: throw IllegalStateException("Could not resolve kotlin generated directory!")
     FileSpec.builder(packageName, "${type.simpleName}_Experiments")
       .addFunction(mapFunction)
       .build()
-      .writeTo(generatedDir)
+      .writeTo(context.processingEnv.filer)
   }
 
   override fun producerIncrementalType(
